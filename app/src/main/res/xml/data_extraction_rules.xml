@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Cached wallpapers are large and re-downloadable. -->
+        <exclude domain="file" path="sources" />
+        <exclude domain="external" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="sources" />
+    </device-transfer>
+</data-extraction-rules>

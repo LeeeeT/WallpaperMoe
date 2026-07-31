@@ -1,0 +1,26 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+captures/
+.cxx/
+
+# Signing material
+*.jks
+*.keystore
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+
+# Nix
+result
+result-*
+
+# Build output
+/dist/
