@@ -28,11 +28,11 @@ Open **Studio** to create and reuse named sources:
 
 | Source | What it does |
 | --- | --- |
-| **Pandora** | Samples from Xiaomi's public wallpaper channels. |
-| **Wallhaven** | Searches wallhaven.cc by query, category, purity, and order. |
-| **Favorites** | Samples your on-device favorites randomly or in round-robin order. |
-| **Combine** | Uses several existing sources randomly, in order, or as fallbacks. |
 | **Keep ready** | Adds optional caching and prefetching to an existing source. |
+| **Combine** | Uses several existing sources randomly, in order, or as fallbacks. |
+| **Favorites** | Samples your on-device favorites randomly or in round-robin order. |
+| **Wallhaven** | Searches wallhaven.cc by query, category, purity, and order. |
+| **Pandora** | Samples from Xiaomi's public wallpaper channels. |
 
 Sources can be reused inside other sources, so a provider only needs to be configured once. Select one source as active; it will be used for both automatic changes and **Change now**.
 

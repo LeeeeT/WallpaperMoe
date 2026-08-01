@@ -992,11 +992,11 @@ private fun OptionGroup(title: String, content: @Composable ColumnScope.() -> Un
 private data class CreatableSource(val kind: SourceKind, @StringRes val description: Int)
 
 private val creatable = listOf(
-    CreatableSource(SourceKind.FAVORITES, R.string.source_picker_favorites),
-    CreatableSource(SourceKind.PANDORA, R.string.source_picker_pandora),
-    CreatableSource(SourceKind.WALLHAVEN, R.string.source_picker_wallhaven),
     CreatableSource(SourceKind.KEEP_READY, R.string.source_picker_keep_ready),
     CreatableSource(SourceKind.COMBINE, R.string.source_picker_combine),
+    CreatableSource(SourceKind.FAVORITES, R.string.source_picker_favorites),
+    CreatableSource(SourceKind.WALLHAVEN, R.string.source_picker_wallhaven),
+    CreatableSource(SourceKind.PANDORA, R.string.source_picker_pandora),
 )
 
 @Composable
