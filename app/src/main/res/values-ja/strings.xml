@@ -128,7 +128,10 @@
     <string name="combine_sources_detail">この組み合わせで使えるソースを追加します。</string>
     <string name="cache_description">保存した画像を再利用し、スケジュールに沿って更新します。</string>
     <string name="cache_images_to_keep">保持する画像数</string>
-    <string name="cache_hours_between_additions">追加の間隔（時間）</string>
+    <string name="cache_refresh_interval">更新間隔</string>
+    <string name="cache_refresh_hourly">1 時間ごと</string>
+    <string name="cache_refresh_6_hours">6 時間ごと</string>
+    <string name="cache_refresh_daily">1 日 1 回</string>
     <string name="prefetch_description">画像を事前に用意して、壁紙の変更を待たせないようにします。</string>
     <string name="prefetch_images_ready">用意しておく画像数</string>
 
@@ -190,7 +193,6 @@
     <string name="validation_wallhaven_purity">Wallhaven の健全度を 1 つ以上選んでください</string>
     <string name="validation_wallhaven_nsfw_key">NSFW 画像を含めるには Wallhaven の API キーを入力してください</string>
     <string name="validation_cache_capacity">キャッシュは 1 枚以上を保持する必要があります</string>
-    <string name="validation_cache_refresh">キャッシュの更新間隔に負の値は指定できません</string>
     <string name="validation_prefetch_depth">先読みは 1 枚以上を用意する必要があります</string>
     <string name="validation_keep_ready_source">準備しておくソースを選んでください</string>
     <string name="validation_combine_empty">組み合わせにソースを 1 つ以上追加してください</string>

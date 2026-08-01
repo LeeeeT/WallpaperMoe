@@ -31,6 +31,15 @@ fun RotationInterval.localizedLabel(): String = stringResource(
 )
 
 @Composable
+fun CacheRefresh.localizedLabel(): String = stringResource(
+    when (this) {
+        CacheRefresh.HOURLY -> R.string.cache_refresh_hourly
+        CacheRefresh.SIX_HOURS -> R.string.cache_refresh_6_hours
+        CacheRefresh.DAILY -> R.string.cache_refresh_daily
+    },
+)
+
+@Composable
 fun WallhavenSorting.localizedLabel(): String = stringResource(
     when (this) {
         WallhavenSorting.RANDOM -> R.string.sorting_random
@@ -89,7 +98,6 @@ fun DraftProblem.localizedMessage(): String = when (this) {
     DraftProblem.WallhavenPurityMissing -> stringResource(R.string.validation_wallhaven_purity)
     DraftProblem.WallhavenNsfwKeyMissing -> stringResource(R.string.validation_wallhaven_nsfw_key)
     DraftProblem.CacheCapacityInvalid -> stringResource(R.string.validation_cache_capacity)
-    DraftProblem.CacheRefreshInvalid -> stringResource(R.string.validation_cache_refresh)
     DraftProblem.PrefetchDepthInvalid -> stringResource(R.string.validation_prefetch_depth)
     DraftProblem.KeepReadySourceMissing -> stringResource(R.string.validation_keep_ready_source)
     DraftProblem.CombineEmpty -> stringResource(R.string.validation_combine_empty)

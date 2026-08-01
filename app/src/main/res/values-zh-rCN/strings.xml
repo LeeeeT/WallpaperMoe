@@ -128,7 +128,10 @@
     <string name="combine_sources_detail">添加该组合可以使用的来源。</string>
     <string name="cache_description">复用已保存的图片，并按计划刷新。</string>
     <string name="cache_images_to_keep">保留的图片数</string>
-    <string name="cache_hours_between_additions">每次添加间隔小时数</string>
+    <string name="cache_refresh_interval">刷新间隔</string>
+    <string name="cache_refresh_hourly">每小时</string>
+    <string name="cache_refresh_6_hours">每 6 小时</string>
+    <string name="cache_refresh_daily">每天一次</string>
     <string name="prefetch_description">提前准备图片，让壁纸更换无需等待。</string>
     <string name="prefetch_images_ready">预备就绪的图片数</string>
 
@@ -190,7 +193,6 @@
     <string name="validation_wallhaven_purity">请至少选择一个 Wallhaven 尺度等级</string>
     <string name="validation_wallhaven_nsfw_key">要包含 NSFW 图片，请输入 Wallhaven API 密钥</string>
     <string name="validation_cache_capacity">缓存至少要保留一张图片</string>
-    <string name="validation_cache_refresh">缓存刷新小时数不能为负</string>
     <string name="validation_prefetch_depth">预取至少要准备一张图片</string>
     <string name="validation_keep_ready_source">请选择要保持就绪的来源</string>
     <string name="validation_combine_empty">请至少向组合中添加一个来源</string>

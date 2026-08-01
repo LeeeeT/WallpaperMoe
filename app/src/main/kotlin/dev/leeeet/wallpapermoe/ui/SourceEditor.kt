@@ -56,6 +56,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -69,8 +70,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -86,6 +87,7 @@ import dev.leeeet.wallpapermoe.source.SourceLibrary
 import dev.leeeet.wallpapermoe.source.WallhavenSorting
 import dev.leeeet.wallpapermoe.source.kind
 import dev.leeeet.wallpapermoe.source.referencesTo
+import kotlin.math.roundToInt
 
 @Composable
 fun SourceScreen(state: UiState, vm: MoeViewModel) {
@@ -409,21 +411,16 @@ private fun ConfigEditor(
                         vm.updateSourceDraft(draft.copy(recipe = config.copy(cacheEnabled = it)))
                     },
                 ) {
-                        Stepper(
+                        SliderRow(
                             stringResource(R.string.cache_images_to_keep),
                             config.cacheCapacity,
-                            1..200,
-                            5,
+                            CACHE_CAPACITY_RANGE,
+                            CACHE_CAPACITY_STEP,
                         ) {
                             vm.updateSourceDraft(draft.copy(recipe = config.copy(cacheCapacity = it)))
                         }
-                        Stepper(
-                            stringResource(R.string.cache_hours_between_additions),
-                            config.cacheRefreshHours,
-                            0..168,
-                            1,
-                        ) {
-                            vm.updateSourceDraft(draft.copy(recipe = config.copy(cacheRefreshHours = it)))
+                        CacheRefreshPicker(config.cacheRefresh) {
+                            vm.updateSourceDraft(draft.copy(recipe = config.copy(cacheRefresh = it)))
                         }
                 }
                 KeepReadyOption(
@@ -800,10 +797,10 @@ private fun ChannelPicker(
     onDismiss: () -> Unit,
     onChange: (SourceRecipeDraft.Pandora) -> Unit,
 ) {
-    val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .6f
     val channels by vm.channels.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.loadChannels() }
     var selected by remember { mutableStateOf(config.channelIds.toSet()) }
+    val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .6f
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         Column(
@@ -1093,6 +1090,56 @@ private fun SourceLibrary.nameOf(id: SourceId): String = sources.first { it.id =
 
 @Composable
 private fun List<SourceId>.summary(@PluralsRes plural: Int): String = pluralStringResource(plural, size, size)
+
+@Composable
+private fun SliderRow(label: String, value: Int, range: IntRange, step: Int, onChange: (Int) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                Text("$value", style = MaterialTheme.typography.titleMedium)
+            }
+            Slider(
+                value = value.toFloat(),
+                onValueChange = { onChange(it.roundToInt()) },
+                valueRange = range.first.toFloat()..range.last.toFloat(),
+                // Slider counts the stops between the ends, not the ends themselves.
+                steps = (range.last - range.first) / step - 1,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CacheRefreshPicker(selected: CacheRefresh, onChange: (CacheRefresh) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Text(stringResource(R.string.cache_refresh_interval), style = MaterialTheme.typography.bodyMedium)
+            CacheRefresh.entries.forEach { option ->
+                Row(
+                    Modifier.fillMaxWidth().clickable { onChange(option) },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    RadioButton(selected = option == selected, onClick = { onChange(option) })
+                    Text(option.localizedLabel(), style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun Stepper(label: String, value: Int, range: IntRange, step: Int, onChange: (Int) -> Unit) {

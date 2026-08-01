@@ -15,12 +15,26 @@ import dev.leeeet.wallpapermoe.source.kind
 import dev.leeeet.wallpapermoe.source.problem
 import dev.leeeet.wallpapermoe.source.referencedSourceIds
 import dev.leeeet.wallpapermoe.source.upserting
+import kotlin.math.abs
 
 /** Incomplete user input for one visible source. Persistence identity lives in the editor session. */
 data class SourceDraft(
     val name: String,
     val recipe: SourceRecipeDraft,
 )
+
+/** How often a cache is allowed to pull one more image in. */
+enum class CacheRefresh(val hours: Int) {
+    HOURLY(1),
+    SIX_HOURS(6),
+    DAILY(24),
+    ;
+
+    companion object {
+        /** Snaps a stored interval onto the choices the editor offers. */
+        fun nearest(hours: Int): CacheRefresh = entries.minBy { abs(it.hours - hours) }
+    }
+}
 
 sealed interface SourceRecipeDraft {
     data class Favorites(
@@ -48,7 +62,7 @@ sealed interface SourceRecipeDraft {
         val sourceId: SourceId? = null,
         val cacheEnabled: Boolean = false,
         val cacheCapacity: Int = DEFAULT_CACHE_CAPACITY,
-        val cacheRefreshHours: Int = DEFAULT_CACHE_REFRESH_HOURS,
+        val cacheRefresh: CacheRefresh = CacheRefresh.DAILY,
         val prefetchEnabled: Boolean = false,
         val prefetchDepth: Int = DEFAULT_PREFETCH_DEPTH,
     ) : SourceRecipeDraft
@@ -76,7 +90,6 @@ sealed interface DraftProblem {
     data object WallhavenPurityMissing : DraftProblem
     data object WallhavenNsfwKeyMissing : DraftProblem
     data object CacheCapacityInvalid : DraftProblem
-    data object CacheRefreshInvalid : DraftProblem
     data object PrefetchDepthInvalid : DraftProblem
     data object KeepReadySourceMissing : DraftProblem
     data object CombineEmpty : DraftProblem
@@ -106,7 +119,6 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
         is SourceRecipeDraft.KeepReady -> when {
             value.sourceId.isNullOrBlank() -> DraftProblem.KeepReadySourceMissing
             value.cacheEnabled && value.cacheCapacity < 1 -> DraftProblem.CacheCapacityInvalid
-            value.cacheEnabled && value.cacheRefreshHours < 0 -> DraftProblem.CacheRefreshInvalid
             value.prefetchEnabled && value.prefetchDepth < 1 -> DraftProblem.PrefetchDepthInvalid
             else -> null
         }
@@ -140,7 +152,7 @@ private fun SourceRecipeDraft.toRecipe(): SourceRecipe = when (this) {
     )
     is SourceRecipeDraft.KeepReady -> SourceRecipe.KeepReady(
         sourceId = requireNotNull(sourceId),
-        cache = if (cacheEnabled) CacheOptions(cacheCapacity, cacheRefreshHours) else null,
+        cache = if (cacheEnabled) CacheOptions(cacheCapacity, cacheRefresh.hours) else null,
         prefetch = if (prefetchEnabled) PrefetchOptions(prefetchDepth) else null,
     )
     is SourceRecipeDraft.Combine -> SourceRecipe.Combine(mode, sourceIds)
@@ -157,8 +169,8 @@ private fun SourceRecipe.toDraft(): SourceRecipeDraft = when (this) {
     is SourceRecipe.KeepReady -> SourceRecipeDraft.KeepReady(
         sourceId = sourceId,
         cacheEnabled = cache != null,
-        cacheCapacity = cache?.capacity ?: DEFAULT_CACHE_CAPACITY,
-        cacheRefreshHours = cache?.refreshHours ?: DEFAULT_CACHE_REFRESH_HOURS,
+        cacheCapacity = cache?.capacity?.let(::snapCapacity) ?: DEFAULT_CACHE_CAPACITY,
+        cacheRefresh = cache?.refreshHours?.let(CacheRefresh::nearest) ?: CacheRefresh.DAILY,
         prefetchEnabled = prefetch != null,
         prefetchDepth = prefetch?.depth ?: DEFAULT_PREFETCH_DEPTH,
     )
@@ -195,6 +207,16 @@ fun SourceLibrary.canReference(ownerId: SourceId, candidateId: SourceId): Boolea
     return !reachesOwner(candidateId)
 }
 
+/** The cache size the editor's slider can express, in steps of [CACHE_CAPACITY_STEP]. */
+val CACHE_CAPACITY_RANGE = 10..100
+const val CACHE_CAPACITY_STEP = 10
+
+/** Rounds a stored capacity onto a slider stop, so the editor always shows a reachable value. */
+private fun snapCapacity(capacity: Int): Int {
+    val clamped = capacity.coerceIn(CACHE_CAPACITY_RANGE)
+    val stops = CACHE_CAPACITY_RANGE.step(CACHE_CAPACITY_STEP)
+    return stops.minBy { abs(it - clamped) }
+}
+
 private const val DEFAULT_CACHE_CAPACITY = 20
-private const val DEFAULT_CACHE_REFRESH_HOURS = 24
 private const val DEFAULT_PREFETCH_DEPTH = 3

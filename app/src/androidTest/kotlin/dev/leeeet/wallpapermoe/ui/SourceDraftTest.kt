@@ -70,14 +70,14 @@ class SourceDraftTest {
                 sourceId = childId,
                 cacheEnabled = true,
                 cacheCapacity = 40,
-                cacheRefreshHours = 12,
+                cacheRefresh = CacheRefresh.SIX_HOURS,
                 prefetchEnabled = true,
                 prefetchDepth = 5,
             ),
         ).toDefinition(newSourceId()).recipe as SourceRecipe.KeepReady
 
         assertEquals(40, recipe.cache?.capacity)
-        assertEquals(12, recipe.cache?.refreshHours)
+        assertEquals(6, recipe.cache?.refreshHours)
         assertEquals(5, recipe.prefetch?.depth)
     }
 
