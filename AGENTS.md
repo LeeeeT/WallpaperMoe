@@ -11,3 +11,7 @@ Before starting each task, ask questions until the task is unambiguous (scope, i
 ## 3. Requests are approximate
 
 When you hit a wall the wall is information: the design is wrong somewhere. STOP. Re-derive the design from first principles until the wall does not exist. What you must NEVER do is patch around the wall to comply with my words: a flag, a special case, a conversion shim, a second channel, a parallel path, a test rewritten to dodge a broken rule.
+
+---
+
+For anything release-related, read `RELEASING.md` first.
