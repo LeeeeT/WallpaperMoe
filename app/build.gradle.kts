@@ -54,6 +54,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Derives the locale list from the values-* folders, so the per-app
+    // language picker stays correct as translations are added or removed.
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     signingConfigs {
         if (releaseSigningEnabled) {
             create("release") {
