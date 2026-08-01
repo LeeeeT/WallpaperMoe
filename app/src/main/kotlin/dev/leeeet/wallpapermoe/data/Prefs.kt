@@ -23,12 +23,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  */
 enum class RotationInterval(val minutes: Int) {
     EVERY_LOCK(0),
-    M15(15),
-    M30(30),
     H1(60),
-    H3(180),
     H6(360),
-    H12(720),
     H24(1440),
     ;
 

@@ -72,12 +72,8 @@
     <string name="settings_footer">壁紙の変更は画面が消灯している間に行われるため、操作を妨げることはありません。</string>
     <string name="settings_interval_detail">画面ロックで変更が起きる頻度を選びます。</string>
     <string name="interval_every_lock">画面がロックされるたび</string>
-    <string name="interval_15_minutes">15 分に 1 回まで</string>
-    <string name="interval_30_minutes">30 分に 1 回まで</string>
     <string name="interval_1_hour">1 時間に 1 回まで</string>
-    <string name="interval_3_hours">3 時間に 1 回まで</string>
     <string name="interval_6_hours">6 時間に 1 回まで</string>
-    <string name="interval_12_hours">12 時間に 1 回まで</string>
     <string name="interval_24_hours">1 日に 1 回まで</string>
 
     <string name="setup_title">セットアップを完了</string>

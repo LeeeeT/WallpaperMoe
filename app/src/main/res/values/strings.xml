@@ -72,12 +72,8 @@
     <string name="settings_footer">Wallpaper changes happen while the screen is off, so the transition never interrupts you.</string>
     <string name="settings_interval_detail">Choose how often a screen lock may trigger a change.</string>
     <string name="interval_every_lock">Every time the screen locks</string>
-    <string name="interval_15_minutes">At most every 15 minutes</string>
-    <string name="interval_30_minutes">At most every 30 minutes</string>
     <string name="interval_1_hour">At most every hour</string>
-    <string name="interval_3_hours">At most every 3 hours</string>
     <string name="interval_6_hours">At most every 6 hours</string>
-    <string name="interval_12_hours">At most every 12 hours</string>
     <string name="interval_24_hours">At most once a day</string>
 
     <string name="setup_title">Finish setup</string>

@@ -24,12 +24,8 @@ fun Tab.localizedLabel(): String = stringResource(
 fun RotationInterval.localizedLabel(): String = stringResource(
     when (this) {
         RotationInterval.EVERY_LOCK -> R.string.interval_every_lock
-        RotationInterval.M15 -> R.string.interval_15_minutes
-        RotationInterval.M30 -> R.string.interval_30_minutes
         RotationInterval.H1 -> R.string.interval_1_hour
-        RotationInterval.H3 -> R.string.interval_3_hours
         RotationInterval.H6 -> R.string.interval_6_hours
-        RotationInterval.H12 -> R.string.interval_12_hours
         RotationInterval.H24 -> R.string.interval_24_hours
     },
 )

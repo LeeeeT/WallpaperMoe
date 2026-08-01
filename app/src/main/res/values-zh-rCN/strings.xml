@@ -72,12 +72,8 @@
     <string name="settings_footer">壁纸会在息屏时更换，因此不会打断你的操作。</string>
     <string name="settings_interval_detail">选择锁屏最多可以多频繁地触发更换。</string>
     <string name="interval_every_lock">每次锁屏时</string>
-    <string name="interval_15_minutes">最多每 15 分钟一次</string>
-    <string name="interval_30_minutes">最多每 30 分钟一次</string>
     <string name="interval_1_hour">最多每小时一次</string>
-    <string name="interval_3_hours">最多每 3 小时一次</string>
     <string name="interval_6_hours">最多每 6 小时一次</string>
-    <string name="interval_12_hours">最多每 12 小时一次</string>
     <string name="interval_24_hours">最多每天一次</string>
 
     <string name="setup_title">完成设置</string>
