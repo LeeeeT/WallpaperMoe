@@ -67,7 +67,7 @@ Wallpaper Moe 不运营任何服务器，也不会收到这些数据。
 - **开机启动** 用于在设备重启后恢复轮换。
 - **不受限制的电池用量** 用于防止 Android 中止后台轮换。
 
-## 面向开发者
+## 面向贡献者
 
 仓库中包含一个版本固定的 Nix 开发环境，内含 JDK、Gradle、Android SDK、模拟器和 ADB：
 
@@ -84,38 +84,6 @@ nix develop --command gradle :app:connectedDebugAndroidTest
 ```
 
 插桩测试覆盖了使用本地模拟服务器的提供方、来源的组合与持久化、图片存储、草稿校验、历史记录和收藏。主要代码位于 `app/src/main/kotlin/dev/leeeet/wallpapermoe/`，按来源、提供方、图片、壁纸、服务、数据和 UI 等关注点组织。
-
-### 发布流程
-
-发布在一个更精简的 Nix 环境中于本地准备，该环境不含模拟器和系统镜像。Nix 把 Android 工具链保存在其存储中，而 Gradle 会在多次发布之间复用依赖与构建缓存。
-
-在 Gradle 用户属性文件中配置生产用密钥库：
-
-```properties
-moe.storeFile=/absolute/path/to/wallpaper-moe.jks
-moe.storePassword=...
-moe.keyAlias=...
-moe.keyPassword=...
-```
-
-发布构建绝不会回退到 Android 调试密钥。本地发布命令还会校验 APK 证书，并拒绝 Android 调试证书。
-
-用 `gh auth login` 认证 GitHub CLI，配置好 `origin`，并从与 `origin/main` 完全一致的干净 `main` 分支开始。然后选择一种稳定语义化版本的递增方式：
-
-```bash
-nix run .#release -- patch
-# 或：minor / major
-```
-
-该命令会：
-
-1. 递增 `version.properties` 中的 `versionName` 和单调递增的 Android `versionCode`。
-2. 运行发布 lint，并构建生产签名的通用 APK。
-3. 创建带签名的 `Release vX.Y.Z` 提交和带签名的附注标签。
-4. 原子性地推送 `main` 和标签。
-5. 将 `wallpaper-moe-vX.Y.Z.apk` 及其 SHA-256 校验和上传到带自动生成说明的草稿版本。
-
-在版本号、lint、APK 构建、签名证书、提交和标签全部于本地通过之前，不会推送任何内容。如果在原子推送之后，GitHub 版本创建或资源上传被中断，只需再次运行同一命令，它会重新构建相同的产物并完成那个草稿，而不会再次递增版本号。
 
 ## 许可与服务
 
