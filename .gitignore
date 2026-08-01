@@ -18,6 +18,10 @@ captures/
 *.iml
 .kotlin/
 
+# Python
+__pycache__/
+*.pyc
+
 # Nix
 result
 result-*

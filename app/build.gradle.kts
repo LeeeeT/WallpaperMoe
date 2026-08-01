@@ -1,10 +1,37 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
 
-val releaseStoreFile: String? = providers.gradleProperty("moe.storeFile").orNull
+val versionProperties = Properties().apply {
+    rootProject.file("version.properties").inputStream().use(::load)
+}
+val appVersionName = requireNotNull(versionProperties.getProperty("versionName")) {
+    "versionName is missing from version.properties"
+}
+require(Regex("(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)").matches(appVersionName)) {
+    "versionName must be a stable semantic version"
+}
+val appVersionCode = requireNotNull(versionProperties.getProperty("versionCode")) {
+    "versionCode is missing from version.properties"
+}.toInt().also { require(it > 0) { "versionCode must be positive" } }
+
+val releaseSigningNames = listOf(
+    "moe.storeFile",
+    "moe.storePassword",
+    "moe.keyAlias",
+    "moe.keyPassword",
+)
+val releaseSigningValues = releaseSigningNames.associateWith { name ->
+    providers.gradleProperty(name).orNull?.takeIf(String::isNotBlank)
+}
+val releaseSigningEnabled = releaseSigningValues.values.all { it != null }
+require(releaseSigningEnabled || releaseSigningValues.values.all { it == null }) {
+    "Release signing is only partially configured; set every ${releaseSigningNames.joinToString()} property"
+}
 
 android {
     namespace = "dev.leeeet.wallpapermoe"
@@ -18,8 +45,8 @@ android {
         applicationId = "dev.leeeet.wallpapermoe"
         minSdk = 34
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
         // Two dependencies ship .so files, so the APK carries a slice for
         // every ABI it targets.
         ndk { abiFilters += setOf("arm64-v8a", "x86_64") }
@@ -28,12 +55,12 @@ android {
     }
 
     signingConfigs {
-        if (releaseStoreFile != null) {
+        if (releaseSigningEnabled) {
             create("release") {
-                storeFile = file(releaseStoreFile)
-                storePassword = providers.gradleProperty("moe.storePassword").orNull
-                keyAlias = providers.gradleProperty("moe.keyAlias").orNull
-                keyPassword = providers.gradleProperty("moe.keyPassword").orNull
+                storeFile = file(releaseSigningValues.getValue("moe.storeFile")!!)
+                storePassword = releaseSigningValues.getValue("moe.storePassword")
+                keyAlias = releaseSigningValues.getValue("moe.keyAlias")
+                keyPassword = releaseSigningValues.getValue("moe.keyPassword")
             }
         }
     }
@@ -43,10 +70,8 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = if (releaseStoreFile != null) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            if (releaseSigningEnabled) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }
@@ -99,4 +124,32 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.okhttp.mockwebserver)
+}
+
+// A typed task with declared inputs: an ad-hoc `doLast` would capture the
+// build script itself, which the configuration cache cannot serialize.
+abstract class VerifyReleaseSigning : DefaultTask() {
+    @get:Input
+    abstract val configured: Property<Boolean>
+
+    @get:Input
+    abstract val requiredProperties: ListProperty<String>
+
+    @TaskAction
+    fun verify() {
+        check(configured.get()) {
+            "Release signing is not configured; set every ${requiredProperties.get().joinToString()} property"
+        }
+    }
+}
+
+val verifyReleaseSigning by tasks.registering(VerifyReleaseSigning::class) {
+    group = "verification"
+    description = "Fails unless the production release-signing properties are complete."
+    configured = releaseSigningEnabled
+    requiredProperties = releaseSigningNames
+}
+
+tasks.matching { it.name == "assembleRelease" }.configureEach {
+    dependsOn(verifyReleaseSigning)
 }
