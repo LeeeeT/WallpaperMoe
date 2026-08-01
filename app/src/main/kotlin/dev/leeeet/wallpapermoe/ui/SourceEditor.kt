@@ -70,6 +70,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -720,7 +721,7 @@ private fun SourceReferencePicker(
     onPick: (SourceId) -> Unit,
 ) {
     val candidates = library.sources.filter { library.canReference(ownerId, it.id) }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         BoxWithConstraints(Modifier.fillMaxWidth().navigationBarsPadding()) {
             val listMaxHeight = maxHeight * .55f
             Column(
@@ -799,22 +800,25 @@ private fun ChannelPicker(
     onDismiss: () -> Unit,
     onChange: (SourceRecipeDraft.Pandora) -> Unit,
 ) {
+    val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .6f
     val channels by vm.channels.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.loadChannels() }
     var selected by remember { mutableStateOf(config.channelIds.toSet()) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(.78f)
                 .navigationBarsPadding()
                 .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(stringResource(R.string.pandora_channels_title), style = MaterialTheme.typography.titleLarge)
             when (val value = channels) {
-                ChannelsState.Idle, ChannelsState.Loading -> Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                ChannelsState.Idle, ChannelsState.Loading -> Box(
+                    Modifier.fillMaxWidth().height(160.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
                     CircularProgressIndicator()
                 }
                 ChannelsState.Failed -> {
@@ -823,7 +827,7 @@ private fun ChannelPicker(
                         Text(stringResource(R.string.action_try_again))
                     }
                 }
-                is ChannelsState.Ready -> LazyColumn(Modifier.weight(1f)) {
+                is ChannelsState.Ready -> LazyColumn(Modifier.heightIn(max = listMaxHeight)) {
                     items(value.channels, key = { it.id }) { channel ->
                         val toggle = {
                             selected = if (channel.id in selected) selected - channel.id else selected + channel.id
@@ -1001,17 +1005,19 @@ private val creatable = listOf(
 
 @Composable
 private fun SourceTypePicker(onDismiss: () -> Unit, onPick: (SourceKind) -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(.72f)
                 .navigationBarsPadding()
                 .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(stringResource(R.string.source_picker_title), style = MaterialTheme.typography.titleLarge)
-            LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(
+                Modifier.heightIn(max = LocalConfiguration.current.screenHeightDp.dp * .6f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 items(creatable, key = { it.kind }) { source ->
                     Surface(
                         modifier = Modifier.fillMaxWidth().clickable { onPick(source.kind) },

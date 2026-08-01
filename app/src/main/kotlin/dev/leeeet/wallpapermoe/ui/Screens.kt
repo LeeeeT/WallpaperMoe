@@ -51,10 +51,13 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -531,7 +534,7 @@ private fun SourceSelectionSheet(
     onOpenStudio: () -> Unit,
 ) {
     val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .55f
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         Column(
             Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -592,6 +595,16 @@ private fun SourceSelectionSheet(
         }
     }
 }
+
+/**
+ * Sheets here are short enough to show whole, so they skip the half-open state
+ * and never ask for a drag before the content below the fold is reachable.
+ */
+@Composable
+internal fun expandedSheetState(): SheetState = rememberBottomSheetState(
+    initialValue = SheetValue.Hidden,
+    enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+)
 
 @Composable
 internal fun SourceGlyph(letter: String, modifier: Modifier = Modifier) {
@@ -670,18 +683,20 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
     }
 
     if (choosingInterval) {
-        ModalBottomSheet(onDismissRequest = { choosingInterval = false }) {
+        ModalBottomSheet(
+            onDismissRequest = { choosingInterval = false },
+            sheetState = expandedSheetState(),
+        ) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(.72f)
                     .navigationBarsPadding()
                     .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(stringResource(R.string.settings_choose_rhythm), style = MaterialTheme.typography.titleLarge)
                 LazyColumn(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.heightIn(max = LocalConfiguration.current.screenHeightDp.dp * .6f),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
