@@ -11,7 +11,7 @@ Wallpaper Moe 会自动更换你的锁定屏幕、主屏幕，或两者的壁纸
 
 | 今天 | 工作室 | 收藏 |
 | :---: | :---: | :---: |
-| ![显示当前壁纸与历史记录的“今天”页面](docs/today.png) | ![陈列可复用壁纸来源的工作室页面](docs/studio.png) | ![本机收藏图库](docs/favorites.png) |
+| ![显示当前壁纸与历史记录的“今天”页面](docs/today-zh.png) | ![陈列可复用壁纸来源的工作室页面](docs/studio-zh.png) | ![本机收藏图库](docs/favorites-zh.png) |
 
 ## 为什么选择 Wallpaper Moe？
 

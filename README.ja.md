@@ -11,7 +11,7 @@ Wallpaper Moe はロック画面・ホーム画面、またはその両方の壁
 
 | きょう | スタジオ | お気に入り |
 | :---: | :---: | :---: |
-| ![現在の壁紙と履歴を表示する「きょう」画面](docs/today.png) | ![再利用できる壁紙ソースを並べたスタジオ画面](docs/studio.png) | ![端末内のお気に入りギャラリー](docs/favorites.png) |
+| ![現在の壁紙と履歴を表示する「きょう」画面](docs/today-ja.png) | ![再利用できる壁紙ソースを並べたスタジオ画面](docs/studio-ja.png) | ![端末内のお気に入りギャラリー](docs/favorites-ja.png) |
 
 ## Wallpaper Moe を選ぶ理由
 
