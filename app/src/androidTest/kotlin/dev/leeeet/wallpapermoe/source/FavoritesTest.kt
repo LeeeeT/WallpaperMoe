@@ -18,7 +18,12 @@ class FavoritesTest {
     private suspend fun favorite(number: Int) {
         val file = File(env.storage.dir("favorite-input"), "$number.wp").apply { writeText("$number") }
         env.archive.addFavorite(
-            SavedWallpaper("$number", "https://example.com/$number.jpg", file, number.toLong()),
+            SavedWallpaper(
+                "$number",
+                WallpaperMetadata(imageUrl = "https://example.com/$number.jpg"),
+                file,
+                number.toLong(),
+            ),
         )
     }
 
@@ -26,7 +31,7 @@ class FavoritesTest {
     fun emptyFavoritesHasAUsefulFailure() {
         assertEquals(
             SampleFailure.FavoritesEmpty,
-            Favorites(FavoritesMode.RANDOM, "favorites").sampleFailure(env.ctx).failure,
+            Favorites(SelectionMode.RANDOM, "favorites").sampleFailure(env.ctx).failure,
         )
     }
 
@@ -34,19 +39,20 @@ class FavoritesTest {
     fun roundRobinUsesEveryFavoriteInOrderAndRemembersItsPlace() = runBlocking {
         favorite(1)
         favorite(2)
-        val first = Favorites(FavoritesMode.ROUND_ROBIN, "favorites")
-        assertEquals("https://example.com/2.jpg", first.sample(env.ctx).originalUrl)
+        val first = Favorites(SelectionMode.ROUND_ROBIN, "favorites")
+        assertEquals("2", first.sample(env.ctx).id)
 
-        val restarted = Favorites(FavoritesMode.ROUND_ROBIN, "favorites")
-        assertEquals("https://example.com/1.jpg", restarted.sample(env.ctx).originalUrl)
-        assertEquals("https://example.com/2.jpg", restarted.sample(env.ctx).originalUrl)
+        val restarted = Favorites(SelectionMode.ROUND_ROBIN, "favorites")
+        assertEquals("1", restarted.sample(env.ctx).id)
+        assertEquals("2", restarted.sample(env.ctx).id)
     }
 
     @Test
     fun randomReturnsAnOwnedFavoriteWithoutChangingIt() = runBlocking {
         favorite(1)
-        val sample = Favorites(FavoritesMode.RANDOM, "favorites").sample(env.ctx)
-        assertEquals("https://example.com/1.jpg", sample.originalUrl)
+        val sample = Favorites(SelectionMode.RANDOM, "favorites").sample(env.ctx)
+        assertEquals("1", sample.id)
+        assertEquals("https://example.com/1.jpg", sample.metadata.imageUrl)
         assertEquals("1", sample.prepared.readText())
         assertEquals(1, env.archive.favorites.value.size)
     }

@@ -1,36 +1,28 @@
 package dev.leeeet.wallpapermoe.source
 
-import dev.leeeet.wallpapermoe.image.ImageException
 import kotlinx.coroutines.CancellationException
 import java.io.File
 
-/** Wallpaper CDNs carry dead entries, so a sample tries more than one candidate. */
-internal const val CANDIDATE_ATTEMPTS = 3
-
-/** Downloads the first candidate that works, giving up at once on a transient failure. */
-internal suspend fun <T> downloadOne(
-    candidates: List<T>,
-    url: (T) -> String,
+/** Downloads the one image selected for this sample. */
+internal suspend fun <T> download(
+    candidate: T,
+    identity: (T) -> String,
+    imageUrl: (T) -> String,
+    metadata: (T) -> WallpaperMetadata,
     dir: File,
     ctx: SampleContext,
     provider: SourceProvider,
 ): WallpaperSample {
-    var lastPermanent: ImageException? = null
-    for (candidate in candidates) {
-        val destination = dir.newSampleFile()
-        try {
-            val originalUrl = url(candidate)
-            ctx.images.fetch(originalUrl, destination, ctx.widthPx, ctx.heightPx)
-            dir.pruneSamples()
-            return WallpaperSample(destination, originalUrl)
-        } catch (e: CancellationException) {
-            destination.delete()
-            throw e
-        } catch (e: ImageException) {
-            destination.delete()
-            if (!e.permanent) throw SampleException(SampleFailure.DownloadFailed(provider), e)
-            lastPermanent = e
-        }
+    val destination = dir.newSampleFile()
+    try {
+        ctx.images.fetch(imageUrl(candidate), destination, ctx.widthPx, ctx.heightPx)
+    } catch (e: CancellationException) {
+        destination.delete()
+        throw e
+    } catch (e: Exception) {
+        destination.delete()
+        throw SampleException(SampleFailure.DownloadFailed(provider), e)
     }
-    throw SampleException(SampleFailure.CandidatesUnavailable(provider), lastPermanent)
+    dir.pruneSamples()
+    return WallpaperSample(newWallpaperId(identity(candidate)), destination, metadata(candidate))
 }

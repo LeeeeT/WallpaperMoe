@@ -19,27 +19,26 @@ data class Pandora(
     }
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample {
-        val images = try {
-            ctx.providers.pandora.images(channelIds, FEED_SIZE)
+        val image = try {
+            ctx.providers.pandora.image(channelIds)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             throw SampleException(SampleFailure.ProviderUnavailable(SourceProvider.PANDORA), e)
         }
-        if (images.isEmpty()) {
+        if (image == null) {
             throw SampleException(SampleFailure.ProviderReturnedNothing(SourceProvider.PANDORA))
         }
 
-        return downloadOne(
-            candidates = images.shuffled().take(CANDIDATE_ATTEMPTS),
-            url = { it.urlFor(ctx.widthPx) },
+        return download(
+            candidate = image,
+            identity = { "pandora:${it.id}" },
+            imageUrl = { it.urlFor(ctx.widthPx) },
+            metadata = { WallpaperMetadata(imageUrl = it.urlFor(ctx.widthPx)) },
             dir = ctx.storage.dir(store),
             ctx = ctx,
             provider = SourceProvider.PANDORA,
         )
     }
 
-    private companion object {
-        const val FEED_SIZE = 60
-    }
 }

@@ -170,7 +170,7 @@ class SourceRepositoryTest {
 
     @Test
     fun favoritesCompilesWithItsSamplingMode() {
-        FavoritesMode.entries.forEach { mode ->
+        SelectionMode.entries.forEach { mode ->
             val definition = SourceDefinition(
                 newSourceId(),
                 "favorites-${mode.name}",
@@ -179,6 +179,21 @@ class SourceRepositoryTest {
             val source = SourceLibrary(listOf(definition), definition.id).resolveActiveSource()
             assertEquals(mode, (source as Favorites).mode)
             assertEquals("${definition.id}/favorites", source.store)
+        }
+    }
+
+    @Test
+    fun nekosBestCompilesWithCategoriesModeAndStore() {
+        SelectionMode.entries.forEach { mode ->
+            val definition = SourceDefinition(
+                newSourceId(),
+                "nekos-best-${mode.name}",
+                SourceRecipe.NekosBest(listOf("neko", "waifu"), mode),
+            )
+            val source = SourceLibrary(listOf(definition), definition.id).resolveActiveSource() as NekosBest
+            assertEquals(listOf("neko", "waifu"), source.categories)
+            assertEquals(mode, source.mode)
+            assertEquals("${definition.id}/nekos-best", source.store)
         }
     }
 

@@ -3,12 +3,9 @@ package dev.leeeet.wallpapermoe.source
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
-@Serializable
-enum class FavoritesMode { RANDOM, ROUND_ROBIN }
-
 /** Samples the permanent favorites collection without taking ownership of its files. */
 data class Favorites(
-    val mode: FavoritesMode,
+    val mode: SelectionMode,
     val store: String,
 ) : Source {
 
@@ -19,8 +16,8 @@ data class Favorites(
         val favorites = ctx.archive.favorites.value
         if (favorites.isEmpty()) throw SampleException(SampleFailure.FavoritesEmpty)
         val index = when (mode) {
-            FavoritesMode.RANDOM -> Random.nextInt(favorites.size)
-            FavoritesMode.ROUND_ROBIN -> {
+            SelectionMode.RANDOM -> Random.nextInt(favorites.size)
+            SelectionMode.ROUND_ROBIN -> {
                 val dir = ctx.storage.dir(store)
                 val next = dir.loadState<State>()?.next ?: 0
                 val selected = ((next % favorites.size) + favorites.size) % favorites.size
@@ -28,7 +25,7 @@ data class Favorites(
                 selected
             }
         }
-        val selected = favorites[index].let { WallpaperSample(it.prepared, it.originalUrl) }
+        val selected = favorites[index].let { WallpaperSample(it.id, it.prepared, it.metadata) }
         val adopted = adopt(selected, ctx.storage.dir(store), "s")
         ctx.storage.dir(store).pruneSamples()
         return adopted

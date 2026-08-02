@@ -88,12 +88,14 @@ class CacheTest {
     }
 
     @Test
-    fun keepsTheOriginalUrlWithThePreparedImage() {
+    fun keepsIdentityAndMetadataWithThePreparedImage() {
         val filled = cache(source = wallhaven("one"), capacity = 1, store = "with-url")
-        val original = filled.takeSample(env.ctx).originalUrl
+        val original = filled.takeSample(env.ctx)
 
         val offline = cache(source = wallhaven(Env.FAILS), capacity = 1, store = "with-url")
-        assertEquals(original, offline.takeSample(env.ctx).originalUrl)
+        val restored = offline.takeSample(env.ctx)
+        assertEquals(original.id, restored.id)
+        assertEquals(original.metadata, restored.metadata)
     }
 
     @Test

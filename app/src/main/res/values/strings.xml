@@ -3,7 +3,7 @@
     <string name="app_name">Wallpaper Moe</string>
 
     <string name="channel_rotation">Running</string>
-    <string name="channel_rotation_desc">Keeps the app able to react when the screen turns off</string>
+    <string name="channel_rotation_desc">Allows automatic wallpaper changes</string>
 
     <string name="nav_now">Today</string>
     <string name="nav_source">Studio</string>
@@ -15,6 +15,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_change_now">Change now</string>
     <string name="action_choose_channels">Choose channels</string>
+    <string name="action_choose_categories">Choose categories</string>
     <string name="action_choose_source">Choose existing source</string>
     <string name="action_choose_active_source">Choose source</string>
     <string name="action_create_source">Create new source</string>
@@ -26,7 +27,7 @@
     <string name="action_keep_editing">Keep editing</string>
     <string name="action_move_down">Move down</string>
     <string name="action_move_up">Move up</string>
-    <string name="action_remove_reference">Remove reference</string>
+    <string name="action_remove_reference">Remove source</string>
     <string name="action_save_selection">Save selection</string>
     <string name="action_save_source">Save source</string>
     <string name="action_open_source_studio">Open source studio</string>
@@ -34,9 +35,10 @@
     <string name="action_close">Close</string>
     <string name="action_add_favorite">Add to favorites</string>
     <string name="action_remove_favorite">Remove from favorites</string>
+    <string name="action_view_source">View source</string>
 
     <string name="dialog_unsaved_title">Discard unsaved changes?</string>
-    <string name="dialog_unsaved_body">The source draft has changes that have not been saved.</string>
+    <string name="dialog_unsaved_body">You have changes that haven’t been saved.</string>
     <string name="dialog_delete_source_title">Delete %1$s?</string>
     <string name="dialog_delete_source_body">The source and its stored wallpapers will be removed.</string>
     <string name="dialog_delete_blocked_title">Source is in use</string>
@@ -44,14 +46,14 @@
 
     <string name="now_active_source">Active source</string>
     <string name="now_no_active_source_short">Choose a source</string>
-    <string name="now_no_sources">No sources configured yet — create one in the Sources tab.</string>
+    <string name="now_no_sources">No sources yet — create one in Studio.</string>
     <string name="now_active_source_picker_title">Choose active source</string>
     <string name="now_source_picker_detail">This is the source used for automatic and manual changes.</string>
     <string name="now_ready">Ready</string>
     <string name="now_not_ready">Not ready</string>
     <string name="now_needs_attention">Needs attention</string>
-    <string name="now_engine_blocked">Android refused to start the background service. Opening the app again usually fixes it; granting the battery exemption fixes it for good.</string>
-    <string name="now_sampling">Sampling…</string>
+    <string name="now_engine_blocked">Wallpaper changes can’t run in the background. Reopen the app; if it keeps happening, allow unrestricted battery use.</string>
+    <string name="now_sampling">Choosing a wallpaper…</string>
     <string name="now_current_wallpaper_description">The wallpaper currently applied</string>
     <string name="history_title">History</string>
     <string name="history_empty">Applied wallpapers will appear here.</string>
@@ -60,6 +62,8 @@
     <string name="wallpaper_thumbnail_description">Saved wallpaper</string>
     <string name="wallpaper_preview_description">Original wallpaper preview</string>
     <string name="preview_unavailable">Could not load the original image.</string>
+    <string name="wallpaper_artist">Art by %1$s</string>
+    <string name="wallpaper_artist_unknown">View artist</string>
 
     <string name="settings_lock_screen">Lock screen</string>
     <string name="settings_destinations">Destinations</string>
@@ -78,63 +82,67 @@
 
     <string name="setup_title">Finish setup</string>
     <string name="setup_notifications_title">Allow notifications</string>
-    <string name="setup_notifications_detail">Required for background rotation. The notification stays silent.</string>
+    <string name="setup_notifications_detail">Lets Wallpaper Moe change wallpapers automatically. The notification stays silent.</string>
     <string name="setup_battery_title">Unrestrict battery usage</string>
-    <string name="setup_battery_detail">Prevents Android from stopping rotation in the background.</string>
+    <string name="setup_battery_detail">Keeps automatic wallpaper changes working when the app is closed.</string>
 
-    <string name="source_intro">Mix providers and processing steps into reusable wallpaper sources.</string>
-    <string name="source_library_empty">Pick a provider, then shape how its wallpapers reach your screen.</string>
+    <string name="source_intro">Create your own wallpaper mix.</string>
+    <string name="source_library_empty">Start with where your wallpapers come from, then customize the mix.</string>
     <plurals name="source_library_count">
         <item quantity="one">%1$d source</item>
         <item quantity="other">%1$d sources</item>
     </plurals>
     <string name="source_active_badge">ACTIVE</string>
-    <string name="source_editor_subtitle">Source editor</string>
-    <string name="source_name_label">Unique name</string>
+    <string name="source_editor_subtitle">Customize source</string>
+    <string name="source_name_label">Source name</string>
     <string name="source_slot_title">Source</string>
-    <string name="source_slot_detail">Choose the source that feeds this step.</string>
-    <string name="source_slot_empty">Nothing inside yet. Until something is added this source cannot produce an image.</string>
+    <string name="source_slot_detail">Choose which wallpapers to use here.</string>
+    <string name="source_slot_empty">Choose a source to continue.</string>
     <string name="source_list_title">Sources</string>
-    <string name="source_list_empty">Nothing here yet. Until something is added this source cannot produce an image.</string>
+    <string name="source_list_empty">Add at least one source to continue.</string>
     <string name="source_picker_title">Add a source</string>
     <string name="source_reference_picker_title">Choose a source</string>
-    <string name="source_reference_picker_detail">Any compatible source in your studio can be reused here.</string>
-    <string name="source_reference_picker_empty">No source can be selected here.</string>
+    <string name="source_reference_picker_detail">Choose one of the sources you’ve already made.</string>
+    <string name="source_reference_picker_empty">No other sources are available.</string>
     <string name="source_name_pandora">Pandora</string>
     <string name="source_name_wallhaven">Wallhaven</string>
+    <string name="source_name_nekos_best">Nekos.best</string>
     <string name="source_name_round_robin">Round robin</string>
     <string name="source_name_random">Random pick</string>
-    <string name="source_name_fallthrough">Fallthrough</string>
-    <string name="source_name_cache">Cache</string>
-    <string name="source_name_prefetch">Prefetch</string>
+    <string name="source_name_fallthrough">First available</string>
+    <string name="source_name_cache">Save for later</string>
+    <string name="source_name_prefetch">Prepare ahead</string>
     <string name="source_name_keep_ready">Keep ready</string>
     <string name="source_name_combine">Combine</string>
     <string name="source_name_favorites">Favorites</string>
     <string name="source_picker_favorites">Use wallpapers you saved on this device</string>
     <string name="source_picker_pandora">Xiaomi’s wallpaper channels</string>
     <string name="source_picker_wallhaven">Search wallhaven.cc</string>
-    <string name="source_picker_keep_ready">Cache images, prepare them ahead of time, or both</string>
-    <string name="source_picker_combine">Choose how several sources work together</string>
+    <string name="source_picker_nekos_best">Anime artwork from Nekos.best</string>
+    <string name="source_picker_keep_ready">Keep wallpapers ready for instant changes</string>
+    <string name="source_picker_combine">Mix wallpapers from several sources</string>
 
     <string name="round_robin_description">Sources are used in the order below.</string>
     <string name="random_description">One of these is picked at random each time.</string>
-    <string name="fallthrough_description">The first source that works is used. The rest are standbys, tried in the order below.</string>
-    <string name="keep_ready_description">Choose a source, then turn on either option or both. Prefetch runs after Cache.</string>
+    <string name="fallthrough_description">Use the first source that has a wallpaper.</string>
+    <string name="keep_ready_description">Choose which wallpapers to use, then decide how many to keep ready.</string>
     <string name="combine_description">Choose one way to combine the sources below.</string>
     <string name="combine_mode">How to choose</string>
-    <string name="favorites_source_description">Choose how wallpapers are sampled from your on-device favorites.</string>
+    <string name="favorites_source_description">Choose how favorites are picked.</string>
     <string name="favorites_source_mode">How to choose</string>
     <string name="favorites_source_summary_random">Saved wallpapers, at random</string>
     <string name="favorites_source_summary_round_robin">Saved wallpapers, in turn</string>
-    <string name="combine_sources_detail">Add the sources this combination can use.</string>
-    <string name="cache_description">Reuse saved images and refresh them on a schedule.</string>
-    <string name="cache_images_to_keep">Images to keep</string>
-    <string name="cache_refresh_interval">Refresh interval</string>
+    <string name="nekos_best_source_description">Choose the kinds of artwork you want to see.</string>
+    <string name="nekos_best_source_mode">How to choose a category</string>
+    <string name="combine_sources_detail">Choose which sources to include.</string>
+    <string name="cache_description">Save wallpapers to reuse later, even when you’re offline.</string>
+    <string name="cache_images_to_keep">Wallpapers to save</string>
+    <string name="cache_refresh_interval">Add a new wallpaper</string>
     <string name="cache_refresh_hourly">Every hour</string>
     <string name="cache_refresh_6_hours">Every 6 hours</string>
     <string name="cache_refresh_daily">Once a day</string>
-    <string name="prefetch_description">Prepare images in advance so wallpaper changes do not wait.</string>
-    <string name="prefetch_images_ready">Images kept ready</string>
+    <string name="prefetch_description">Prepare wallpapers before the next change.</string>
+    <string name="prefetch_images_ready">Wallpapers to prepare</string>
 
     <string name="pandora_no_channels">No channels chosen yet.</string>
     <string name="pandora_channels_title">Pandora channels</string>
@@ -142,6 +150,9 @@
         <item quantity="one">%1$d subscriber</item>
         <item quantity="other">%1$d subscribers</item>
     </plurals>
+
+    <string name="nekos_best_no_categories">No categories chosen yet.</string>
+    <string name="nekos_best_categories_title">Kinds of artwork</string>
 
     <string name="wallhaven_search">Search</string>
     <string name="wallhaven_search_hint">Leave empty for anything</string>
@@ -179,6 +190,7 @@
         <item quantity="other">%1$d sources, first that works</item>
     </plurals>
     <string name="summary_wallhaven">%1$s · %2$s</string>
+    <string name="summary_nekos_best">%1$s · %2$s</string>
     <string name="summary_source_reference">%1$s · %2$s</string>
     <string name="summary_keep_ready_passthrough">No preparation</string>
     <plurals name="summary_cache">
@@ -197,24 +209,25 @@
     <string name="validation_source_name_blank">Enter a source name</string>
     <string name="validation_source_name_duplicate">Another source already has this name</string>
     <string name="validation_source_reference_missing">Choose sources that still exist</string>
-    <string name="validation_source_reference_cycle">This reference would create a cycle</string>
+    <string name="validation_source_reference_cycle">These sources would end up using each other</string>
     <string name="validation_wallhaven_category">Choose at least one Wallhaven category</string>
     <string name="validation_wallhaven_purity">Choose at least one Wallhaven purity level</string>
     <string name="validation_wallhaven_nsfw_key">Enter a Wallhaven API key to include NSFW images</string>
-    <string name="validation_cache_capacity">Cache must keep at least one image</string>
-    <string name="validation_prefetch_depth">Prefetch must keep at least one image ready</string>
+    <string name="validation_nekos_best_category">Choose at least one Nekos.best image category</string>
+    <string name="validation_cache_capacity">Save at least one wallpaper</string>
+    <string name="validation_prefetch_depth">Prepare at least one wallpaper</string>
     <string name="validation_keep_ready_source">Choose the source to keep ready</string>
     <string name="validation_combine_empty">Add at least one source to Combine</string>
 
     <string name="channels_unavailable">Could not reach Pandora</string>
+    <string name="categories_unavailable">Could not load artwork choices</string>
     <string name="failure_provider_unavailable">Could not reach %1$s</string>
-    <string name="failure_provider_empty">%1$s returned no matching wallpapers</string>
-    <string name="failure_download">Could not download an image from %1$s</string>
-    <string name="failure_candidates_unavailable">Every image offered by %1$s was unavailable</string>
-    <string name="failure_cache_empty">Cache is empty</string>
+    <string name="failure_provider_empty">%1$s couldn’t find a matching wallpaper</string>
+    <string name="failure_download">Could not load a wallpaper from %1$s</string>
+    <string name="failure_cache_empty">No saved wallpapers yet</string>
     <string name="failure_favorites_empty">Favorites is empty</string>
     <string name="failure_no_target">No wallpaper target is selected</string>
-    <string name="failure_image_missing">The prepared wallpaper is missing</string>
+    <string name="failure_image_missing">That wallpaper is no longer available</string>
     <string name="failure_apply">Android could not apply the wallpaper</string>
     <string name="failure_unexpected">Something went wrong while changing the wallpaper</string>
 </resources>

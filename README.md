@@ -17,7 +17,7 @@ Wallpaper Moe automatically refreshes your lock screen, home screen, or both. Bu
 
 - **A calm daily view.** See the current wallpaper, change it immediately, browse the latest 20 wallpapers, and open their uncropped originals.
 - **Favorites stay yours.** Tap the heart on any current or previous wallpaper. Favorites are copied to app storage and remain available even if history is pruned.
-- **Sources fit your taste.** Browse Pandora channels, search Wallhaven, or rotate through wallpapers you have already favorited.
+- **Sources fit your taste.** Browse Pandora channels, discover static Nekos.best artwork categories, search Wallhaven, or rotate through wallpapers you have already favorited.
 - **Powerful without being fiddly.** Combine multiple sources randomly, in order, or as fallbacks. Keep wallpapers cached or prepared ahead of time for quick changes.
 - **Independent controls.** Choose the lock screen, home screen, or both, with intervals from every lock to once per day.
 - **Made for different screens.** The layout adapts from compact phones to tablets.
@@ -32,6 +32,7 @@ Open **Studio** to create and reuse named sources:
 | **Combine** | Uses several existing sources randomly, in order, or as fallbacks. |
 | **Favorites** | Samples your on-device favorites randomly or in round-robin order. |
 | **Wallhaven** | Searches wallhaven.cc by query, category, purity, and order. |
+| **Nekos.best** | Discovers its current static-image categories and samples selected categories randomly or in round-robin order. |
 | **Pandora** | Samples from Xiaomi's public wallpaper channels. |
 
 Sources can be reused inside other sources, so a provider only needs to be configured once. Select one source as active; it will be used for both automatic changes and **Change now**.
@@ -56,6 +57,7 @@ The app contacts only the provider sources you configure:
 
 - Pandora requests include the app version, locale, screen width, current time, and a random identifier created for that app installation.
 - Wallhaven requests include your selected filters and, when supplied, your API key.
+- Nekos.best requests include selected category names and the project URL in the required User-Agent. Image acquisitions share a process-wide queue paced to the API's 200-requests-per-minute, per-category limit. Artist and source attribution supplied by the API is retained with each wallpaper and shown in its preview.
 
 Wallpaper Moe does not operate a server and does not receive this data.
 
@@ -89,4 +91,4 @@ Instrumentation tests cover providers with a local mock server, source compositi
 
 Wallpaper Moe is available under the [MIT license](LICENSE).
 
-The project is not affiliated with, endorsed by, or connected to Xiaomi or wallhaven.cc. Wallpaper images remain subject to their creators' and providers' terms.
+The project is not affiliated with, endorsed by, or connected to Xiaomi, wallhaven.cc, or Nekos.best. Wallpaper images remain subject to their creators' and providers' terms. Nekos.best content is available only for non-commercial use; Wallpaper Moe respects its per-category API rate limit and retains its attribution.

@@ -1,8 +1,11 @@
 package dev.leeeet.wallpapermoe.source
 
 import android.graphics.Bitmap
+import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.leeeet.wallpapermoe.image.ImagePipeline
+import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestApi
+import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestDownloader
 import dev.leeeet.wallpapermoe.provider.pandora.PandoraApi
 import dev.leeeet.wallpapermoe.provider.wallhaven.WallhavenApi
 import dev.leeeet.wallpapermoe.wallpaper.WallpaperArchive
@@ -33,7 +36,7 @@ import java.util.UUID
  * [Source] is sealed, so the sources under test are the real ones — a failing
  * source is a real [Wallhaven] the server refuses to answer.
  */
-class Env {
+class Env(nekosBestIntervalMs: Long = 0L) {
 
     private val root = File(
         InstrumentationRegistry.getInstrumentation().targetContext.cacheDir,
@@ -60,6 +63,10 @@ class Env {
             heightPx = HEIGHT,
             images = images,
             providers = Providers(
+                nekosBest = NekosBestDownloader(
+                    api = NekosBestApi("${routes.base}/nekos"),
+                    minimumIntervalMs = nekosBestIntervalMs,
+                ),
                 pandora = PandoraApi(
                     installId = { "test-install-id" },
                     screenWidthPx = WIDTH,
@@ -94,6 +101,10 @@ class Env {
 
     val downloads: Int get() = routes.downloads.get()
 
+    val nekosBestRequests: List<RecordedRequest> get() = routes.nekosBestRequests.toList()
+    val nekosBestRequestTimes: List<Pair<String, Long>>
+        get() = routes.nekosBestRequestTimes.toList()
+
     fun close() {
         server.shutdown()
         background.cancel()
@@ -106,11 +117,22 @@ class Env {
         val searches = ConcurrentHashMap<String, AtomicInteger>()
         val queries = CopyOnWriteArrayList<String>()
         val downloads = AtomicInteger()
+        val nekosBestRequests = CopyOnWriteArrayList<RecordedRequest>()
+        val nekosBestRequestTimes = CopyOnWriteArrayList<Pair<String, Long>>()
 
         override fun dispatch(request: RecordedRequest): MockResponse {
             val url = request.requestUrl ?: return MockResponse().setResponseCode(400)
             val path = url.encodedPath
             return when {
+                path == "/nekos/endpoints" -> {
+                    nekosBestRequests += request
+                    json(NEKOS_ENDPOINTS)
+                }
+                path.startsWith("/nekos/") -> {
+                    nekosBestRequests += request
+                    nekosBestRequestTimes += path to SystemClock.elapsedRealtime()
+                    nekos(path.substringAfterLast('/'), url.queryParameter("amount")?.toIntOrNull() ?: 1)
+                }
                 path.endsWith("/search") -> {
                     queries += url.encodedQuery.orEmpty()
                     search(url.queryParameter("q").orEmpty())
@@ -127,8 +149,7 @@ class Env {
             return when (query) {
                 FAILS -> MockResponse().setResponseCode(500)
                 EMPTY -> json("""{"data":[]}""")
-                GONE -> json(results((1..3).map { "missing-$it" }))
-                FLAKY -> json(results(listOf("broken")))
+                MISSING -> json(results(listOf("missing")))
                 else -> json(results(listOf(query.ifEmpty { "anything" })))
             }
         }
@@ -136,14 +157,21 @@ class Env {
         private fun image(path: String): MockResponse {
             downloads.incrementAndGet()
             return when {
-                // Permanent: downloadOne should move to the next candidate.
                 path.contains("missing") -> MockResponse().setResponseCode(404)
-                // Transient: downloadOne should abandon the sample.
-                path.contains("broken") -> MockResponse().setResponseCode(500)
                 else -> MockResponse()
                     .setHeader("Content-Type", "image/jpeg")
                     .setBody(Buffer().write(jpeg()))
             }
+        }
+
+        private fun nekos(category: String, amount: Int): MockResponse = when (category) {
+            FAILS -> MockResponse().setResponseCode(500)
+            EMPTY -> json("""{"results":[]}""")
+            else -> json(
+                (1..amount).joinToString(",", prefix = """{"results":[""", postfix = "]}") { index ->
+                    """{"url":"$base/img/nekos-$category-$index.jpg","source_url":"https://art.example/$category-$index","artist_name":"Artist $index","artist_href":"https://artist.example/$index"}"""
+                },
+            )
         }
 
         private fun results(names: List<String>) = names
@@ -168,11 +196,8 @@ class Env {
         /** The search succeeds with an empty result set. */
         const val EMPTY = "empty"
 
-        /** Three results, every one a 404 at download time. */
-        const val GONE = "gone"
-
-        /** One result, a 500 at download time, which counts as transient. */
-        const val FLAKY = "flaky"
+        /** The search succeeds, but its one image is unavailable. */
+        const val MISSING = "missing"
 
         /** A real JPEG, so the decode under test is real. */
         fun jpeg(width: Int = 640, height: Int = 1280): ByteArray {
@@ -203,6 +228,16 @@ class Env {
               {"name":"nameless, so unusable"}
             ]}
         """
+
+        const val NEKOS_ENDPOINTS = """
+            {
+              "waifu":{"format":"png"},
+              "hug":{"format":"gif"},
+              "husbando":{"format":"png"},
+              "neko":{"format":"png"},
+              "kitsune":{"format":"png"}
+            }
+        """
     }
 }
 
@@ -226,6 +261,12 @@ fun pandora(
     channelLabels: List<String> = emptyList(),
     store: String = newStoreName(),
 ) = Pandora(channelIds, channelLabels, store)
+
+fun nekosBest(
+    categories: List<String>,
+    mode: SelectionMode = SelectionMode.RANDOM,
+    store: String = newStoreName(),
+) = NekosBest(categories, mode, store)
 
 fun roundRobin(sources: List<Source>, store: String = newStoreName()) = RoundRobin(sources, store)
 

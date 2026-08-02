@@ -1,7 +1,7 @@
 package dev.leeeet.wallpapermoe.ui
 
 import dev.leeeet.wallpapermoe.source.CombineMode
-import dev.leeeet.wallpapermoe.source.FavoritesMode
+import dev.leeeet.wallpapermoe.source.SelectionMode
 import dev.leeeet.wallpapermoe.source.SourceDefinition
 import dev.leeeet.wallpapermoe.source.SourceKind
 import dev.leeeet.wallpapermoe.source.SourceLibrary
@@ -19,9 +19,54 @@ class SourceDraftTest {
     @Test
     fun incompleteGroupedRecipesStayDrafts() {
         val library = SourceLibrary()
-        listOf(SourceKind.KEEP_READY, SourceKind.COMBINE).forEach {
+        listOf(SourceKind.KEEP_READY, SourceKind.COMBINE, SourceKind.NEKOS_BEST).forEach {
             assertNotNull(newSourceDraft(it, library).validationProblem(newSourceId(), library))
         }
+    }
+
+    @Test
+    fun nekosBestDraftSavesSeveralCategoriesAndItsMode() {
+        val id = newSourceId()
+        val draft = newSourceDraft(SourceKind.NEKOS_BEST, SourceLibrary()).copy(
+            recipe = SourceRecipeDraft.NekosBest(
+                categories = listOf("neko", "waifu"),
+                mode = SelectionMode.ROUND_ROBIN,
+            ),
+        )
+
+        assertNull(draft.validationProblem(id, SourceLibrary()))
+        assertEquals(
+            SourceRecipe.NekosBest(listOf("neko", "waifu"), SelectionMode.ROUND_ROBIN),
+            draft.toDefinition(id).recipe,
+        )
+    }
+
+    @Test
+    fun nekosBestCanBePlacedBehindPrefetchIndirectly() {
+        val nekosId = newSourceId()
+        val combineId = newSourceId()
+        val readyId = newSourceId()
+        val nekos = SourceDefinition(
+            nekosId,
+            "nekos-best-1",
+            SourceRecipe.NekosBest(listOf("neko"), SelectionMode.RANDOM),
+        )
+        val combine = SourceDefinition(
+            combineId,
+            "combine-1",
+            SourceRecipe.Combine(CombineMode.RANDOM, listOf(nekosId)),
+        )
+        val library = SourceLibrary(listOf(nekos, combine))
+        val draft = SourceDraft(
+            "keep-ready-1",
+            SourceRecipeDraft.KeepReady(
+                sourceId = combineId,
+                prefetchEnabled = true,
+                prefetchDepth = 3,
+            ),
+        )
+
+        assertNull(draft.validationProblem(readyId, library))
     }
 
     @Test
@@ -35,9 +80,9 @@ class SourceDraftTest {
         val id = newSourceId()
         val draft = newSourceDraft(SourceKind.FAVORITES, SourceLibrary())
         assertNull(draft.validationProblem(id, SourceLibrary()))
-        assertEquals(FavoritesMode.RANDOM, (draft.recipe as SourceRecipeDraft.Favorites).mode)
+        assertEquals(SelectionMode.RANDOM, (draft.recipe as SourceRecipeDraft.Favorites).mode)
         assertEquals(
-            SourceRecipe.Favorites(FavoritesMode.RANDOM),
+            SourceRecipe.Favorites(SelectionMode.RANDOM),
             draft.toDefinition(id).recipe,
         )
     }

@@ -213,7 +213,7 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
     var showingFavorites by remember { mutableStateOf(false) }
     var previewing by remember { mutableStateOf<dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper?>(null) }
     var pendingFavoriteRemovals by remember { mutableStateOf<Set<String>>(emptySet()) }
-    val favoriteUrls = state.favorites.mapTo(mutableSetOf()) { it.originalUrl }
+    val favoriteIds = state.favorites.mapTo(mutableSetOf()) { it.id }
 
     fun closeFavorites() {
         val removals = pendingFavoriteRemovals
@@ -246,10 +246,10 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
                     onRotate = vm::rotateNow,
                     current = state.history.firstOrNull(),
                     currentFavorite = state.history.firstOrNull()?.let {
-                        it.originalUrl in favoriteUrls
+                        it.id in favoriteIds
                     } ?: false,
                     onFavorite = { wallpaper, favorite ->
-                        if (favorite) vm.removeFavorite(wallpaper.originalUrl)
+                        if (favorite) vm.removeFavorite(wallpaper.id)
                         else vm.addFavorite(wallpaper)
                     },
                 )
@@ -258,14 +258,14 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
             item {
                 HistorySection(
                     history = state.history,
-                    favoriteUrls = favoriteUrls,
+                    favoriteIds = favoriteIds,
                     onOpenFavorites = {
                         pendingFavoriteRemovals = emptySet()
                         showingFavorites = true
                     },
                     onPreview = { previewing = it },
                     onFavorite = { wallpaper, favorite ->
-                        if (favorite) vm.removeFavorite(wallpaper.originalUrl)
+                        if (favorite) vm.removeFavorite(wallpaper.id)
                         else vm.addFavorite(wallpaper)
                     },
                 )
@@ -303,7 +303,7 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
             onDismiss = ::closeFavorites,
             onPreview = { previewing = it },
             onToggleRemoval = { wallpaper ->
-                pendingFavoriteRemovals = pendingFavoriteRemovals.toggle(wallpaper.originalUrl)
+                pendingFavoriteRemovals = pendingFavoriteRemovals.toggle(wallpaper.id)
             },
         )
     }
@@ -311,18 +311,18 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
     previewing?.let { wallpaper ->
         WallpaperPreviewDialog(
             wallpaper = wallpaper,
-            favorite = if (showingFavorites && wallpaper.originalUrl in favoriteUrls) {
-                wallpaper.originalUrl !in pendingFavoriteRemovals
+            favorite = if (showingFavorites && wallpaper.id in favoriteIds) {
+                wallpaper.id !in pendingFavoriteRemovals
             } else {
-                wallpaper.originalUrl in favoriteUrls
+                wallpaper.id in favoriteIds
             },
             onDismiss = { previewing = null },
             onFavorite = {
-                if (showingFavorites && wallpaper.originalUrl in favoriteUrls) {
-                    pendingFavoriteRemovals = pendingFavoriteRemovals.toggle(wallpaper.originalUrl)
-                } else if (wallpaper.originalUrl in favoriteUrls) {
-                    vm.removeFavorite(wallpaper.originalUrl)
-                    previewing = state.history.firstOrNull { it.originalUrl == wallpaper.originalUrl }
+                if (showingFavorites && wallpaper.id in favoriteIds) {
+                    pendingFavoriteRemovals = pendingFavoriteRemovals.toggle(wallpaper.id)
+                } else if (wallpaper.id in favoriteIds) {
+                    vm.removeFavorite(wallpaper.id)
+                    previewing = state.history.firstOrNull { it.id == wallpaper.id }
                 } else {
                     vm.addFavorite(wallpaper)
                 }

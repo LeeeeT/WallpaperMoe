@@ -38,6 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,18 +50,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
 import dev.leeeet.wallpapermoe.R
+import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
 
 @Composable
 internal fun HistorySection(
     history: List<SavedWallpaper>,
-    favoriteUrls: Set<String>,
+    favoriteIds: Set<String>,
     onOpenFavorites: () -> Unit,
     onPreview: (SavedWallpaper) -> Unit,
     onFavorite: (SavedWallpaper, Boolean) -> Unit,
@@ -98,10 +105,10 @@ internal fun HistorySection(
                     history.forEach { wallpaper ->
                     WallpaperThumbnail(
                         wallpaper = wallpaper,
-                        favorite = wallpaper.originalUrl in favoriteUrls,
+                        favorite = wallpaper.id in favoriteIds,
                         onPreview = { onPreview(wallpaper) },
                         onFavorite = {
-                            onFavorite(wallpaper, wallpaper.originalUrl in favoriteUrls)
+                            onFavorite(wallpaper, wallpaper.id in favoriteIds)
                         },
                             modifier = Modifier.size(width = itemWidth, height = itemWidth / .7f),
                         )
@@ -207,7 +214,7 @@ internal fun FavoritesDialog(
                     items(favorites, key = SavedWallpaper::id) { wallpaper ->
                         WallpaperThumbnail(
                             wallpaper = wallpaper,
-                            favorite = wallpaper.originalUrl !in pendingRemovals,
+                            favorite = wallpaper.id !in pendingRemovals,
                             onPreview = { onPreview(wallpaper) },
                             onFavorite = { onToggleRemoval(wallpaper) },
                             modifier = Modifier.fillMaxWidth().aspectRatio(.7f),
@@ -227,11 +234,24 @@ internal fun WallpaperPreviewDialog(
     onFavorite: () -> Unit,
 ) {
     FullScreenDialog(onDismiss) {
-        var loading by remember(wallpaper.originalUrl) { mutableStateOf(true) }
-        var failed by remember(wallpaper.originalUrl) { mutableStateOf(false) }
+        val context = LocalContext.current
+        var loading by remember(wallpaper.id) { mutableStateOf(true) }
+        var failed by remember(wallpaper.id) { mutableStateOf(false) }
+        val preview = remember(wallpaper.id) {
+            wallpaper.metadata.imageUrl?.let { url ->
+                ImageRequest.Builder(context)
+                    .data(url)
+                    .httpHeaders(
+                        NetworkHeaders.Builder()
+                            .set("User-Agent", APP_USER_AGENT)
+                            .build(),
+                    )
+                    .build()
+            } ?: wallpaper.prepared
+        }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             AsyncImage(
-                model = wallpaper.originalUrl,
+                model = preview,
                 contentDescription = stringResource(R.string.wallpaper_preview_description),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
@@ -277,6 +297,42 @@ internal fun WallpaperPreviewDialog(
                 onClick = onFavorite,
                 modifier = Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(12.dp),
             )
+            WallpaperAttribution(wallpaper, Modifier.align(Alignment.BottomCenter))
+        }
+    }
+}
+
+@Composable
+private fun WallpaperAttribution(wallpaper: SavedWallpaper, modifier: Modifier = Modifier) {
+    val metadata = wallpaper.metadata
+    if (metadata.artistName == null && metadata.artistUrl == null && metadata.sourceUrl == null) return
+    val uriHandler = LocalUriHandler.current
+    Surface(
+        modifier = modifier.navigationBarsPadding().padding(12.dp),
+        shape = MaterialTheme.shapes.large,
+        color = Color.Black.copy(alpha = .72f),
+        contentColor = Color.White,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val artistLabel = metadata.artistName?.let {
+                stringResource(R.string.wallpaper_artist, it)
+            } ?: stringResource(R.string.wallpaper_artist_unknown)
+            if (metadata.artistUrl != null) {
+                TextButton(onClick = { runCatching { uriHandler.openUri(metadata.artistUrl) } }) {
+                    Text(artistLabel, color = Color.White)
+                }
+            } else if (metadata.artistName != null) {
+                Text(artistLabel, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp))
+            }
+            metadata.sourceUrl?.let { sourceUrl ->
+                TextButton(onClick = { runCatching { uriHandler.openUri(sourceUrl) } }) {
+                    Text(stringResource(R.string.action_view_source), color = Color.White)
+                }
+            }
         }
     }
 }

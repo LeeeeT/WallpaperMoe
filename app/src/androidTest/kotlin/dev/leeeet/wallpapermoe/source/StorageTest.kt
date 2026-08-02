@@ -40,7 +40,13 @@ class StorageTest {
 
     private fun stored(dir: File, name: String, bytes: Int = 8): File {
         val source = write(storage.dir("input-${System.nanoTime()}"), "image.wp", bytes.coerceAtLeast(1))
-        val adopted = runBlocking { adopt(WallpaperSample(source, "https://example.com/$name"), dir, "x") }
+        val adopted = runBlocking {
+            adopt(
+                WallpaperSample(name, source, WallpaperMetadata(imageUrl = "https://example.com/$name")),
+                dir,
+                "x",
+            )
+        }
         val entry = requireNotNull(adopted.prepared.parentFile)
         val named = File(dir, name)
         check(entry.renameTo(named))
@@ -160,14 +166,23 @@ class StorageTest {
         val produced = write(from, "s-1.wp", bytes = 16)
 
         val adopted = runBlocking {
-            adopt(WallpaperSample(produced, "https://example.com/original.jpg"), to, "c")
+            adopt(
+                WallpaperSample(
+                    "original",
+                    produced,
+                    WallpaperMetadata(imageUrl = "https://example.com/original.jpg"),
+                ),
+                to,
+                "c",
+            )
         }
 
         assertTrue(produced.exists())
         assertEquals(to, adopted.prepared.parentFile?.parentFile)
         assertTrue(adopted.prepared.parentFile!!.name.startsWith("c-"))
         assertEquals(16, adopted.prepared.length())
-        assertEquals("https://example.com/original.jpg", adopted.originalUrl)
+        assertEquals("original", adopted.id)
+        assertEquals("https://example.com/original.jpg", adopted.metadata.imageUrl)
     }
 
     @Test

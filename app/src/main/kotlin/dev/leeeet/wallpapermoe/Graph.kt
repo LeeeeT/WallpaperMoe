@@ -3,6 +3,7 @@ package dev.leeeet.wallpapermoe
 import android.content.Context
 import dev.leeeet.wallpapermoe.data.Prefs
 import dev.leeeet.wallpapermoe.image.ImagePipeline
+import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestDownloader
 import dev.leeeet.wallpapermoe.provider.pandora.PandoraApi
 import dev.leeeet.wallpapermoe.provider.wallhaven.WallhavenApi
 import dev.leeeet.wallpapermoe.source.Providers
@@ -46,6 +47,7 @@ object Graph {
 
             val metrics = app.resources.displayMetrics
             providers = Providers(
+                nekosBest = NekosBestDownloader(),
                 pandora = PandoraApi(
                     installId = { prefs.installId() },
                     screenWidthPx = metrics.widthPixels,

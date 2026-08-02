@@ -1,6 +1,13 @@
 package dev.leeeet.wallpapermoe.source
 
 import android.graphics.BitmapFactory
+import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -11,7 +18,7 @@ import org.junit.Test
 /**
  * The two sources that fetch, and the download they share.
  *
- * Pandora forces its image URLs to https, so the shared [downloadOne] leg is
+ * Pandora forces its image URLs to https, so the shared [download] leg is
  * covered through the Wallhaven cases, which exercise it in full.
  */
 class ProviderTest {
@@ -30,10 +37,16 @@ class ProviderTest {
         val produced = sample.prepared
 
         assertEquals("works", produced.store)
-        assertTrue(sample.originalUrl.endsWith("/img/works.jpg"))
+        assertTrue(sample.metadata.imageUrl!!.endsWith("/img/works.jpg"))
         val bitmap = BitmapFactory.decodeFile(produced.path)
         assertEquals(Env.WIDTH, bitmap.width)
         assertEquals(Env.HEIGHT, bitmap.height)
+    }
+
+    @Test
+    fun providerIdentityStaysStableWhenTheSameWallpaperReturnsAgain() {
+        val source = wallhaven("works")
+        assertEquals(source.takeSample(env.ctx).id, source.takeSample(env.ctx).id)
     }
 
     @Test
@@ -95,19 +108,8 @@ class ProviderTest {
     // --------------------------------------------------------------- download
 
     @Test
-    fun aCandidateThatIsGoneIsSkippedAndTheRestAreTried() {
-        val failure = wallhaven(Env.GONE).sampleFailure(env.ctx)
-
-        assertEquals(CANDIDATE_ATTEMPTS, env.downloads)
-        assertEquals(
-            SampleFailure.CandidatesUnavailable(SourceProvider.WALLHAVEN),
-            failure.failure,
-        )
-    }
-
-    @Test
-    fun aCandidateThatMightWorkLaterEndsTheAttempt() {
-        val failure = wallhaven(Env.FLAKY).sampleFailure(env.ctx)
+    fun aFailedImageEndsTheSampleAfterOneDownload() {
+        val failure = wallhaven(Env.MISSING).sampleFailure(env.ctx)
 
         assertEquals(1, env.downloads)
         assertEquals(SampleFailure.DownloadFailed(SourceProvider.WALLHAVEN), failure.failure)
@@ -120,6 +122,104 @@ class ProviderTest {
 
         val left = env.storage.dir("works").listFiles().orEmpty()
         assertEquals("older samples should be pruned", 2, left.size)
+    }
+
+    // ------------------------------------------------------------ nekos.best
+
+    @Test
+    fun nekosBestDiscoversOnlyStaticImageCategories() = runBlocking {
+        assertEquals(
+            listOf("husbando", "kitsune", "neko", "waifu"),
+            env.ctx.providers.nekosBest.imageCategories(),
+        )
+    }
+
+    @Test
+    fun nekosBestIdentifiesTheAppExactlyAsRequired() = runBlocking {
+        env.ctx.providers.nekosBest.imageCategories()
+
+        assertEquals(APP_USER_AGENT, env.nekosBestRequests.single().getHeader("User-Agent"))
+    }
+
+    @Test
+    fun nekosBestKeepsEveryAvailableAttributionField() {
+        val sample = nekosBest(listOf("neko")).takeSample(env.ctx)
+
+        assertTrue(sample.metadata.imageUrl!!.endsWith("/img/nekos-neko-1.jpg"))
+        assertEquals("https://art.example/neko-1", sample.metadata.sourceUrl)
+        assertEquals("Artist 1", sample.metadata.artistName)
+        assertEquals("https://artist.example/1", sample.metadata.artistUrl)
+        assertEquals("1", env.nekosBestRequests.single().requestUrl!!.queryParameter("amount"))
+    }
+
+    @Test
+    fun nekosBestRoundRobinUsesEveryCategoryAndRemembersItsPlace() {
+        nekosBest(
+            listOf("neko", "waifu"),
+            SelectionMode.ROUND_ROBIN,
+            "nekos-round-robin",
+        ).take(env.ctx)
+        val restarted = nekosBest(
+            listOf("neko", "waifu"),
+            SelectionMode.ROUND_ROBIN,
+            "nekos-round-robin",
+        )
+        restarted.take(env.ctx)
+        restarted.take(env.ctx)
+
+        assertEquals(
+            listOf("/nekos/neko", "/nekos/waifu", "/nekos/neko"),
+            env.nekosBestRequests.map { it.requestUrl!!.encodedPath },
+        )
+    }
+
+    @Test
+    fun nekosBestQueuesConcurrentAcquisitionsAtThePerCategoryRate() {
+        env.close()
+        val intervalMs = 2_000L
+        env = Env(nekosBestIntervalMs = intervalMs)
+
+        runBlocking {
+            coroutineScope {
+                listOf("queued-a", "queued-b").map { store ->
+                    async { nekosBest(listOf("neko"), store = store).sample(env.ctx) }
+                }.awaitAll()
+            }
+        }
+
+        val starts = env.nekosBestRequestTimes.map { it.second }
+        assertEquals(2, starts.size)
+        assertTrue(
+            "requests started only ${starts[1] - starts[0]} ms apart",
+            starts[1] - starts[0] >= 1_900L,
+        )
+    }
+
+    @Test
+    fun cancellingAQueuedNekosBestAcquisitionRemovesItBeforeTheRequest() = runBlocking {
+        env.close()
+        env = Env(nekosBestIntervalMs = 10_000L)
+        nekosBest(listOf("neko"), store = "first").sample(env.ctx)
+
+        val queued = launch {
+            nekosBest(listOf("neko"), store = "cancelled").sample(env.ctx)
+        }
+        delay(100)
+        queued.cancelAndJoin()
+
+        assertEquals(1, env.nekosBestRequestTimes.size)
+    }
+
+    @Test
+    fun nekosBestReportsProviderFailures() {
+        assertEquals(
+            SampleFailure.ProviderUnavailable(SourceProvider.NEKOS_BEST),
+            nekosBest(listOf(Env.FAILS)).sampleFailure(env.ctx).failure,
+        )
+        assertEquals(
+            SampleFailure.ProviderReturnedNothing(SourceProvider.NEKOS_BEST),
+            nekosBest(listOf(Env.EMPTY)).sampleFailure(env.ctx).failure,
+        )
     }
 
     // ----------------------------------------------------------------- pandora
@@ -136,26 +236,26 @@ class ProviderTest {
     }
 
     @Test
-    fun pandoraTakesOnlyTheImagesFromTheFeed() {
-        val images = runBlocking { env.ctx.providers.pandora.images(listOf("c1"), 60) }
-        assertEquals(listOf("i1", "i3"), images.map { it.id })
+    fun pandoraReturnsOneUsableImage() {
+        val image = runBlocking { env.ctx.providers.pandora.image(listOf("c1")) }
+        assertEquals("i1", image!!.id)
     }
 
     @Test
     fun pandoraBuildsUrlsForTheScreenItIsAskedAbout() {
-        val images = runBlocking { env.ctx.providers.pandora.images(listOf("c1"), 60) }
+        val image = runBlocking { env.ctx.providers.pandora.image(listOf("c1")) }
 
-        assertEquals("https://cdn.example/webp/w1080/one.jpg", images[0].urlFor(1080))
-        assertEquals("https://cdn.example/three.jpg", images[1].urlFor(1080))
+        assertEquals("https://cdn.example/webp/w1080/one.jpg", image!!.urlFor(1080))
     }
 
     @Test
     fun pandoraSendsNoIdentifyingContext() {
-        runBlocking { env.ctx.providers.pandora.images(listOf("c1"), 60) }
+        runBlocking { env.ctx.providers.pandora.image(listOf("c1")) }
 
         val sent = env.server.takeRequest().requestUrl!!
         assertEquals("test-install-id", sent.queryParameter("_devid"))
         assertEquals("c1", sent.queryParameter("channel_id"))
+        assertEquals("1", sent.queryParameter("page_size"))
         listOf("imei", "mac", "oaid", "androidId", "device", "model").forEach {
             assertTrue("did not expect $it", sent.queryParameter(it) == null)
         }

@@ -66,11 +66,11 @@ private data class SourceEditing(
     val dirty: Boolean get() = stack.any(EditorSession::dirty)
 }
 
-sealed interface ChannelsState {
-    data object Idle : ChannelsState
-    data object Loading : ChannelsState
-    data class Ready(val channels: List<PandoraApi.Channel>) : ChannelsState
-    data object Failed : ChannelsState
+sealed interface RemoteListState<out T> {
+    data object Idle : RemoteListState<Nothing>
+    data object Loading : RemoteListState<Nothing>
+    data class Ready<T>(val items: List<T>) : RemoteListState<T>
+    data object Failed : RemoteListState<Nothing>
 }
 
 class MoeViewModel(app: Application) : AndroidViewModel(app) {
@@ -78,8 +78,11 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     private val tab = MutableStateFlow(Tab.NOW)
     private val sourceEditing = MutableStateFlow(SourceEditing())
 
-    private val _channels = MutableStateFlow<ChannelsState>(ChannelsState.Idle)
-    val channels: StateFlow<ChannelsState> = _channels
+    private val _channels = MutableStateFlow<RemoteListState<PandoraApi.Channel>>(RemoteListState.Idle)
+    val channels: StateFlow<RemoteListState<PandoraApi.Channel>> = _channels
+
+    private val _nekosBestCategories = MutableStateFlow<RemoteListState<String>>(RemoteListState.Idle)
+    val nekosBestCategories: StateFlow<RemoteListState<String>> = _nekosBestCategories
 
     val state: StateFlow<UiState> = combine(
         combine(
@@ -244,12 +247,22 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     fun deleteSource(id: SourceId) = viewModelScope.launch { Graph.sources.delete(id) }
 
     fun loadChannels(force: Boolean = false) = viewModelScope.launch {
-        if (!force && _channels.value is ChannelsState.Ready) return@launch
-        _channels.value = ChannelsState.Loading
+        if (!force && _channels.value is RemoteListState.Ready) return@launch
+        _channels.value = RemoteListState.Loading
         _channels.value = try {
-            ChannelsState.Ready(Graph.providers.pandora.channels())
+            RemoteListState.Ready(Graph.providers.pandora.channels())
         } catch (_: Exception) {
-            ChannelsState.Failed
+            RemoteListState.Failed
+        }
+    }
+
+    fun loadNekosBestCategories(force: Boolean = false) = viewModelScope.launch {
+        if (!force && _nekosBestCategories.value is RemoteListState.Ready) return@launch
+        _nekosBestCategories.value = RemoteListState.Loading
+        _nekosBestCategories.value = try {
+            RemoteListState.Ready(Graph.providers.nekosBest.imageCategories())
+        } catch (_: Exception) {
+            RemoteListState.Failed
         }
     }
 
@@ -265,12 +278,12 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         runCatching { Graph.archive.addFavorite(wallpaper) }
     }
 
-    fun removeFavorite(originalUrl: String) = viewModelScope.launch {
-        runCatching { Graph.archive.removeFavorite(originalUrl) }
+    fun removeFavorite(id: String) = viewModelScope.launch {
+        runCatching { Graph.archive.removeFavorite(id) }
     }
 
-    fun removeFavorites(originalUrls: Set<String>) = viewModelScope.launch {
-        runCatching { Graph.archive.removeFavorites(originalUrls) }
+    fun removeFavorites(ids: Set<String>) = viewModelScope.launch {
+        runCatching { Graph.archive.removeFavorites(ids) }
     }
 
     private data class CoreState(

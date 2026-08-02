@@ -55,6 +55,7 @@ private fun SourceProvider.localizedName(): String = stringResource(
     when (this) {
         SourceProvider.PANDORA -> R.string.source_name_pandora
         SourceProvider.WALLHAVEN -> R.string.source_name_wallhaven
+        SourceProvider.NEKOS_BEST -> R.string.source_name_nekos_best
     },
 )
 
@@ -73,8 +74,6 @@ private fun SampleFailure.localizedMessage(): String = when (this) {
         stringResource(R.string.failure_provider_empty, provider.localizedName())
     is SampleFailure.DownloadFailed ->
         stringResource(R.string.failure_download, provider.localizedName())
-    is SampleFailure.CandidatesUnavailable ->
-        stringResource(R.string.failure_candidates_unavailable, provider.localizedName())
     SampleFailure.CacheEmpty -> stringResource(R.string.failure_cache_empty)
     SampleFailure.FavoritesEmpty -> stringResource(R.string.failure_favorites_empty)
     SampleFailure.Unexpected -> stringResource(R.string.failure_unexpected)
@@ -97,6 +96,7 @@ fun DraftProblem.localizedMessage(): String = when (this) {
     DraftProblem.WallhavenCategoryMissing -> stringResource(R.string.validation_wallhaven_category)
     DraftProblem.WallhavenPurityMissing -> stringResource(R.string.validation_wallhaven_purity)
     DraftProblem.WallhavenNsfwKeyMissing -> stringResource(R.string.validation_wallhaven_nsfw_key)
+    DraftProblem.NekosBestCategoryMissing -> stringResource(R.string.validation_nekos_best_category)
     DraftProblem.CacheCapacityInvalid -> stringResource(R.string.validation_cache_capacity)
     DraftProblem.PrefetchDepthInvalid -> stringResource(R.string.validation_prefetch_depth)
     DraftProblem.KeepReadySourceMissing -> stringResource(R.string.validation_keep_ready_source)
@@ -111,6 +111,7 @@ fun SourceKind.localizedName(): String = stringResource(
         SourceKind.FAVORITES -> R.string.source_name_favorites
         SourceKind.PANDORA -> R.string.source_name_pandora
         SourceKind.WALLHAVEN -> R.string.source_name_wallhaven
+        SourceKind.NEKOS_BEST -> R.string.source_name_nekos_best
         SourceKind.KEEP_READY -> R.string.source_name_keep_ready
         SourceKind.COMBINE -> R.string.source_name_combine
     },

@@ -2,7 +2,7 @@ package dev.leeeet.wallpapermoe.ui
 
 import dev.leeeet.wallpapermoe.source.CacheOptions
 import dev.leeeet.wallpapermoe.source.CombineMode
-import dev.leeeet.wallpapermoe.source.FavoritesMode
+import dev.leeeet.wallpapermoe.source.SelectionMode
 import dev.leeeet.wallpapermoe.source.LibraryProblem
 import dev.leeeet.wallpapermoe.source.PrefetchOptions
 import dev.leeeet.wallpapermoe.source.SourceDefinition
@@ -38,7 +38,7 @@ enum class CacheRefresh(val hours: Int) {
 
 sealed interface SourceRecipeDraft {
     data class Favorites(
-        val mode: FavoritesMode = FavoritesMode.RANDOM,
+        val mode: SelectionMode = SelectionMode.RANDOM,
     ) : SourceRecipeDraft
 
     data class Pandora(
@@ -56,6 +56,11 @@ sealed interface SourceRecipeDraft {
         val nsfw: Boolean = false,
         val sorting: WallhavenSorting = WallhavenSorting.RANDOM,
         val apiKey: String = "",
+    ) : SourceRecipeDraft
+
+    data class NekosBest(
+        val categories: List<String> = emptyList(),
+        val mode: SelectionMode = SelectionMode.RANDOM,
     ) : SourceRecipeDraft
 
     data class KeepReady(
@@ -78,6 +83,7 @@ val SourceRecipeDraft.kind: SourceKind
         is SourceRecipeDraft.Favorites -> SourceKind.FAVORITES
         is SourceRecipeDraft.Pandora -> SourceKind.PANDORA
         is SourceRecipeDraft.Wallhaven -> SourceKind.WALLHAVEN
+        is SourceRecipeDraft.NekosBest -> SourceKind.NEKOS_BEST
         is SourceRecipeDraft.KeepReady -> SourceKind.KEEP_READY
         is SourceRecipeDraft.Combine -> SourceKind.COMBINE
     }
@@ -89,6 +95,7 @@ sealed interface DraftProblem {
     data object WallhavenCategoryMissing : DraftProblem
     data object WallhavenPurityMissing : DraftProblem
     data object WallhavenNsfwKeyMissing : DraftProblem
+    data object NekosBestCategoryMissing : DraftProblem
     data object CacheCapacityInvalid : DraftProblem
     data object PrefetchDepthInvalid : DraftProblem
     data object KeepReadySourceMissing : DraftProblem
@@ -115,6 +122,9 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
             value.nsfw && value.apiKey.isBlank() -> DraftProblem.WallhavenNsfwKeyMissing
             else -> null
         }
+
+        is SourceRecipeDraft.NekosBest ->
+            if (value.categories.isEmpty()) DraftProblem.NekosBestCategoryMissing else null
 
         is SourceRecipeDraft.KeepReady -> when {
             value.sourceId.isNullOrBlank() -> DraftProblem.KeepReadySourceMissing
@@ -150,6 +160,7 @@ private fun SourceRecipeDraft.toRecipe(): SourceRecipe = when (this) {
     is SourceRecipeDraft.Wallhaven -> SourceRecipe.Wallhaven(
         query, general, anime, people, sfw, sketchy, nsfw, sorting, apiKey,
     )
+    is SourceRecipeDraft.NekosBest -> SourceRecipe.NekosBest(categories, mode)
     is SourceRecipeDraft.KeepReady -> SourceRecipe.KeepReady(
         sourceId = requireNotNull(sourceId),
         cache = if (cacheEnabled) CacheOptions(cacheCapacity, cacheRefresh.hours) else null,
@@ -166,6 +177,7 @@ private fun SourceRecipe.toDraft(): SourceRecipeDraft = when (this) {
     is SourceRecipe.Wallhaven -> SourceRecipeDraft.Wallhaven(
         query, general, anime, people, sfw, sketchy, nsfw, sorting, apiKey,
     )
+    is SourceRecipe.NekosBest -> SourceRecipeDraft.NekosBest(categories.toList(), mode)
     is SourceRecipe.KeepReady -> SourceRecipeDraft.KeepReady(
         sourceId = sourceId,
         cacheEnabled = cache != null,
@@ -183,6 +195,7 @@ fun newSourceDraft(kind: SourceKind, library: SourceLibrary): SourceDraft = Sour
         SourceKind.FAVORITES -> SourceRecipeDraft.Favorites()
         SourceKind.PANDORA -> SourceRecipeDraft.Pandora()
         SourceKind.WALLHAVEN -> SourceRecipeDraft.Wallhaven()
+        SourceKind.NEKOS_BEST -> SourceRecipeDraft.NekosBest()
         SourceKind.KEEP_READY -> SourceRecipeDraft.KeepReady()
         SourceKind.COMBINE -> SourceRecipeDraft.Combine()
     },

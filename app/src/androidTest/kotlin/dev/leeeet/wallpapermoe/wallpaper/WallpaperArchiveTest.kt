@@ -2,6 +2,7 @@ package dev.leeeet.wallpapermoe.wallpaper
 
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.leeeet.wallpapermoe.source.WallpaperSample
+import dev.leeeet.wallpapermoe.source.WallpaperMetadata
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -30,16 +31,20 @@ class WallpaperArchiveTest {
 
     private fun sample(number: Int): WallpaperSample {
         val file = File(root, "incoming-$number.wp").apply { writeText("image-$number") }
-        return WallpaperSample(file, "https://example.com/$number.jpg")
+        return WallpaperSample(
+            number.toString(),
+            file,
+            WallpaperMetadata(imageUrl = "https://example.com/$number.jpg"),
+        )
     }
 
     @Test
-    fun historyKeepsTheNewestTwentyAndDeduplicatesByUrl() = runBlocking {
+    fun historyKeepsTheNewestTwentyAndDeduplicatesByIdentity() = runBlocking {
         (1..21).forEach { archive.rememberApplied(sample(it)) }
-        assertEquals((21 downTo 2).map { "https://example.com/$it.jpg" }, archive.history.value.map { it.originalUrl })
+        assertEquals((21 downTo 2).map(Int::toString), archive.history.value.map { it.id })
 
         archive.rememberApplied(sample(7))
-        assertEquals("https://example.com/7.jpg", archive.history.value.first().originalUrl)
+        assertEquals("7", archive.history.value.first().id)
         assertEquals(20, archive.history.value.size)
     }
 
@@ -56,9 +61,20 @@ class WallpaperArchiveTest {
         assertTrue(favorite.prepared.exists())
         assertEquals("image-1", favorite.prepared.readText())
 
-        reloaded.removeFavorite(favorite.originalUrl)
+        reloaded.removeFavorite(favorite.id)
         assertFalse(favorite.prepared.exists())
         assertTrue(reloaded.favorites.value.isEmpty())
+    }
+
+    @Test
+    fun aProviderMayOmitEveryMetadataField() = runBlocking {
+        val file = File(root, "metadata-free.wp").apply { writeText("image") }
+        archive.rememberApplied(WallpaperSample("metadata-free", file))
+
+        val reloaded = WallpaperArchive(root)
+        reloaded.load()
+        assertEquals(WallpaperMetadata(), reloaded.history.value.single().metadata)
+        assertEquals("image", reloaded.history.value.single().prepared.readText())
     }
 
     @Test
@@ -68,12 +84,12 @@ class WallpaperArchiveTest {
             archive.addFavorite(archive.history.value.first())
         }
         archive.removeFavorites(
-            setOf("https://example.com/1.jpg", "https://example.com/3.jpg"),
+            setOf("1", "3"),
         )
 
         assertEquals(
-            listOf("https://example.com/2.jpg"),
-            archive.favorites.value.map { it.originalUrl },
+            listOf("2"),
+            archive.favorites.value.map { it.id },
         )
     }
 }

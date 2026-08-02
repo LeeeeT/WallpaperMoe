@@ -34,8 +34,8 @@ data class Wallhaven(
     }
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample {
-        val results = try {
-            ctx.providers.wallhaven.search(
+        val image = try {
+            ctx.providers.wallhaven.image(
                 WallhavenApi.Query(
                     text = query,
                     general = general,
@@ -53,13 +53,15 @@ data class Wallhaven(
         } catch (e: Exception) {
             throw SampleException(SampleFailure.ProviderUnavailable(SourceProvider.WALLHAVEN), e)
         }
-        if (results.isEmpty()) {
+        if (image == null) {
             throw SampleException(SampleFailure.ProviderReturnedNothing(SourceProvider.WALLHAVEN))
         }
 
-        return downloadOne(
-            candidates = results.shuffled().take(CANDIDATE_ATTEMPTS),
-            url = { it.url },
+        return download(
+            candidate = image,
+            identity = { "wallhaven:${it.id}" },
+            imageUrl = { it.url },
+            metadata = { WallpaperMetadata(imageUrl = it.url) },
             dir = ctx.storage.dir(store),
             ctx = ctx,
             provider = SourceProvider.WALLHAVEN,

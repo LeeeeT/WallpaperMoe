@@ -1,6 +1,7 @@
 package dev.leeeet.wallpapermoe.provider.pandora
 
 import dev.leeeet.wallpapermoe.net.Http
+import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.net.getString
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -52,20 +53,21 @@ class PandoraApi(
         }
     }
 
-    /** The feed is a fixed window of ~200 items, so a request takes a slice of it. */
-    suspend fun images(channelIds: List<String>, pageSize: Int): List<Image> {
-        if (channelIds.isEmpty()) return emptyList()
+    suspend fun image(channelIds: List<String>): Image? {
+        if (channelIds.isEmpty()) return null
         val body = get(
             PATH_LOCK_VIEW,
             mapOf(
-                "page_size" to pageSize.toString(),
+                "page_size" to "1",
                 "channel_id" to channelIds.joinToString(","),
             ),
         )
         val parsed = Http.json.decodeFromString<LockViewResponse>(body)
-        return parsed.items.mapNotNull { item ->
-            if (item.itemType != null && item.itemType != TYPE_IMAGE) return@mapNotNull null
-            val id = item.id?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+        return parsed.items.firstNotNullOfOrNull { item ->
+            if (item.itemType != null && item.itemType != TYPE_IMAGE) {
+                return@firstNotNullOfOrNull null
+            }
+            val id = item.id?.takeIf { it.isNotBlank() } ?: return@firstNotNullOfOrNull null
             item.images.firstNotNullOfOrNull { it.clUrl?.toImage(id) }
         }
     }
@@ -74,7 +76,7 @@ class PandoraApi(
         val query = (params + commonParams()).entries.joinToString("&") { (k, v) ->
             "${URLEncoder.encode(k, "UTF-8")}=${URLEncoder.encode(v, "UTF-8")}"
         }
-        return Http.client.getString("$baseUrl$path?$query", USER_AGENT)
+        return Http.client.getString("$baseUrl$path?$query", APP_USER_AGENT)
     }
 
     private suspend fun commonParams(): Map<String, String> = mapOf(
@@ -115,7 +117,6 @@ class PandoraApi(
         const val TYPE_IMAGE = "image"
         const val FORMAT = "webp"
         const val COVER_WIDTH_PX = 480
-        const val USER_AGENT = "WallpaperMoe/1.0 (Android)"
     }
 }
 

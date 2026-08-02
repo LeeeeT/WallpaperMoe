@@ -43,7 +43,7 @@ class Storage(private val root: File) {
 
     private companion object {
         const val SCHEMA_FILE = ".schema"
-        const val STORAGE_SCHEMA = "2"
+        const val STORAGE_SCHEMA = "3"
     }
 }
 
@@ -90,7 +90,10 @@ private const val KEEP_SAMPLES = 2
  * across a reboot; the nano suffix keeps them unique.
  */
 @Serializable
-private data class StoredSample(val originalUrl: String)
+private data class StoredSample(
+    val id: String,
+    val metadata: WallpaperMetadata = WallpaperMetadata(),
+)
 
 private const val STORED_IMAGE = "image.wp"
 private const val STORED_SAMPLE = "sample.json"
@@ -100,7 +103,7 @@ internal fun File.storedSample(): WallpaperSample? = runCatching {
     val image = File(this, STORED_IMAGE)
     if (!image.isFile || image.length() == 0L) return@runCatching null
     val metadata = documentJson.decodeFromString<StoredSample>(File(this, STORED_SAMPLE).readText())
-    WallpaperSample(image, metadata.originalUrl)
+    WallpaperSample(metadata.id, image, metadata.metadata)
 }.getOrNull()
 
 internal suspend fun adopt(produced: WallpaperSample, dir: File, prefix: String): WallpaperSample =
@@ -109,7 +112,7 @@ internal suspend fun adopt(produced: WallpaperSample, dir: File, prefix: String)
         val staged = File(dir, "${target.name}.part").apply { mkdirs() }
         produced.prepared.copyTo(File(staged, STORED_IMAGE), overwrite = true)
         File(staged, STORED_SAMPLE).writeText(
-            documentJson.encodeToString(StoredSample(produced.originalUrl)),
+            documentJson.encodeToString(StoredSample(produced.id, produced.metadata)),
         )
         check(staged.renameTo(target))
         checkNotNull(target.storedSample())

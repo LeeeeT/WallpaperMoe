@@ -45,13 +45,29 @@ class PrefetchTest {
     }
 
     @Test
-    fun bufferedSamplesKeepTheirOriginalUrl() {
+    fun bufferedSamplesKeepTheirMetadata() {
         val warm = prefetch(source = wallhaven("one"), depth = 1, store = "with-url")
         warm.take(env.ctx)
         awaitUntil("the URL-bearing buffer to fill") { buffered("with-url").size == 1 }
 
         val offline = prefetch(source = wallhaven(Env.FAILS), depth = 1, store = "with-url")
-        assertTrue(offline.takeSample(env.ctx).originalUrl.endsWith("/img/one.jpg"))
+        assertTrue(offline.takeSample(env.ctx).metadata.imageUrl!!.endsWith("/img/one.jpg"))
+    }
+
+    @Test
+    fun nekosBestCanFillAPrefetchBuffer() {
+        val prefetch = prefetch(
+            source = nekosBest(listOf("neko")),
+            depth = 2,
+            store = "nekos-prefetch",
+        )
+
+        prefetch.take(env.ctx)
+
+        awaitUntil("the Nekos.best buffer to fill") {
+            buffered("nekos-prefetch").size == 2
+        }
+        assertEquals(3, env.nekosBestRequestTimes.size)
     }
 
     @Test

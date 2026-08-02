@@ -1,5 +1,6 @@
 package dev.leeeet.wallpapermoe.source
 
+import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.UUID
@@ -23,6 +24,7 @@ data class SourceDefinition(
 enum class SourceKind(val slug: String) {
     PANDORA("pandora"),
     WALLHAVEN("wallhaven"),
+    NEKOS_BEST("nekos-best"),
     FAVORITES("favorites"),
     KEEP_READY("keep-ready"),
     COMBINE("combine"),
@@ -49,7 +51,7 @@ data class PrefetchOptions(val depth: Int) {
 sealed interface SourceRecipe {
     @Serializable
     @SerialName("favorites")
-    data class Favorites(val mode: FavoritesMode) : SourceRecipe
+    data class Favorites(val mode: SelectionMode) : SourceRecipe
 
     @Serializable
     @SerialName("pandora")
@@ -81,6 +83,19 @@ sealed interface SourceRecipe {
     }
 
     @Serializable
+    @SerialName("nekos_best")
+    data class NekosBest(
+        val categories: List<String>,
+        val mode: SelectionMode,
+    ) : SourceRecipe {
+        init {
+            require(categories.isNotEmpty())
+            require(categories.all(NekosBestApi::isCategoryName))
+            require(categories.distinct().size == categories.size)
+        }
+    }
+
+    @Serializable
     @SerialName("keep_ready")
     data class KeepReady(
         val sourceId: SourceId,
@@ -105,13 +120,18 @@ val SourceRecipe.kind: SourceKind
         is SourceRecipe.Favorites -> SourceKind.FAVORITES
         is SourceRecipe.Pandora -> SourceKind.PANDORA
         is SourceRecipe.Wallhaven -> SourceKind.WALLHAVEN
+        is SourceRecipe.NekosBest -> SourceKind.NEKOS_BEST
         is SourceRecipe.KeepReady -> SourceKind.KEEP_READY
         is SourceRecipe.Combine -> SourceKind.COMBINE
     }
 
 val SourceRecipe.referencedSourceIds: List<SourceId>
     get() = when (this) {
-        is SourceRecipe.Favorites, is SourceRecipe.Pandora, is SourceRecipe.Wallhaven -> emptyList()
+        is SourceRecipe.Favorites,
+        is SourceRecipe.Pandora,
+        is SourceRecipe.Wallhaven,
+        is SourceRecipe.NekosBest,
+        -> emptyList()
         is SourceRecipe.KeepReady -> listOf(sourceId)
         is SourceRecipe.Combine -> sourceIds
     }
@@ -122,6 +142,7 @@ val SourceDefinition.stateStores: Set<String>
         is SourceRecipe.Favorites -> setOf("$id/favorites")
         is SourceRecipe.Pandora -> setOf("$id/pandora")
         is SourceRecipe.Wallhaven -> setOf("$id/wallhaven")
+        is SourceRecipe.NekosBest -> setOf("$id/nekos-best")
         is SourceRecipe.Combine -> when (value.mode) {
             CombineMode.ROUND_ROBIN -> setOf("$id/round-robin")
             CombineMode.RANDOM, CombineMode.FALLTHROUGH -> emptySet()
@@ -173,6 +194,7 @@ val SourceLibrary.problem: LibraryProblem?
             return found
         }
         if (sources.any { cyclic(it.id) }) return LibraryProblem.ReferenceCycle
+
         return null
     }
 
@@ -214,6 +236,11 @@ fun SourceLibrary.resolveActiveSource(): Source? {
                 sorting = recipe.sorting,
                 apiKey = recipe.apiKey,
                 store = "${definition.id}/wallhaven",
+            )
+            is SourceRecipe.NekosBest -> NekosBest(
+                categories = recipe.categories,
+                mode = recipe.mode,
+                store = "${definition.id}/nekos-best",
             )
             is SourceRecipe.Combine -> when (recipe.mode) {
                 CombineMode.RANDOM -> Random(recipe.sourceIds.map(::resolve))

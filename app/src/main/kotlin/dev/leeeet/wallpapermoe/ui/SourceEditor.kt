@@ -78,7 +78,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.leeeet.wallpapermoe.R
 import dev.leeeet.wallpapermoe.source.CombineMode
-import dev.leeeet.wallpapermoe.source.FavoritesMode
+import dev.leeeet.wallpapermoe.source.SelectionMode
 import dev.leeeet.wallpapermoe.source.SourceRecipe
 import dev.leeeet.wallpapermoe.source.SourceDefinition
 import dev.leeeet.wallpapermoe.source.SourceId
@@ -389,8 +389,8 @@ private fun ConfigEditor(
             is SourceRecipeDraft.Favorites -> {
                 EditorDescription(R.string.favorites_source_description)
                 OptionGroup(stringResource(R.string.favorites_source_mode)) {
-                    FavoritesMode.entries.forEach { mode ->
-                        FavoritesModeRow(mode, config.mode == mode) {
+                    SelectionMode.entries.forEach { mode ->
+                        SelectionModeRow(mode, config.mode == mode) {
                             vm.updateSourceDraft(draft.copy(recipe = config.copy(mode = mode)))
                         }
                     }
@@ -398,6 +398,7 @@ private fun ConfigEditor(
             }
             is SourceRecipeDraft.Pandora -> PandoraEditor(draftId, draft, config, vm)
             is SourceRecipeDraft.Wallhaven -> WallhavenEditor(draft, config, vm)
+            is SourceRecipeDraft.NekosBest -> NekosBestEditor(draftId, draft, config, vm)
             is SourceRecipeDraft.KeepReady -> {
                 EditorDescription(R.string.keep_ready_description)
                 SingleReferenceEditor(draftId, config.sourceId, library, vm) {
@@ -463,10 +464,117 @@ private fun ConfigEditor(
 }
 
 @Composable
-private fun FavoritesModeRow(mode: FavoritesMode, selected: Boolean, onSelect: () -> Unit) {
+private fun NekosBestEditor(
+    draftId: SourceId,
+    draft: SourceDraft,
+    config: SourceRecipeDraft.NekosBest,
+    vm: MoeViewModel,
+) {
+    var picking by remember(draftId) { mutableStateOf(false) }
+    EditorDescription(R.string.nekos_best_source_description)
+    OptionGroup(stringResource(R.string.nekos_best_source_mode)) {
+        SelectionMode.entries.forEach { mode ->
+            SelectionModeRow(mode, config.mode == mode) {
+                vm.updateSourceDraft(draft.copy(recipe = config.copy(mode = mode)))
+            }
+        }
+    }
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+        Text(
+            if (config.categories.isEmpty()) stringResource(R.string.nekos_best_no_categories)
+            else config.categories.joinToString(", ") { it.categoryLabel() },
+            modifier = Modifier.padding(14.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    Button(onClick = { picking = true }, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.action_choose_categories))
+    }
+    if (picking) {
+        NekosBestCategoryPicker(config, vm, { picking = false }) {
+            vm.updateSourceDraft(draft.copy(recipe = it))
+        }
+    }
+}
+
+@Composable
+private fun NekosBestCategoryPicker(
+    config: SourceRecipeDraft.NekosBest,
+    vm: MoeViewModel,
+    onDismiss: () -> Unit,
+    onChange: (SourceRecipeDraft.NekosBest) -> Unit,
+) {
+    val categories by vm.nekosBestCategories.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { vm.loadNekosBestCategories() }
+    var selected by remember { mutableStateOf(config.categories.toSet()) }
+    val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .6f
+
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(stringResource(R.string.nekos_best_categories_title), style = MaterialTheme.typography.titleLarge)
+            when (val value = categories) {
+                RemoteListState.Idle, RemoteListState.Loading -> Box(
+                    Modifier.fillMaxWidth().height(160.dp),
+                    contentAlignment = Alignment.Center,
+                ) { CircularProgressIndicator() }
+                RemoteListState.Failed -> {
+                    EmptyReference(stringResource(R.string.categories_unavailable))
+                    TextButton(onClick = { vm.loadNekosBestCategories(force = true) }) {
+                        Text(stringResource(R.string.action_try_again))
+                    }
+                }
+                is RemoteListState.Ready -> {
+                    val choices = (value.items + config.categories).distinct().sorted()
+                    LazyColumn(Modifier.heightIn(max = listMaxHeight)) {
+                        items(choices, key = { it }) { category ->
+                            val toggle = {
+                                selected = if (category in selected) selected - category else selected + category
+                            }
+                            Row(
+                                Modifier.fillMaxWidth().clickable { toggle() }.padding(vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Checkbox(category in selected, onCheckedChange = { toggle() })
+                                Text(category.categoryLabel(), style = MaterialTheme.typography.bodyLarge)
+                            }
+                        }
+                    }
+                }
+            }
+            Button(
+                onClick = {
+                    val available = when (val value = categories) {
+                        is RemoteListState.Ready -> value.items
+                        else -> config.categories
+                    }
+                    onChange(config.copy(categories = (available + selected).distinct().filter { it in selected }))
+                    onDismiss()
+                },
+                enabled = selected.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text(stringResource(R.string.action_save_selection)) }
+        }
+    }
+}
+
+private fun String.categoryLabel(): String = replace('_', ' ').replace('-', ' ')
+    .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+
+@Composable
+private fun SelectionModeRow(mode: SelectionMode, selected: Boolean, onSelect: () -> Unit) {
     val title = when (mode) {
-        FavoritesMode.RANDOM -> stringResource(R.string.source_name_random)
-        FavoritesMode.ROUND_ROBIN -> stringResource(R.string.source_name_round_robin)
+        SelectionMode.RANDOM -> stringResource(R.string.source_name_random)
+        SelectionMode.ROUND_ROBIN -> stringResource(R.string.source_name_round_robin)
     }
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onSelect).padding(vertical = 6.dp),
@@ -812,20 +920,20 @@ private fun ChannelPicker(
         ) {
             Text(stringResource(R.string.pandora_channels_title), style = MaterialTheme.typography.titleLarge)
             when (val value = channels) {
-                ChannelsState.Idle, ChannelsState.Loading -> Box(
+                RemoteListState.Idle, RemoteListState.Loading -> Box(
                     Modifier.fillMaxWidth().height(160.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
-                ChannelsState.Failed -> {
+                RemoteListState.Failed -> {
                     EmptyReference(stringResource(R.string.channels_unavailable))
                     TextButton(onClick = { vm.loadChannels(force = true) }) {
                         Text(stringResource(R.string.action_try_again))
                     }
                 }
-                is ChannelsState.Ready -> LazyColumn(Modifier.heightIn(max = listMaxHeight)) {
-                    items(value.channels, key = { it.id }) { channel ->
+                is RemoteListState.Ready -> LazyColumn(Modifier.heightIn(max = listMaxHeight)) {
+                    items(value.items, key = { it.id }) { channel ->
                         val toggle = {
                             selected = if (channel.id in selected) selected - channel.id else selected + channel.id
                         }
@@ -850,8 +958,11 @@ private fun ChannelPicker(
             }
             Button(
                 onClick = {
-                    val ready = channels as? ChannelsState.Ready
-                    val labels = ready?.channels.orEmpty().filter { it.id in selected }.map { it.name }
+                    val labels = when (val ready = channels) {
+                        is RemoteListState.Ready ->
+                            ready.items.filter { it.id in selected }.map { it.name }
+                        else -> emptyList()
+                    }
                     onChange(config.copy(channelIds = selected.toList(), channelLabels = labels))
                     onDismiss()
                 },
@@ -997,6 +1108,7 @@ private val creatable = listOf(
     CreatableSource(SourceKind.COMBINE, R.string.source_picker_combine),
     CreatableSource(SourceKind.FAVORITES, R.string.source_picker_favorites),
     CreatableSource(SourceKind.WALLHAVEN, R.string.source_picker_wallhaven),
+    CreatableSource(SourceKind.NEKOS_BEST, R.string.source_picker_nekos_best),
     CreatableSource(SourceKind.PANDORA, R.string.source_picker_pandora),
 )
 
@@ -1046,8 +1158,8 @@ private fun SourceTypePicker(onDismiss: () -> Unit, onPick: (SourceKind) -> Unit
 @Composable
 private fun SourceDefinition.localizedSummary(library: SourceLibrary): String = when (val value = recipe) {
     is SourceRecipe.Favorites -> when (value.mode) {
-        FavoritesMode.RANDOM -> stringResource(R.string.favorites_source_summary_random)
-        FavoritesMode.ROUND_ROBIN -> stringResource(R.string.favorites_source_summary_round_robin)
+        SelectionMode.RANDOM -> stringResource(R.string.favorites_source_summary_random)
+        SelectionMode.ROUND_ROBIN -> stringResource(R.string.favorites_source_summary_round_robin)
     }
     is SourceRecipe.Pandora -> when {
         value.channelLabels.isNotEmpty() -> value.channelLabels.joinToString(", ")
@@ -1057,6 +1169,14 @@ private fun SourceDefinition.localizedSummary(library: SourceLibrary): String = 
         R.string.summary_wallhaven,
         value.query.ifBlank { stringResource(R.string.summary_anything) },
         value.sorting.localizedLabel(),
+    )
+    is SourceRecipe.NekosBest -> stringResource(
+        R.string.summary_nekos_best,
+        value.categories.joinToString(", ") { it.categoryLabel() },
+        when (value.mode) {
+            SelectionMode.RANDOM -> stringResource(R.string.source_name_random)
+            SelectionMode.ROUND_ROBIN -> stringResource(R.string.source_name_round_robin)
+        },
     )
     is SourceRecipe.Combine -> when (value.mode) {
         CombineMode.RANDOM -> value.sourceIds.summary(R.plurals.summary_sources_random)

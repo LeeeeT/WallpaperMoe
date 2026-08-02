@@ -16,7 +16,7 @@ class SerializationTest {
         val favorites = SourceDefinition(
             newSourceId(),
             "favorites-1",
-            SourceRecipe.Favorites(FavoritesMode.ROUND_ROBIN),
+            SourceRecipe.Favorites(SelectionMode.ROUND_ROBIN),
         )
         val pandora = SourceDefinition(
             newSourceId(),
@@ -32,12 +32,17 @@ class SerializationTest {
                 prefetch = PrefetchOptions(depth = 3),
             ),
         )
+        val nekosBest = SourceDefinition(
+            newSourceId(),
+            "nekos-best-1",
+            SourceRecipe.NekosBest(listOf("neko", "waifu"), SelectionMode.ROUND_ROBIN),
+        )
         val combine = SourceDefinition(
             newSourceId(),
             "combine-1",
             SourceRecipe.Combine(CombineMode.RANDOM, listOf(ready.id, pandora.id, pandora.id)),
         )
-        val library = SourceLibrary(listOf(favorites, pandora, ready, combine), combine.id)
+        val library = SourceLibrary(listOf(favorites, pandora, nekosBest, ready, combine), combine.id)
 
         assertEquals(library, roundTrip(library))
     }

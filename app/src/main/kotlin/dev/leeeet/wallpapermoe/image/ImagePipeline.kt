@@ -5,8 +5,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
 import dev.leeeet.wallpapermoe.net.Http
+import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.net.await
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.Request
@@ -42,30 +42,17 @@ class ImagePipeline(private val scratchDir: File) {
         try {
             val request = Request.Builder()
                 .url(url)
-                .header("User-Agent", USER_AGENT)
+                .header("User-Agent", APP_USER_AGENT)
                 .build()
             Http.client.await(request).use { response ->
-                if (!response.isSuccessful) throw HttpStatus(response.code)
+                if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
                 staged.outputStream().use { out -> response.body.byteStream().copyTo(out) }
             }
-            if (staged.length() <= 0) throw IOException()
+            if (staged.length() <= 0) throw IOException("empty image response")
 
             if (!render(staged, destination, widthPx, heightPx)) {
-                // Re-fetching returns the same undecodable bytes, so this is as
-                // permanent as a 404.
-                throw ImageException(permanent = true)
+                throw IOException("image could not be rendered")
             }
-        } catch (e: CancellationException) {
-            // Must stay a cancellation: wrapped, the screen coming back would
-            // read as a failed download instead of an abandoned one.
-            throw e
-        } catch (e: ImageException) {
-            throw e
-        } catch (e: Exception) {
-            throw ImageException(
-                permanent = e is HttpStatus && e.code in PERMANENT_STATUSES,
-                cause = e,
-            )
         } finally {
             staged.delete()
         }
@@ -119,17 +106,7 @@ class ImagePipeline(private val scratchDir: File) {
         return sample
     }
 
-    private class HttpStatus(val code: Int) : IOException()
-
     private companion object {
         const val QUALITY = 90
-        const val USER_AGENT = "WallpaperMoe/1.0 (Android)"
-        val PERMANENT_STATUSES = setOf(400, 401, 403, 404, 410, 451)
     }
 }
-
-/** [permanent] separates "this image is gone" from "the server was unreachable". */
-class ImageException(
-    val permanent: Boolean = false,
-    cause: Throwable? = null,
-) : Exception(cause)

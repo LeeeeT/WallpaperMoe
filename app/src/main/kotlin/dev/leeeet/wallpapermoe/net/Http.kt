@@ -13,13 +13,16 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resumeWithException
 
+/** Provider-compliant identity with a durable project contact URL. */
+const val APP_USER_AGENT = "WallpaperMoe (https://github.com/LeeeeT/WallpaperMoe)"
+
 object Http {
     val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .callTimeout(60, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
+            .retryOnConnectionFailure(false)
             .build()
     }
 

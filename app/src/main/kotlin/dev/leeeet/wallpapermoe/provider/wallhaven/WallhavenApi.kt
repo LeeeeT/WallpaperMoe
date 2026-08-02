@@ -1,6 +1,7 @@
 package dev.leeeet.wallpapermoe.provider.wallhaven
 
 import dev.leeeet.wallpapermoe.net.Http
+import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.net.getString
 import kotlinx.serialization.Serializable
 import java.net.URLEncoder
@@ -22,7 +23,7 @@ class WallhavenApi(private val baseUrl: String = "https://wallhaven.cc/api/v1") 
         val apiKey: String = "",
     )
 
-    suspend fun search(q: Query): List<Image> {
+    suspend fun image(q: Query): Image? {
         val params = buildMap {
             if (q.text.isNotBlank()) put("q", q.text.trim())
             put("categories", flags(q.general, q.anime, q.people))
@@ -33,10 +34,10 @@ class WallhavenApi(private val baseUrl: String = "https://wallhaven.cc/api/v1") 
         val query = params.entries.joinToString("&") { (k, v) ->
             "${URLEncoder.encode(k, "UTF-8")}=${URLEncoder.encode(v, "UTF-8")}"
         }
-        val body = Http.client.getString("$baseUrl/search?$query", USER_AGENT)
-        return Http.json.decodeFromString<SearchResponse>(body).data.mapNotNull {
-            val id = it.id?.takeIf(String::isNotBlank) ?: return@mapNotNull null
-            val path = it.path?.takeIf(String::isNotBlank) ?: return@mapNotNull null
+        val body = Http.client.getString("$baseUrl/search?$query", APP_USER_AGENT)
+        return Http.json.decodeFromString<SearchResponse>(body).data.firstNotNullOfOrNull {
+            val id = it.id?.takeIf(String::isNotBlank) ?: return@firstNotNullOfOrNull null
+            val path = it.path?.takeIf(String::isNotBlank) ?: return@firstNotNullOfOrNull null
             Image(id, path)
         }
     }
@@ -46,10 +47,6 @@ class WallhavenApi(private val baseUrl: String = "https://wallhaven.cc/api/v1") 
         "${a.bit()}${b.bit()}${c.bit()}"
 
     private fun Boolean.bit() = if (this) "1" else "0"
-
-    private companion object {
-        const val USER_AGENT = "WallpaperMoe/1.0 (Android)"
-    }
 }
 
 @Serializable
