@@ -3,6 +3,7 @@ package dev.leeeet.wallpapermoe.source
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import java.io.File
 
 /**
  * Samples ahead in the background, so the lock path is served from the buffer.
@@ -46,22 +47,22 @@ data class Prefetch(
         return adopted
     }
 
-    private fun takeBuffered(dir: java.io.File): WallpaperSample? {
+    private fun takeBuffered(dir: File): WallpaperSample? {
         for (buffered in buffered(dir)) {
-            val target = java.io.File(dir, "s-${System.currentTimeMillis()}-${System.nanoTime()}")
+            val target = File(dir, "s-${System.currentTimeMillis()}-${System.nanoTime()}")
             if (buffered.renameTo(target)) return target.readStoredSample()
         }
         return null
     }
 
     /** Oldest first: names carry the wall clock, so the order survives a reboot. */
-    private fun buffered(dir: java.io.File): List<java.io.File> = dir.listFiles().orEmpty()
+    private fun buffered(dir: File): List<File> = dir.listFiles().orEmpty()
         .filter { it.name.startsWith("r-") }
         .onEach { it.readStoredSample() }
         .sortedBy { it.name }
 
     /** `tryLock`: one refill runs at a time, and the rest return at once. */
-    private fun refillInBackground(ctx: SampleContext, dir: java.io.File) {
+    private fun refillInBackground(ctx: SampleContext, dir: File) {
         ctx.background.launch {
             if (!filling.tryLock()) return@launch
             try {

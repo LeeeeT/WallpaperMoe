@@ -28,7 +28,7 @@ data class Cache(
     ) {
         init {
             require(entries.distinct().size == entries.size)
-            require(entries.all { it.isNotBlank() && java.io.File(it).name == it })
+            require(entries.all { it.isNotBlank() && File(it).name == it })
             require(lastAddedAt >= 0)
         }
     }
@@ -38,7 +38,7 @@ data class Cache(
     override suspend fun sample(ctx: SampleContext): WallpaperSample = mutex.withLock {
         val dir = ctx.storage.dir(store)
         val state = dir.loadState<State>() ?: State(emptyList(), 0, 0L)
-        state.entries.forEach { java.io.File(dir, it).readStoredSample() }
+        state.entries.forEach { File(dir, it).readStoredSample() }
         sweepOrphans(dir, state.entries)
         val now = System.currentTimeMillis()
         val due = refreshHours > 0 && now - state.lastAddedAt >= refreshHours * 3_600_000L
@@ -75,14 +75,14 @@ data class Cache(
         val removed = all.take(overflow)
         val entries = all.drop(overflow)
         dir.saveState(state.copy(entries = entries, lastAddedAt = now))
-        removed.forEach { java.io.File(dir, it).deleteRecursively() }
+        removed.forEach { File(dir, it).deleteRecursively() }
         return adopted
     }
 
-    private fun serve(dir: java.io.File, state: State): WallpaperSample {
+    private fun serve(dir: File, state: State): WallpaperSample {
         val index = ((state.cursor % state.entries.size) + state.entries.size) % state.entries.size
         dir.saveState(state.copy(cursor = state.cursor + 1))
-        return java.io.File(dir, state.entries[index]).readStoredSample()
+        return File(dir, state.entries[index]).readStoredSample()
     }
 
     private fun sweepOrphans(dir: File, entries: List<String>) {

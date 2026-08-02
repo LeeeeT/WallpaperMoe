@@ -81,7 +81,7 @@ nix develop --command gradle :app:lintDebug
 nix develop --command gradle :app:connectedDebugAndroidTest
 ```
 
-Instrumentation tests cover providers with a local mock server, source composition and persistence, image storage, draft validation, history, and favorites. The main code is organized under `app/src/main/kotlin/dev/leeeet/wallpapermoe/` by source, provider, image, wallpaper, service, data, and UI concerns.
+Instrumentation tests cover providers with a local mock server, source composition and persistence, image storage, draft validation, history, and favorites. The main code is organized under `app/src/main/kotlin/dev/leeeet/wallpapermoe/` by source, provider, networking, wallpaper, service, data, and UI concerns.
 
 ## License and services
 

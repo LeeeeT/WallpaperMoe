@@ -62,12 +62,7 @@ internal fun File.pruneSamples(keep: Int = KEEP_SAMPLES) {
 
 private const val KEEP_SAMPLES = 2
 
-/**
- * Copies, because the source that produced the file will reuse the original.
- * Staged through a `.part` name so the target only ever appears complete —
- * Prefetch reads its folder as its buffer. Wall-clock names keep buffer order
- * across a reboot; the nano suffix keeps them unique.
- */
+/** One adopted sample's record, beside the image it describes. */
 @Serializable
 private data class StoredSample(
     val id: String,
@@ -85,6 +80,12 @@ internal fun File.readStoredSample(): WallpaperSample {
     return WallpaperSample(metadata.id, image, metadata.metadata)
 }
 
+/**
+ * Copies, because the source that produced the file will reuse the original.
+ * Staged through a `.part` name so the target only ever appears complete —
+ * Prefetch reads its folder as its buffer. Wall-clock names keep buffer order
+ * across a reboot; the nano suffix keeps them unique.
+ */
 internal suspend fun adopt(produced: WallpaperSample, dir: File, prefix: String): WallpaperSample =
     withContext(Dispatchers.IO) {
         val target = File(dir, "$prefix-${System.currentTimeMillis()}-${System.nanoTime()}")

@@ -1,6 +1,7 @@
 package dev.leeeet.wallpapermoe.ui
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.leeeet.wallpapermoe.MoeApplication
@@ -301,7 +302,7 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     fun activateWallpaper() {
         val app = getApplication<Application>()
         app.startActivity(
-            WallpaperRuntime.activationIntent(app).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+            WallpaperRuntime.activationIntent(app).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
         )
     }
 

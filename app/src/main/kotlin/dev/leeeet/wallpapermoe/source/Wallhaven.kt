@@ -74,7 +74,6 @@ data class Wallhaven(
             candidate = image,
             identity = { "wallhaven:${it.id}" },
             url = { it.url },
-            metadata = { WallpaperMetadata() },
             dir = ctx.storage.dir(store),
             provider = SourceProvider.WALLHAVEN,
         )

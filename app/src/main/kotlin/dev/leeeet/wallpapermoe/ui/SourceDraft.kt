@@ -123,7 +123,8 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
         is SourceRecipeDraft.KeepReady -> when {
             value.sourceId.isNullOrBlank() -> DraftProblem.KeepReadySourceMissing
             !value.cacheEnabled && !value.prefetchEnabled -> DraftProblem.KeepReadyOptionMissing
-            value.cacheEnabled && value.cacheCapacity < 1 -> DraftProblem.CacheCapacityInvalid
+            value.cacheEnabled && !value.cacheCapacity.isValidCacheCapacity() ->
+                DraftProblem.CacheCapacityInvalid
             value.prefetchEnabled && value.prefetchDepth < 1 -> DraftProblem.PrefetchDepthInvalid
             else -> null
         }
@@ -145,6 +146,10 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
         -> error("The existing source library is invalid")
     }
 }
+
+/** The same rule [CacheOptions] enforces, asked before the draft is turned into one. */
+private fun Int.isValidCacheCapacity(): Boolean =
+    this in CACHE_CAPACITY_RANGE && this % CACHE_CAPACITY_STEP == 0
 
 fun SourceDraft.toDefinition(id: SourceId): SourceDefinition = SourceDefinition(
     id = id,

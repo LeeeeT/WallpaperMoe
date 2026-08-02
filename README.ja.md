@@ -81,7 +81,7 @@ nix develop --command gradle :app:lintDebug
 nix develop --command gradle :app:connectedDebugAndroidTest
 ```
 
-インストルメンテーションテストは、ローカルのモックサーバーを使ったプロバイダー、ソースの合成と永続化、画像ストレージ、下書きの検証、履歴、お気に入りを対象としています。主要なコードは `app/src/main/kotlin/dev/leeeet/wallpapermoe/` 以下に、ソース・プロバイダー・画像・壁紙・サービス・データ・UI の関心事ごとに整理されています。
+インストルメンテーションテストは、ローカルのモックサーバーを使ったプロバイダー、ソースの合成と永続化、画像ストレージ、下書きの検証、履歴、お気に入りを対象としています。主要なコードは `app/src/main/kotlin/dev/leeeet/wallpapermoe/` 以下に、ソース・プロバイダー・ネットワーク・壁紙・サービス・データ・UI の関心事ごとに整理されています。
 
 ## ライセンスとサービス
 

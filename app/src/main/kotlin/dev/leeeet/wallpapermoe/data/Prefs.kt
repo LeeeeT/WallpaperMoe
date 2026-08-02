@@ -2,6 +2,7 @@ package dev.leeeet.wallpapermoe.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -56,7 +57,7 @@ class Prefs(private val context: Context) {
 
     suspend fun setInterval(v: RotationInterval) = edit { it[KEY_INTERVAL] = v.minutes }
 
-    private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
+    private suspend fun edit(block: (MutablePreferences) -> Unit) {
         context.dataStore.edit(block)
     }
 

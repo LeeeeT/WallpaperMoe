@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -80,6 +81,7 @@ import dev.leeeet.wallpapermoe.Rotator
 import dev.leeeet.wallpapermoe.data.RotationInterval
 import dev.leeeet.wallpapermoe.source.SourceDefinition
 import dev.leeeet.wallpapermoe.source.kind
+import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
 
 @Composable
 fun MoeRoot(state: UiState, vm: MoeViewModel) {
@@ -208,7 +210,7 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
     }
     var choosingSource by remember { mutableStateOf(false) }
     var showingFavorites by remember { mutableStateOf(false) }
-    var previewing by remember { mutableStateOf<dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper?>(null) }
+    var previewing by remember { mutableStateOf<SavedWallpaper?>(null) }
     var pendingFavoriteRemovals by remember { mutableStateOf<Set<String>>(emptySet()) }
     val favoriteIds = state.favorites.mapTo(mutableSetOf()) { it.id }
 
@@ -227,7 +229,7 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
                 .widthIn(max = MoeContentMaxWidth)
                 .fillMaxWidth()
                 .align(Alignment.TopCenter),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            contentPadding = PaddingValues(
                 start = 16.dp,
                 top = 16.dp,
                 end = 16.dp,
@@ -339,9 +341,9 @@ private fun WallpaperHero(
     onChooseSource: () -> Unit,
     onActivate: () -> Unit,
     onRotate: () -> Unit,
-    current: dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper?,
+    current: SavedWallpaper?,
     currentFavorite: Boolean,
-    onFavorite: (dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper, Boolean) -> Unit,
+    onFavorite: (SavedWallpaper, Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     Box(
@@ -639,7 +641,7 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
                 .widthIn(max = MoeContentMaxWidth)
                 .fillMaxWidth()
                 .align(Alignment.TopCenter),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp, 16.dp, 16.dp, 20.dp),
+            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -688,7 +690,7 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
                 Text(stringResource(R.string.settings_choose_rhythm), style = MaterialTheme.typography.titleLarge)
                 LazyColumn(
                     modifier = Modifier.heightIn(max = windowHeight() * .6f),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 8.dp),
+                    contentPadding = PaddingValues(bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(RotationInterval.entries, key = { it }) { option ->

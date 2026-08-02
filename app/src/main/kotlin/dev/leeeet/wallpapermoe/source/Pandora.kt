@@ -28,7 +28,6 @@ data class Pandora(
             candidate = image,
             identity = { "pandora:${it.id}" },
             url = { it.url },
-            metadata = { WallpaperMetadata() },
             dir = ctx.storage.dir(store),
             provider = SourceProvider.PANDORA,
         )

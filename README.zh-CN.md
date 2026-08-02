@@ -81,7 +81,7 @@ nix develop --command gradle :app:lintDebug
 nix develop --command gradle :app:connectedDebugAndroidTest
 ```
 
-插桩测试覆盖了使用本地模拟服务器的提供方、来源的组合与持久化、图片存储、草稿校验、历史记录和收藏。主要代码位于 `app/src/main/kotlin/dev/leeeet/wallpapermoe/`，按来源、提供方、图片、壁纸、服务、数据和 UI 等关注点组织。
+插桩测试覆盖了使用本地模拟服务器的提供方、来源的组合与持久化、图片存储、草稿校验、历史记录和收藏。主要代码位于 `app/src/main/kotlin/dev/leeeet/wallpapermoe/`，按来源、提供方、网络、壁纸、服务、数据和 UI 等关注点组织。
 
 ## 许可与服务
 

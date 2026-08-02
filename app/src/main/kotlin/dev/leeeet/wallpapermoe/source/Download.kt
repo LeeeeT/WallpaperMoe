@@ -14,7 +14,6 @@ internal suspend fun <T> download(
     candidate: T,
     identity: (T) -> String,
     url: (T) -> String,
-    metadata: (T) -> WallpaperMetadata,
     dir: File,
     provider: SourceProvider,
 ): WallpaperSample {
@@ -29,7 +28,7 @@ internal suspend fun <T> download(
         throw SampleException(SampleFailure.DownloadFailed(provider), e)
     }
     dir.pruneSamples()
-    return WallpaperSample(wallpaperId(identity(candidate)), destination, metadata(candidate))
+    return WallpaperSample(wallpaperId(identity(candidate)), destination)
 }
 
 internal suspend fun downloadFile(url: String, destination: File) {
