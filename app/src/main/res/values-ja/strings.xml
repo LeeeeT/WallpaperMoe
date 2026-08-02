@@ -10,6 +10,7 @@
     <string name="nav_settings">設定</string>
 
     <string name="action_add_source">ソースを追加</string>
+    <string name="action_activate_named_source">%1$s をアクティブにする</string>
     <string name="action_back">戻る</string>
     <string name="action_allow">許可</string>
     <string name="action_cancel">キャンセル</string>
@@ -30,6 +31,7 @@
     <string name="action_remove_reference">ソースを外す</string>
     <string name="action_save_selection">選択を保存</string>
     <string name="action_save_source">ソースを保存</string>
+    <string name="action_save_to_gallery">ギャラリーに保存</string>
     <string name="action_open_source_studio">ソーススタジオを開く</string>
     <string name="action_try_again">再試行</string>
     <string name="action_close">閉じる</string>

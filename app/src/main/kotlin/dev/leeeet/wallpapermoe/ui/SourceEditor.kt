@@ -10,7 +10,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -80,6 +80,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -251,14 +252,24 @@ private fun LibrarySourceCard(
     var deleteDialog by remember { mutableStateOf(false) }
     val references = library.referencesTo(definition.id)
     val active = definition.id == library.activeSourceId
-    val interactionSource = remember { MutableInteractionSource() }
     val haptic = LocalHapticFeedback.current
+    val activateLabel = stringResource(R.string.action_activate_named_source, definition.name)
     val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
 
     Card(
-        onClick = { vm.editSource(definition.id) },
-        interactionSource = interactionSource,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                role = Role.Button,
+                onLongClickLabel = activateLabel,
+                onLongClick = if (active) null else {
+                    {
+                        vm.setActiveSource(definition.id)
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    }
+                },
+                onClick = { vm.editSource(definition.id) },
+            ),
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         colors = CardDefaults.cardColors(
@@ -320,7 +331,6 @@ private fun LibrarySourceCard(
                                 haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
                                 onDragStopped()
                             },
-                            interactionSource = interactionSource,
                         )
                         .clearAndSetSemantics {}
                 },

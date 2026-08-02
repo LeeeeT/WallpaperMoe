@@ -11,6 +11,8 @@ import dev.leeeet.wallpapermoe.source.SourceRepository
 import dev.leeeet.wallpapermoe.source.Storage
 import dev.leeeet.wallpapermoe.wallpaper.WallpaperApplier
 import dev.leeeet.wallpapermoe.wallpaper.WallpaperArchive
+import dev.leeeet.wallpapermoe.wallpaper.GallerySaver
+import dev.leeeet.wallpapermoe.wallpaper.MediaStoreGallerySink
 import java.io.File
 import java.util.Locale
 
@@ -26,6 +28,7 @@ object Graph {
     lateinit var providers: Providers private set
     lateinit var rotator: Rotator private set
     lateinit var archive: WallpaperArchive private set
+    internal lateinit var gallerySaver: GallerySaver private set
 
     /** A copy of the wallpaper on screen, kept for the app to display. */
     lateinit var currentWallpaper: File private set
@@ -41,6 +44,10 @@ object Graph {
             images = ImagePipeline(File(app.cacheDir, "downloads"))
             currentWallpaper = File(app.filesDir, "current.wp")
             archive = WallpaperArchive(File(app.filesDir, "wallpapers"))
+            gallerySaver = GallerySaver(
+                scratchDir = File(app.cacheDir, "gallery"),
+                sink = MediaStoreGallerySink(app.contentResolver),
+            )
 
             val storage = Storage(File(app.filesDir, "sources"))
             sources = SourceRepository(File(app.filesDir, "sources.json"), storage)

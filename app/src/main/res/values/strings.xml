@@ -10,6 +10,7 @@
     <string name="nav_settings">Controls</string>
 
     <string name="action_add_source">Add a source</string>
+    <string name="action_activate_named_source">Activate %1$s</string>
     <string name="action_back">Back</string>
     <string name="action_allow">Allow</string>
     <string name="action_cancel">Cancel</string>
@@ -30,6 +31,7 @@
     <string name="action_remove_reference">Remove source</string>
     <string name="action_save_selection">Save selection</string>
     <string name="action_save_source">Save source</string>
+    <string name="action_save_to_gallery">Save to gallery</string>
     <string name="action_open_source_studio">Open source studio</string>
     <string name="action_try_again">Try again</string>
     <string name="action_close">Close</string>

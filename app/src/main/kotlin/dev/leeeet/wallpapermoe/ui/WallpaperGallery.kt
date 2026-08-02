@@ -8,6 +8,7 @@ package dev.leeeet.wallpapermoe.ui
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -44,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,13 +54,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -295,11 +303,15 @@ internal fun WallpaperPreviewDialog(
     favorite: Boolean,
     onDismiss: () -> Unit,
     onFavorite: () -> Unit,
+    onSave: () -> Unit,
 ) {
     FullScreenDialog(onDismiss) {
         val context = LocalContext.current
         var loading by remember(wallpaper.id) { mutableStateOf(true) }
         var failed by remember(wallpaper.id) { mutableStateOf(false) }
+        var transform by remember(wallpaper.id) { mutableStateOf(ImageTransform()) }
+        var viewport by remember(wallpaper.id) { mutableStateOf(IntSize.Zero) }
+        var imageSize by remember(wallpaper.id) { mutableStateOf(Size.Zero) }
         val preview = remember(wallpaper.id) {
             wallpaper.metadata.imageUrl?.let { url ->
                 ImageRequest.Builder(context)
@@ -312,19 +324,38 @@ internal fun WallpaperPreviewDialog(
                     .build()
             } ?: wallpaper.prepared
         }
+        LaunchedEffect(viewport, imageSize) {
+            transform = transform.copy(
+                offset = clampZoomOffset(transform.offset, transform.scale, viewport, imageSize),
+            )
+        }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             AsyncImage(
                 model = preview,
                 contentDescription = stringResource(R.string.wallpaper_preview_description),
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onSizeChanged { viewport = it }
+                    .pointerInput(wallpaper.id, viewport, imageSize) {
+                        detectTransformGestures { centroid, pan, zoom, _ ->
+                            transform = transform.withGesture(centroid, pan, zoom, viewport, imageSize)
+                        }
+                    }
+                    .graphicsLayer {
+                        scaleX = transform.scale
+                        scaleY = transform.scale
+                        translationX = transform.offset.x
+                        translationY = transform.offset.y
+                    },
                 onLoading = {
                     loading = true
                     failed = false
                 },
-                onSuccess = {
+                onSuccess = { state ->
                     loading = false
                     failed = false
+                    state.painter.intrinsicSize.takeIf(Size::hasArea)?.let { imageSize = it }
                 },
                 onError = {
                     loading = false
@@ -355,11 +386,26 @@ internal fun WallpaperPreviewDialog(
                     Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.action_close))
                 }
             }
-            FavoriteButton(
-                favorite = favorite,
-                onClick = onFavorite,
+            Row(
                 modifier = Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(12.dp),
-            )
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Surface(
+                    modifier = Modifier.size(42.dp),
+                    shape = CircleShape,
+                    color = Color.Black.copy(alpha = .52f),
+                    contentColor = Color.White,
+                    shadowElevation = 2.dp,
+                ) {
+                    IconButton(onClick = onSave) {
+                        Icon(
+                            Icons.Filled.SaveAlt,
+                            contentDescription = stringResource(R.string.action_save_to_gallery),
+                        )
+                    }
+                }
+                FavoriteButton(favorite = favorite, onClick = onFavorite)
+            }
             WallpaperAttribution(wallpaper, Modifier.align(Alignment.BottomCenter))
         }
     }

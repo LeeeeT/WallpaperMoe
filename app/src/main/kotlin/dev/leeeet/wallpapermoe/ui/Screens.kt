@@ -317,6 +317,7 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
             } else {
                 wallpaper.id in favoriteIds
             },
+            onSave = { vm.saveToGallery(wallpaper) },
             onDismiss = { previewing = null },
             onFavorite = {
                 if (showingFavorites && wallpaper.id in favoriteIds) {

@@ -290,6 +290,10 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         runCatching { Graph.archive.reorderFavorites(ids) }
     }
 
+    fun saveToGallery(wallpaper: SavedWallpaper) = viewModelScope.launch {
+        runCatching { Graph.gallerySaver.save(wallpaper) }
+    }
+
     fun removeFavorites(ids: Set<String>) = viewModelScope.launch {
         runCatching { Graph.archive.removeFavorites(ids) }
     }
