@@ -164,7 +164,6 @@
     <string name="wallhaven_nsfw">NSFW</string>
     <string name="wallhaven_aspect_ratio">アスペクト比</string>
     <string name="wallhaven_portrait">縦向き</string>
-    <string name="wallhaven_square">正方形</string>
     <string name="wallhaven_landscape">横向き</string>
     <string name="wallhaven_order">並び順</string>
     <string name="wallhaven_api_key">API キー（NSFW に必要）</string>

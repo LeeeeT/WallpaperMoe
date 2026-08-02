@@ -55,7 +55,7 @@ class ProviderTest {
             query = "  forest  ",
             general = true, anime = false, people = true,
             sfw = true, sketchy = true, nsfw = false,
-            aspects = setOf(WallhavenAspect.PORTRAIT, WallhavenAspect.SQUARE),
+            aspects = setOf(WallhavenAspect.PORTRAIT),
             sorting = WallhavenSorting.TOPLIST,
             apiKey = " key ",
             store = "filters",
@@ -65,7 +65,7 @@ class ProviderTest {
         assertTrue(sent, sent.contains("q=forest"))
         assertTrue(sent, sent.contains("categories=101"))
         assertTrue(sent, sent.contains("purity=110"))
-        assertTrue(sent, sent.contains("ratios=portrait%2C1x1%2C3x2%2C4x3%2C5x4"))
+        assertTrue(sent, sent.contains("ratios=portrait"))
         assertTrue(sent, sent.contains("sorting=toplist"))
         assertTrue(sent, sent.contains("apikey=key"))
     }

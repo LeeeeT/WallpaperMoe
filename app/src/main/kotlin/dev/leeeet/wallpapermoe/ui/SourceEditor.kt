@@ -1036,7 +1036,6 @@ private fun WallhavenEditor(draft: SourceDraft, config: SourceRecipeDraft.Wallha
                         stringResource(
                             when (aspect) {
                                 WallhavenAspect.PORTRAIT -> R.string.wallhaven_portrait
-                                WallhavenAspect.SQUARE -> R.string.wallhaven_square
                                 WallhavenAspect.LANDSCAPE -> R.string.wallhaven_landscape
                             },
                         ),

@@ -42,7 +42,7 @@ class SourceRepositoryTest {
             sfw = true,
             sketchy = false,
             nsfw = false,
-            aspects = setOf(WallhavenAspect.PORTRAIT, WallhavenAspect.SQUARE),
+            aspects = setOf(WallhavenAspect.PORTRAIT),
             sorting = WallhavenSorting.RANDOM,
             apiKey = "",
         ),

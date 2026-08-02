@@ -5,10 +5,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class WallhavenAspect(val apiValues: List<String>) {
-    PORTRAIT(listOf("portrait")),
-    SQUARE(listOf("1x1", "3x2", "4x3", "5x4")),
-    LANDSCAPE(listOf("landscape"));
+enum class WallhavenAspect(val apiValue: String) {
+    PORTRAIT("portrait"),
+    LANDSCAPE("landscape");
 
     companion object {
         val ALL: Set<WallhavenAspect> = entries.toSet()
@@ -87,5 +86,4 @@ internal fun Set<WallhavenAspect>.apiRatios(): String? =
     if (this == WallhavenAspect.ALL) null
     else WallhavenAspect.entries
         .filter { it in this }
-        .flatMap(WallhavenAspect::apiValues)
-        .joinToString(",")
+        .joinToString(",", transform = WallhavenAspect::apiValue)
