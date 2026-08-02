@@ -6,13 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.leeeet.wallpapermoe.service.Engine
+import dev.leeeet.wallpapermoe.service.WallpaperRuntime
 import dev.leeeet.wallpapermoe.ui.MoeRoot
 import dev.leeeet.wallpapermoe.ui.MoeTheme
 import dev.leeeet.wallpapermoe.ui.MoeViewModel
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -29,12 +27,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** A foreground activity is an Android-authorized place to apply the saved engine setting. */
     override fun onStart() {
         super.onStart()
-        lifecycleScope.launch {
-            val graph = (application as MoeApplication).graph
-            Engine.applySettings(this@MainActivity, graph.prefs.current())
-        }
+        WallpaperRuntime.refresh(this)
     }
 }

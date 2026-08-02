@@ -46,12 +46,12 @@ class PrefetchTest {
 
     @Test
     fun bufferedSamplesKeepTheirMetadata() {
-        val warm = prefetch(source = wallhaven("one"), depth = 1, store = "with-url")
+        val warm = prefetch(source = nekosBest(listOf("neko")), depth = 1, store = "with-metadata")
         warm.take(env.ctx)
-        awaitUntil("the URL-bearing buffer to fill") { buffered("with-url").size == 1 }
+        awaitUntil("the metadata-bearing buffer to fill") { buffered("with-metadata").size == 1 }
 
-        val offline = prefetch(source = wallhaven(Env.FAILS), depth = 1, store = "with-url")
-        assertTrue(offline.takeSample(env.ctx).metadata.imageUrl!!.endsWith("/img/one.jpg"))
+        val offline = prefetch(source = nekosBest(listOf(Env.FAILS)), depth = 1, store = "with-metadata")
+        assertEquals("Artist 1", offline.takeSample(env.ctx).metadata.artistName)
     }
 
     @Test

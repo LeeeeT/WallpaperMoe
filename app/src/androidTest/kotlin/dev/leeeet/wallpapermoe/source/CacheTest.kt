@@ -88,11 +88,11 @@ class CacheTest {
     }
 
     @Test
-    fun keepsIdentityAndMetadataWithThePreparedImage() {
-        val filled = cache(source = wallhaven("one"), capacity = 1, store = "with-url")
+    fun keepsIdentityAndMetadataWithTheDownloadedImage() {
+        val filled = cache(source = wallhaven("one"), capacity = 1, store = "with-metadata")
         val original = filled.takeSample(env.ctx)
 
-        val offline = cache(source = wallhaven(Env.FAILS), capacity = 1, store = "with-url")
+        val offline = cache(source = wallhaven(Env.FAILS), capacity = 1, store = "with-metadata")
         val restored = offline.takeSample(env.ctx)
         assertEquals(original.id, restored.id)
         assertEquals(original.metadata, restored.metadata)
@@ -120,10 +120,10 @@ class CacheTest {
     }
 
     @Test
-    fun keepsImagesAlreadyShapedForTheScreen() {
+    fun keepsTheProviderDimensions() {
         val cache = cache(source = wallhaven("one"), capacity = 2, refreshHours = 0)
         val bitmap = android.graphics.BitmapFactory.decodeFile(cache.take(env.ctx).path)
-        assertEquals(Env.WIDTH, bitmap.width)
-        assertEquals(Env.HEIGHT, bitmap.height)
+        assertEquals(640, bitmap.width)
+        assertEquals(1280, bitmap.height)
     }
 }

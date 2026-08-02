@@ -5,10 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import dev.leeeet.wallpapermoe.MoeApplication
 import dev.leeeet.wallpapermoe.Rotator
-import dev.leeeet.wallpapermoe.data.MoeSettings
 import dev.leeeet.wallpapermoe.data.RotationInterval
 import dev.leeeet.wallpapermoe.provider.pandora.PandoraApi
-import dev.leeeet.wallpapermoe.service.Engine
+import dev.leeeet.wallpapermoe.service.WallpaperRuntime
 import dev.leeeet.wallpapermoe.source.Source
 import dev.leeeet.wallpapermoe.source.SourceId
 import dev.leeeet.wallpapermoe.source.SourceKind
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -29,11 +27,11 @@ import java.io.File
 enum class Tab { NOW, SOURCE, SETTINGS }
 
 data class UiState(
-    val settings: MoeSettings,
+    val interval: RotationInterval,
+    val wallpaperActive: Boolean,
     val source: Source?,
     val sourceLibrary: SourceLibrary,
     val status: Rotator.Status,
-    val engineBlocked: Boolean,
     val currentWallpaper: File?,
     val wallpaperVersion: Long,
     val history: List<SavedWallpaper>,
@@ -91,13 +89,13 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
 
     val state: StateFlow<UiState> = combine(
         combine(
-            graph.prefs.settings,
+            graph.prefs.interval,
+            WallpaperRuntime.active,
             graph.sources.source,
             graph.sources.library,
             graph.rotator.status,
-            Engine.blocked,
-        ) { settings, source, library, status, blocked ->
-            CoreState(settings, source, library, status, blocked)
+        ) { interval, active, source, library, status ->
+            CoreState(interval, active, source, library, status)
         },
         combine(graph.prefs.lastRotationAt, tab, sourceEditing) { rotation, selectedTab, editing ->
             Triple(rotation, selectedTab, editing)
@@ -107,11 +105,11 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     ) { core, navigation, history, favorites ->
         val (lastRotation, currentTab, editing) = navigation
         UiState(
-            settings = core.settings,
+            interval = core.interval,
+            wallpaperActive = core.wallpaperActive,
             source = core.source,
             sourceLibrary = core.library,
             status = core.status,
-            engineBlocked = core.engineBlocked,
             currentWallpaper = graph.currentWallpaper.takeIf { it.exists() && it.length() > 0 },
             wallpaperVersion = lastRotation,
             history = history,
@@ -127,11 +125,11 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = UiState(
-            settings = MoeSettings(true, true, RotationInterval.EVERY_LOCK),
+            interval = RotationInterval.EVERY_LOCK,
+            wallpaperActive = false,
             source = null,
             sourceLibrary = SourceLibrary(),
             status = Rotator.Status.Idle,
-            engineBlocked = false,
             currentWallpaper = null,
             wallpaperVersion = 0,
             history = emptyList(),
@@ -298,19 +296,17 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun setApplyToLock(v: Boolean) = viewModelScope.launch {
-        graph.prefs.setApplyToLock(v)
-        Engine.applySettings(getApplication(), graph.prefs.current())
-    }
-
-    fun setApplyToHome(v: Boolean) = viewModelScope.launch {
-        graph.prefs.setApplyToHome(v)
-        Engine.applySettings(getApplication(), graph.prefs.current())
-    }
     fun setInterval(v: RotationInterval) = viewModelScope.launch { graph.prefs.setInterval(v) }
 
-    fun rotateNow() = viewModelScope.launch {
-        if (graph.prefs.settings.first().enabled) Engine.rotateNow(getApplication())
+    fun activateWallpaper() {
+        val app = getApplication<Application>()
+        app.startActivity(
+            WallpaperRuntime.activationIntent(app).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    }
+
+    fun rotateNow() {
+        if (WallpaperRuntime.active.value) graph.rotator.rotateNow()
     }
 
     fun addFavorite(wallpaper: SavedWallpaper) = viewModelScope.launch {
@@ -344,10 +340,10 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private data class CoreState(
-        val settings: MoeSettings,
+        val interval: RotationInterval,
+        val wallpaperActive: Boolean,
         val source: Source?,
         val library: SourceLibrary,
         val status: Rotator.Status,
-        val engineBlocked: Boolean,
     )
 }

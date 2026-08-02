@@ -20,7 +20,7 @@ class FavoritesTest {
         env.archive.addFavorite(
             SavedWallpaper(
                 "$number",
-                WallpaperMetadata(imageUrl = "https://example.com/$number.jpg"),
+                WallpaperMetadata(sourceUrl = "https://example.com/$number"),
                 file,
                 number.toLong(),
             ),
@@ -63,8 +63,8 @@ class FavoritesTest {
         favorite(1)
         val sample = Favorites(SelectionMode.RANDOM, "favorites").sample(env.ctx)
         assertEquals("1", sample.id)
-        assertEquals("https://example.com/1.jpg", sample.metadata.imageUrl)
-        assertEquals("1", sample.prepared.readText())
+        assertEquals("https://example.com/1", sample.metadata.sourceUrl)
+        assertEquals("1", sample.file.readText())
         assertEquals(1, env.archive.favorites.value.size)
     }
 }

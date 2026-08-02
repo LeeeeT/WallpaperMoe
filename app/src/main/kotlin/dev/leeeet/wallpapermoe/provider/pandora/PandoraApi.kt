@@ -27,26 +27,7 @@ class PandoraApi(
         val subscribers: Int?,
     )
 
-    sealed interface Image {
-        val id: String
-        fun urlFor(widthPx: Int): String
-    }
-
-    /** The CDN resizes by path, so the URL is built per width. */
-    private data class ResizableImage(
-        override val id: String,
-        val root: String,
-        val locator: String,
-    ) : Image {
-        override fun urlFor(widthPx: Int) = "$root$FORMAT/w$widthPx/$locator"
-    }
-
-    private data class FixedImage(
-        override val id: String,
-        val url: String,
-    ) : Image {
-        override fun urlFor(widthPx: Int) = url
-    }
+    data class Image(val id: String, val url: String)
 
     suspend fun channels(): List<Channel> {
         val body = get(PATH_INDEX, emptyMap())
@@ -99,20 +80,12 @@ class PandoraApi(
         "_ts" to (System.currentTimeMillis() / 1000).toString(),
     )
 
-    /**
-     * Prefers the resizable `cl_url` rendition; the fixed covers are a last
-     * resort and mostly 404. All of them arrive as plaintext http, which
-     * Android blocks, so they are forced to TLS.
-     */
+    /** The API returns plaintext CDN roots, so the selected rendition is forced to TLS. */
     private fun ClUrl.toImage(id: String): Image? {
         val root = urlRoot?.takeIf { it.isNotBlank() }?.toHttps()
         val loc = locator?.takeIf { it.isNotBlank() }
-        if (root != null && loc != null) return ResizableImage(id, root, loc)
-        val fixed = urlFull?.takeIf { it.isNotBlank() }
-            ?: urlH?.takeIf { it.isNotBlank() }
-            ?: urlM?.takeIf { it.isNotBlank() }
-            ?: urlL?.takeIf { it.isNotBlank() }
-        return fixed?.let { FixedImage(id, it.toHttps()) }
+        if (root == null || loc == null) return null
+        return Image(id, "$root$FORMAT/w$screenWidthPx/$loc")
     }
 
     private fun String.toHttps() =
@@ -134,10 +107,6 @@ class PandoraApi(
 private data class ClUrl(
     val locator: String? = null,
     @SerialName("url_root") val urlRoot: String? = null,
-    @SerialName("url_full") val urlFull: String? = null,
-    @SerialName("url_h") val urlH: String? = null,
-    @SerialName("url_m") val urlM: String? = null,
-    @SerialName("url_l") val urlL: String? = null,
 )
 
 @Serializable

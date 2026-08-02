@@ -32,9 +32,9 @@ class NekosBestApi(private val baseUrl: String = "https://nekos.best/api/v2") {
         val url = "${baseUrl.trimEnd('/')}/$category?amount=1"
         val body = Http.client.getString(url, APP_USER_AGENT)
         return Http.json.decodeFromString<ImageResponse>(body).results.firstNotNullOfOrNull { item ->
-            val imageUrl = item.url.clean() ?: return@firstNotNullOfOrNull null
+            val url = item.url.clean() ?: return@firstNotNullOfOrNull null
             Image(
-                url = imageUrl,
+                url = url,
                 sourceUrl = item.sourceUrl.clean(),
                 artistName = item.artistName.clean(),
                 artistUrl = item.artistUrl.clean(),

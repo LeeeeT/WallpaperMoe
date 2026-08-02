@@ -27,10 +27,9 @@ data class Pandora(
         return download(
             candidate = image,
             identity = { "pandora:${it.id}" },
-            imageUrl = { it.urlFor(ctx.widthPx) },
-            metadata = { WallpaperMetadata(imageUrl = it.urlFor(ctx.widthPx)) },
+            url = { it.url },
+            metadata = { WallpaperMetadata() },
             dir = ctx.storage.dir(store),
-            ctx = ctx,
             provider = SourceProvider.PANDORA,
         )
     }

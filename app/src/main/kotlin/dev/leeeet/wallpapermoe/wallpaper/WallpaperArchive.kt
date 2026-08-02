@@ -17,7 +17,7 @@ import java.util.UUID
 data class SavedWallpaper(
     val id: String,
     val metadata: WallpaperMetadata,
-    val prepared: File,
+    val file: File,
     val savedAt: Long,
 )
 
@@ -92,7 +92,7 @@ class WallpaperArchive(private val root: File) {
                 it.id == wallpaper.id
             }?.toSaved(historyDir) ?: wallpaper
             val record = copyInto(
-                WallpaperSample(source.id, source.prepared, source.metadata),
+                WallpaperSample(source.id, source.file, source.metadata),
                 favoritesDir,
             )
             val next = current.copy(favorites = listOf(record) + current.favorites)
@@ -136,7 +136,7 @@ class WallpaperArchive(private val root: File) {
         val fileName = reuse?.fileName ?: "${UUID.randomUUID()}.wp"
         val target = File(directory, fileName)
         val staged = File(directory, "$fileName.tmp")
-        sample.prepared.copyTo(staged, overwrite = true)
+        sample.file.copyTo(staged, overwrite = true)
         target.delete()
         check(staged.renameTo(target))
         return Record(sample.id, sample.metadata, fileName, System.currentTimeMillis())
@@ -173,11 +173,11 @@ class WallpaperArchive(private val root: File) {
     private fun Record.toSaved(directory: File) = SavedWallpaper(
         id = id,
         metadata = metadata,
-        prepared = File(directory, fileName),
+        file = File(directory, fileName),
         savedAt = savedAt,
     )
 
-    private fun SavedWallpaper.toRecord() = Record(id, metadata, prepared.name, savedAt)
+    private fun SavedWallpaper.toRecord() = Record(id, metadata, file.name, savedAt)
 
     private companion object {
         const val HISTORY_LIMIT = 20

@@ -42,12 +42,12 @@ class StorageTest {
         val source = write(storage.dir("input-${System.nanoTime()}"), "image.wp", bytes.coerceAtLeast(1))
         val adopted = runBlocking {
             adopt(
-                WallpaperSample(name, source, WallpaperMetadata(imageUrl = "https://example.com/$name")),
+                WallpaperSample(name, source, WallpaperMetadata(sourceUrl = "https://example.com/$name")),
                 dir,
                 "x",
             )
         }
-        val entry = requireNotNull(adopted.prepared.parentFile)
+        val entry = requireNotNull(adopted.file.parentFile)
         val named = File(dir, name)
         check(entry.renameTo(named))
         if (bytes == 0) File(named, "image.wp").writeBytes(ByteArray(0))
@@ -170,7 +170,7 @@ class StorageTest {
                 WallpaperSample(
                     "original",
                     produced,
-                    WallpaperMetadata(imageUrl = "https://example.com/original.jpg"),
+                    WallpaperMetadata(sourceUrl = "https://example.com/original"),
                 ),
                 to,
                 "c",
@@ -178,11 +178,11 @@ class StorageTest {
         }
 
         assertTrue(produced.exists())
-        assertEquals(to, adopted.prepared.parentFile?.parentFile)
-        assertTrue(adopted.prepared.parentFile!!.name.startsWith("c-"))
-        assertEquals(16, adopted.prepared.length())
+        assertEquals(to, adopted.file.parentFile?.parentFile)
+        assertTrue(adopted.file.parentFile!!.name.startsWith("c-"))
+        assertEquals(16, adopted.file.length())
         assertEquals("original", adopted.id)
-        assertEquals("https://example.com/original.jpg", adopted.metadata.imageUrl)
+        assertEquals("https://example.com/original", adopted.metadata.sourceUrl)
     }
 
     @Test

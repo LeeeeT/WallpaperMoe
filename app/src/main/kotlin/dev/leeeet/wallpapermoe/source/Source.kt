@@ -1,6 +1,5 @@
 package dev.leeeet.wallpapermoe.source
 
-import dev.leeeet.wallpapermoe.image.ImagePipeline
 import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestDownloader
 import dev.leeeet.wallpapermoe.provider.pandora.PandoraApi
 import dev.leeeet.wallpapermoe.provider.wallhaven.WallhavenApi
@@ -27,7 +26,7 @@ sealed interface Source {
 data class WallpaperSample(
     /** Stable while this sample moves through cache, history, and favorites. */
     val id: String,
-    val prepared: File,
+    val file: File,
     val metadata: WallpaperMetadata = WallpaperMetadata(),
 ) {
     init { require(id.isNotBlank()) }
@@ -36,15 +35,13 @@ data class WallpaperSample(
 /** Optional provider metadata. No source is required to manufacture fields it does not have. */
 @Serializable
 data class WallpaperMetadata(
-    /** Remote image suitable for a full-resolution preview. */
-    val imageUrl: String? = null,
     /** Page where the original work is published. */
     val sourceUrl: String? = null,
     val artistName: String? = null,
     val artistUrl: String? = null,
 ) {
     init {
-        require(listOfNotNull(imageUrl, sourceUrl, artistName, artistUrl).all { it.isNotBlank() })
+        require(listOfNotNull(sourceUrl, artistName, artistUrl).all { it.isNotBlank() })
     }
 }
 
@@ -55,9 +52,6 @@ fun newWallpaperId(providerIdentity: String? = null): String = if (providerIdent
 }
 
 class SampleContext(
-    val widthPx: Int,
-    val heightPx: Int,
-    val images: ImagePipeline,
     val providers: Providers,
     val storage: Storage,
     val archive: WallpaperArchive,

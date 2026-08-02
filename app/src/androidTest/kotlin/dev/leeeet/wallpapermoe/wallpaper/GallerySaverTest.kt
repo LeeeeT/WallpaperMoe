@@ -5,11 +5,8 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import coil3.ImageLoader
-import coil3.disk.DiskCache
 import dev.leeeet.wallpapermoe.source.WallpaperMetadata
 import kotlinx.coroutines.runBlocking
-import okio.Path.Companion.toPath
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -23,7 +20,6 @@ import java.io.File
 @RunWith(AndroidJUnit4::class)
 class GallerySaverTest {
     private lateinit var root: File
-    private lateinit var imageLoader: ImageLoader
     private val writes = mutableListOf<Write>()
     private val names = mutableSetOf<String>()
 
@@ -33,67 +29,33 @@ class GallerySaverTest {
             InstrumentationRegistry.getInstrumentation().targetContext.cacheDir,
             "gallery-saver-${System.nanoTime()}",
         ).apply { mkdirs() }
-        imageLoader = ImageLoader.Builder(InstrumentationRegistry.getInstrumentation().targetContext)
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(File(root, "coil").absolutePath.toPath())
-                    .maxSizeBytes(16L * 1024 * 1024)
-                    .build()
-            }
-            .build()
     }
 
     @After
     fun tearDown() {
-        imageLoader.shutdown()
         root.deleteRecursively()
     }
 
     @Test
-    fun cachedOriginalIsSavedWithoutAnotherDownload() = runBlocking {
-        val original = jpeg(0xFFAA3366.toInt())
-        val prepared = File(root, "prepared.wp").apply { writeBytes(jpeg(0xFF3366AA.toInt())) }
-        val wallpaper = wallpaper(prepared, "https://example.com/original.jpg")
-        cache(requireNotNull(wallpaper.originalImageCacheKey()), original)
+    fun savesTheDownloadedFileUnchanged() = runBlocking {
+        val downloadedBytes = jpeg(0xFF3366AA.toInt())
+        val downloaded = File(root, "downloaded.wp").apply { writeBytes(downloadedBytes) }
 
-        val result = saver().save(wallpaper)
+        val result = saver().save(wallpaper(downloaded))
 
         assertEquals(GallerySaveResult.Saved, result)
-        assertArrayEquals(original, writes.single().bytes)
+        assertArrayEquals(downloadedBytes, writes.single().bytes)
         assertEquals("image/jpeg", writes.single().mimeType)
         assertTrue(writes.single().displayName.endsWith(".jpg"))
     }
 
     @Test
-    fun missingCachedOriginalFailsInsteadOfDownloadingAgain() = runBlocking {
-        val prepared = File(root, "prepared.wp").apply { writeBytes(jpeg(0xFF3366AA.toInt())) }
-
-        val result = runCatching {
-            saver().save(wallpaper(prepared, "https://example.com/original.jpg"))
-        }
-
-        assertTrue(result.isFailure)
-        assertTrue(writes.isEmpty())
-    }
-
-    @Test
-    fun localWallpaperUsesItsPreparedImage() = runBlocking {
-        val preparedBytes = jpeg(0xFF3366AA.toInt())
-        val prepared = File(root, "prepared.wp").apply { writeBytes(preparedBytes) }
-
-        val result = saver().save(wallpaper(prepared))
-
-        assertEquals(GallerySaveResult.Saved, result)
-        assertArrayEquals(preparedBytes, writes.single().bytes)
-    }
-
-    @Test
     fun repeatedSaveIsIdempotent() = runBlocking {
-        val prepared = File(root, "prepared.wp").apply { writeBytes(jpeg(0xFF3366AA.toInt())) }
+        val file = File(root, "downloaded.wp").apply { writeBytes(jpeg(0xFF3366AA.toInt())) }
         val saver = saver()
 
-        val first = saver.save(wallpaper(prepared))
-        val second = saver.save(wallpaper(prepared))
+        val first = saver.save(wallpaper(file))
+        val second = saver.save(wallpaper(file))
 
         assertEquals(GallerySaveResult.Saved, first)
         assertEquals(GallerySaveResult.AlreadySaved, second)
@@ -135,7 +97,6 @@ class GallerySaverTest {
     }
 
     private fun saver() = GallerySaver(
-        imageLoader = imageLoader,
         sink = GallerySink { source, mimeType, displayName ->
             if (!names.add(displayName)) {
                 GallerySaveResult.AlreadySaved
@@ -146,18 +107,10 @@ class GallerySaverTest {
         },
     )
 
-    private fun cache(key: String, bytes: ByteArray) {
-        val editor = requireNotNull(imageLoader.diskCache).openEditor(key)
-        requireNotNull(editor).run {
-            data.toFile().writeBytes(bytes)
-            commit()
-        }
-    }
-
-    private fun wallpaper(prepared: File, imageUrl: String? = null) = SavedWallpaper(
+    private fun wallpaper(file: File) = SavedWallpaper(
         id = "wallpaper",
-        metadata = WallpaperMetadata(imageUrl = imageUrl),
-        prepared = prepared,
+        metadata = WallpaperMetadata(),
+        file = file,
         savedAt = 0L,
     )
 

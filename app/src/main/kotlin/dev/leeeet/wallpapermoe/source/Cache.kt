@@ -62,7 +62,7 @@ data class Cache(
         now: Long,
     ): WallpaperSample {
         val adopted = adopt(source.sample(ctx), dir, "c")
-        val entryName = requireNotNull(adopted.prepared.parentFile).name
+        val entryName = requireNotNull(adopted.file.parentFile).name
         val entries = (live + entryName).let { all ->
             val overflow = all.size - capacity
             if (overflow <= 0) return@let all

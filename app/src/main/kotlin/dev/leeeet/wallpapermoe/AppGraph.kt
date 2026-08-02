@@ -1,16 +1,14 @@
 package dev.leeeet.wallpapermoe
 
 import android.app.Application
-import coil3.SingletonImageLoader
 import dev.leeeet.wallpapermoe.data.Prefs
-import dev.leeeet.wallpapermoe.image.ImagePipeline
 import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestDownloader
 import dev.leeeet.wallpapermoe.provider.pandora.PandoraApi
 import dev.leeeet.wallpapermoe.provider.wallhaven.WallhavenApi
 import dev.leeeet.wallpapermoe.source.Providers
 import dev.leeeet.wallpapermoe.source.SourceRepository
 import dev.leeeet.wallpapermoe.source.Storage
-import dev.leeeet.wallpapermoe.wallpaper.WallpaperApplier
+import dev.leeeet.wallpapermoe.service.WallpaperRuntime
 import dev.leeeet.wallpapermoe.wallpaper.WallpaperArchive
 import dev.leeeet.wallpapermoe.wallpaper.GallerySaver
 import dev.leeeet.wallpapermoe.wallpaper.MediaStoreGallerySink
@@ -21,8 +19,6 @@ import java.util.Locale
 class AppGraph(app: Application) {
     val prefs: Prefs
     val sources: SourceRepository
-    val applier: WallpaperApplier
-    val images: ImagePipeline
     val providers: Providers
     val rotator: Rotator
     val archive: WallpaperArchive
@@ -33,12 +29,9 @@ class AppGraph(app: Application) {
 
     init {
         prefs = Prefs(app)
-        applier = WallpaperApplier(app)
-        images = ImagePipeline(File(app.cacheDir, "downloads"))
         currentWallpaper = File(app.filesDir, "current.wp")
         archive = WallpaperArchive(File(app.filesDir, "wallpapers"))
         gallerySaver = GallerySaver(
-            imageLoader = SingletonImageLoader.get(app),
             sink = MediaStoreGallerySink(app.contentResolver),
         )
 
@@ -61,12 +54,11 @@ class AppGraph(app: Application) {
         rotator = Rotator(
             prefs = prefs,
             repository = sources,
-            applier = applier,
-            images = images,
             providers = providers,
             storage = storage,
             archive = archive,
             currentFile = currentWallpaper,
+            onWallpaperChanged = WallpaperRuntime::redraw,
         )
     }
 }

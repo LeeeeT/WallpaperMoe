@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Wallpaper Moe</string>
-
-    <string name="channel_rotation">Running</string>
-    <string name="channel_rotation_desc">Allows automatic wallpaper changes</string>
+    <string name="wallpaper_description">Your Wallpaper Moe collection</string>
 
     <string name="nav_now">Today</string>
     <string name="nav_source">Studio</string>
@@ -11,8 +9,8 @@
 
     <string name="action_add_source">Add a source</string>
     <string name="action_activate_named_source">Activate %1$s</string>
+    <string name="action_activate_wallpaper">Activate Wallpaper Moe</string>
     <string name="action_back">Back</string>
-    <string name="action_allow">Allow</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_change_now">Change now</string>
     <string name="action_choose_channels">Choose channels</string>
@@ -52,9 +50,9 @@
     <string name="now_active_source_picker_title">Choose active source</string>
     <string name="now_source_picker_detail">This is the source used for automatic and manual changes.</string>
     <string name="now_ready">Ready</string>
+    <string name="now_inactive">Not active</string>
     <string name="now_not_ready">Not ready</string>
     <string name="now_needs_attention">Needs attention</string>
-    <string name="now_engine_blocked">Wallpaper changes can’t run in the background. Reopen the app; if it keeps happening, allow unrestricted battery use.</string>
     <string name="now_sampling">Choosing a wallpaper…</string>
     <string name="now_current_wallpaper_description">The wallpaper currently applied</string>
     <string name="history_title">History</string>
@@ -71,12 +69,6 @@
     <string name="wallpaper_artist">Art by %1$s</string>
     <string name="wallpaper_artist_unknown">View artist</string>
 
-    <string name="settings_lock_screen">Lock screen</string>
-    <string name="settings_destinations">Destinations</string>
-    <string name="settings_destinations_detail">Choose which screens receive every new wallpaper.</string>
-    <string name="settings_lock_screen_detail">Change the wallpaper behind the lock screen</string>
-    <string name="settings_home_screen">Home screen</string>
-    <string name="settings_home_screen_detail">Change the wallpaper behind your app icons</string>
     <string name="settings_how_often">How often</string>
     <string name="settings_choose_rhythm">Choose a rhythm</string>
     <string name="settings_footer">Wallpaper changes happen while the screen is off, so the transition never interrupts you.</string>
@@ -85,12 +77,6 @@
     <string name="interval_1_hour">At most every hour</string>
     <string name="interval_6_hours">At most every 6 hours</string>
     <string name="interval_24_hours">At most once a day</string>
-
-    <string name="setup_title">Finish setup</string>
-    <string name="setup_notifications_title">Allow notifications</string>
-    <string name="setup_notifications_detail">Lets Wallpaper Moe change wallpapers automatically. The notification stays silent.</string>
-    <string name="setup_battery_title">Unrestrict battery usage</string>
-    <string name="setup_battery_detail">Keeps automatic wallpaper changes working when the app is closed.</string>
 
     <string name="source_intro">Create your own wallpaper mix.</string>
     <string name="source_library_empty">Start with where your wallpapers come from, then customize the mix.</string>
@@ -237,8 +223,5 @@
     <string name="failure_download">Could not load a wallpaper from %1$s</string>
     <string name="failure_cache_empty">No saved wallpapers yet</string>
     <string name="failure_favorites_empty">Favorites is empty</string>
-    <string name="failure_no_target">No wallpaper target is selected</string>
-    <string name="failure_image_missing">That wallpaper is no longer available</string>
-    <string name="failure_apply">Android could not apply the wallpaper</string>
     <string name="failure_unexpected">Something went wrong while changing the wallpaper</string>
 </resources>

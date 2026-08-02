@@ -3,7 +3,6 @@ package dev.leeeet.wallpapermoe.source
 import android.graphics.Bitmap
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.leeeet.wallpapermoe.image.ImagePipeline
 import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestApi
 import dev.leeeet.wallpapermoe.provider.nekosbest.NekosBestDownloader
 import dev.leeeet.wallpapermoe.provider.pandora.PandoraApi
@@ -47,7 +46,6 @@ class Env(nekosBestIntervalMs: Long = 0L) {
     val server = MockWebServer()
 
     val storage = Storage(File(root, "sources"))
-    val images = ImagePipeline(File(root, "scratch"))
     val background = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val archive = WallpaperArchive(File(root, "archive"))
 
@@ -59,9 +57,6 @@ class Env(nekosBestIntervalMs: Long = 0L) {
         routes.base = server.url("/").toString().trimEnd('/')
 
         ctx = SampleContext(
-            widthPx = WIDTH,
-            heightPx = HEIGHT,
-            images = images,
             providers = Providers(
                 nekosBest = NekosBestDownloader(
                     api = NekosBestApi("${routes.base}/nekos"),
@@ -296,7 +291,7 @@ fun Source.sampleFailure(ctx: SampleContext): SampleException {
     return thrown ?: throw AssertionError("expected this sample to fail, but it produced an image")
 }
 
-fun Source.take(ctx: SampleContext): File = runBlocking { sample(ctx).prepared }
+fun Source.take(ctx: SampleContext): File = runBlocking { sample(ctx).file }
 
 fun Source.takeSample(ctx: SampleContext): WallpaperSample = runBlocking { sample(ctx) }
 

@@ -28,12 +28,7 @@ data class NekosBest(
         val image = try {
             ctx.providers.nekosBest.acquire(category) { selected ->
                 try {
-                    ctx.images.fetch(
-                        selected.url,
-                        destination,
-                        ctx.widthPx,
-                        ctx.heightPx,
-                    )
+                    downloadFile(selected.url, destination)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
@@ -58,9 +53,8 @@ data class NekosBest(
         dir.pruneSamples()
         return WallpaperSample(
             id = newWallpaperId("nekos-best:${image.url}"),
-            prepared = destination,
+            file = destination,
             metadata = WallpaperMetadata(
-                imageUrl = image.url,
                 sourceUrl = image.sourceUrl,
                 artistName = image.artistName,
                 artistUrl = image.artistUrl,

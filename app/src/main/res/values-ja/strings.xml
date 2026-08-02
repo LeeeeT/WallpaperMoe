@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Wallpaper Moe</string>
-
-    <string name="channel_rotation">実行中</string>
-    <string name="channel_rotation_desc">壁紙を自動で変更できるようにします</string>
+    <string name="wallpaper_description">Wallpaper Moe の壁紙コレクション</string>
 
     <string name="nav_now">きょう</string>
     <string name="nav_source">スタジオ</string>
@@ -11,8 +9,8 @@
 
     <string name="action_add_source">ソースを追加</string>
     <string name="action_activate_named_source">%1$s をアクティブにする</string>
+    <string name="action_activate_wallpaper">Wallpaper Moe を有効にする</string>
     <string name="action_back">戻る</string>
-    <string name="action_allow">許可</string>
     <string name="action_cancel">キャンセル</string>
     <string name="action_change_now">いま変更</string>
     <string name="action_choose_channels">チャンネルを選択</string>
@@ -52,9 +50,9 @@
     <string name="now_active_source_picker_title">アクティブなソースを選択</string>
     <string name="now_source_picker_detail">自動変更と手動変更の両方でこのソースが使われます。</string>
     <string name="now_ready">準備完了</string>
+    <string name="now_inactive">無効</string>
     <string name="now_not_ready">準備できていません</string>
     <string name="now_needs_attention">確認が必要です</string>
-    <string name="now_engine_blocked">壁紙を自動で変更できません。アプリを開き直し、問題が続く場合は電池使用量を「制限なし」にしてください。</string>
     <string name="now_sampling">壁紙を選んでいます…</string>
     <string name="now_current_wallpaper_description">現在適用されている壁紙</string>
     <string name="history_title">履歴</string>
@@ -71,12 +69,6 @@
     <string name="wallpaper_artist">作者: %1$s</string>
     <string name="wallpaper_artist_unknown">作者を見る</string>
 
-    <string name="settings_lock_screen">ロック画面</string>
-    <string name="settings_destinations">適用先</string>
-    <string name="settings_destinations_detail">新しい壁紙を適用する画面を選びます。</string>
-    <string name="settings_lock_screen_detail">ロック画面の背景を変更します</string>
-    <string name="settings_home_screen">ホーム画面</string>
-    <string name="settings_home_screen_detail">アプリアイコンの背景を変更します</string>
     <string name="settings_how_often">変更の頻度</string>
     <string name="settings_choose_rhythm">ペースを選択</string>
     <string name="settings_footer">壁紙の変更は画面が消灯している間に行われるため、操作を妨げることはありません。</string>
@@ -85,12 +77,6 @@
     <string name="interval_1_hour">1 時間に 1 回まで</string>
     <string name="interval_6_hours">6 時間に 1 回まで</string>
     <string name="interval_24_hours">1 日に 1 回まで</string>
-
-    <string name="setup_title">セットアップを完了</string>
-    <string name="setup_notifications_title">通知を許可</string>
-    <string name="setup_notifications_detail">Wallpaper Moe が壁紙を自動で変更するために使います。通知音は鳴りません。</string>
-    <string name="setup_battery_title">電池使用量の制限を解除</string>
-    <string name="setup_battery_detail">アプリを閉じていても壁紙の自動変更を続けます。</string>
 
     <string name="source_intro">自分好みの壁紙の組み合わせを作りましょう。</string>
     <string name="source_library_empty">まず壁紙の入手先を選び、好みに合わせて組み立てます。</string>
@@ -228,8 +214,5 @@
     <string name="failure_download">%1$s の壁紙を読み込めませんでした</string>
     <string name="failure_cache_empty">保存済みの壁紙がまだありません</string>
     <string name="failure_favorites_empty">お気に入りが空です</string>
-    <string name="failure_no_target">壁紙の適用先が選択されていません</string>
-    <string name="failure_image_missing">その壁紙は利用できなくなりました</string>
-    <string name="failure_apply">Android が壁紙を適用できませんでした</string>
     <string name="failure_unexpected">壁紙の変更中に問題が発生しました</string>
 </resources>

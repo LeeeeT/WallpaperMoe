@@ -1,7 +1,6 @@
 package dev.leeeet.wallpapermoe
 
 import dev.leeeet.wallpapermoe.data.Prefs
-import dev.leeeet.wallpapermoe.image.ImagePipeline
 import dev.leeeet.wallpapermoe.source.Providers
 import dev.leeeet.wallpapermoe.source.SampleContext
 import dev.leeeet.wallpapermoe.source.SampleException
@@ -9,18 +8,17 @@ import dev.leeeet.wallpapermoe.source.SampleFailure
 import dev.leeeet.wallpapermoe.source.Source
 import dev.leeeet.wallpapermoe.source.SourceRepository
 import dev.leeeet.wallpapermoe.source.Storage
-import dev.leeeet.wallpapermoe.wallpaper.ApplyResult
-import dev.leeeet.wallpapermoe.wallpaper.ApplyFailure
-import dev.leeeet.wallpapermoe.wallpaper.ApplyTargets
-import dev.leeeet.wallpapermoe.wallpaper.WallpaperApplier
 import dev.leeeet.wallpapermoe.wallpaper.WallpaperArchive
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -29,12 +27,11 @@ import java.io.File
 class Rotator(
     private val prefs: Prefs,
     private val repository: SourceRepository,
-    private val applier: WallpaperApplier,
-    private val images: ImagePipeline,
     private val providers: Providers,
     private val storage: Storage,
     private val archive: WallpaperArchive,
     private val currentFile: File,
+    private val onWallpaperChanged: () -> Unit,
 ) {
 
     enum class Trigger { SCREEN_OFF, MANUAL }
@@ -48,7 +45,6 @@ class Rotator(
 
     sealed interface Failure {
         data class Sampling(val reason: SampleFailure) : Failure
-        data class Applying(val reason: ApplyFailure) : Failure
         data object Unexpected : Failure
     }
 
@@ -61,42 +57,46 @@ class Rotator(
      * on one side can delete the file the other is still streaming.
      */
     private val running = Mutex()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private var screenOffJob: Job? = null
+
+    fun onScreenOff() {
+        if (screenOffJob?.isActive == true) return
+        screenOffJob = scope.launch { rotate(Trigger.SCREEN_OFF) }
+    }
+
+    fun onScreenOn() {
+        screenOffJob?.cancel()
+        screenOffJob = null
+    }
+
+    fun rotateNow() {
+        scope.launch { rotate(Trigger.MANUAL) }
+    }
 
     /** A rotation already under way wins. */
-    suspend fun rotate(
-        trigger: Trigger,
-        background: CoroutineScope,
-    ) {
+    private suspend fun rotate(trigger: Trigger) {
         if (!running.tryLock()) return
         try {
-            doRotate(trigger, background)
+            doRotate(trigger)
         } finally {
             running.unlock()
         }
     }
 
-    private suspend fun doRotate(
-        trigger: Trigger,
-        background: CoroutineScope,
-    ) {
-        val settings = prefs.current()
-        if (!settings.enabled) return
-
-        if (trigger == Trigger.SCREEN_OFF && settings.interval.minutes > 0) {
+    private suspend fun doRotate(trigger: Trigger) {
+        val interval = prefs.interval.first()
+        if (trigger == Trigger.SCREEN_OFF && interval.minutes > 0) {
             val since = System.currentTimeMillis() - prefs.lastRotationAt.first()
-            if (since < settings.interval.minutes * 60_000L) return
+            if (since < interval.minutes * 60_000L) return
         }
 
         val source = repository.source.value ?: return
-        val (width, height) = applier.targetSize()
         val ctx = SampleContext(
-            widthPx = width,
-            heightPx = height,
-            images = images,
             providers = providers,
             storage = storage,
             archive = archive,
-            background = background,
+            background = scope,
         )
 
         _status.value = Status.Working
@@ -114,31 +114,24 @@ class Rotator(
             return
         }
 
-        val targets = ApplyTargets(lock = settings.applyToLock, home = settings.applyToHome)
-        _status.value = when (val result = applier.apply(
-            sampled.prepared,
-            targets,
-            onlyWhileScreenOff = trigger == Trigger.SCREEN_OFF,
-        )) {
-            is ApplyResult.Success -> {
-                prefs.markRotated(System.currentTimeMillis())
-                rememberCurrent(sampled.prepared)
-                runCatching { archive.rememberApplied(sampled) }
-                Status.Idle
-            }
-
-            is ApplyResult.Skipped -> Status.Idle
-            is ApplyResult.Failed -> Status.Failed(Failure.Applying(result.reason))
+        try {
+            rememberCurrent(sampled.file)
+            onWallpaperChanged()
+            prefs.markRotated(System.currentTimeMillis())
+            runCatching { archive.rememberApplied(sampled) }
+            _status.value = Status.Idle
+        } catch (e: CancellationException) {
+            _status.value = Status.Idle
+            throw e
+        } catch (_: Exception) {
+            _status.value = Status.Failed(Failure.Unexpected)
         }
     }
 
     /** A copy, because the source that produced the file may overwrite it on its next sample. */
     private suspend fun rememberCurrent(applied: File) = withContext(Dispatchers.IO) {
-        runCatching {
-            val tmp = File(currentFile.absolutePath + ".tmp")
-            applied.copyTo(tmp, overwrite = true)
-            tmp.renameTo(currentFile)
-        }
-        Unit
+        val tmp = File(currentFile.absolutePath + ".tmp")
+        applied.copyTo(tmp, overwrite = true)
+        check(tmp.renameTo(currentFile))
     }
 }

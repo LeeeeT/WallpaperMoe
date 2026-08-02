@@ -5,10 +5,7 @@ import android.content.ContentValues
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
-import coil3.ImageLoader
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -21,25 +18,12 @@ enum class GallerySaveResult {
 }
 
 internal class GallerySaver(
-    private val imageLoader: ImageLoader,
     private val sink: GallerySink,
 ) {
-    private val mutex = Mutex()
-
-    suspend fun save(wallpaper: SavedWallpaper): GallerySaveResult = mutex.withLock {
-        withContext(Dispatchers.IO) {
-            val cached = wallpaper.metadata.imageUrl?.let {
-                val key = requireNotNull(wallpaper.originalImageCacheKey())
-                imageLoader.diskCache?.openSnapshot(key)
-                    ?: throw IOException("original image cache entry is unavailable")
-            }
-            cached.use {
-                val source = cached?.data?.toFile() ?: wallpaper.prepared
-                val image = inspect(source)
-                val displayName = "WallpaperMoe_${source.sha256()}.${image.extension}"
-                sink.write(source, image.mimeType, displayName)
-            }
-        }
+    suspend fun save(wallpaper: SavedWallpaper): GallerySaveResult = withContext(Dispatchers.IO) {
+        val image = inspect(wallpaper.file)
+        val displayName = "WallpaperMoe_${wallpaper.file.sha256()}.${image.extension}"
+        sink.write(wallpaper.file, image.mimeType, displayName)
     }
 
     private fun inspect(file: File): GalleryImage {
@@ -60,9 +44,6 @@ internal class GallerySaver(
         return GalleryImage(mimeType, extension)
     }
 }
-
-internal fun SavedWallpaper.originalImageCacheKey(): String? =
-    metadata.imageUrl?.let { "wallpaper-original:$it" }
 
 internal fun interface GallerySink {
     fun write(source: File, mimeType: String, displayName: String): GallerySaveResult

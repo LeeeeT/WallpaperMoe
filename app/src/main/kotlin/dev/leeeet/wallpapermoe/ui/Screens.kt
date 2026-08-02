@@ -36,10 +36,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -54,7 +53,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetState
@@ -242,6 +240,7 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
                     state = state,
                     active = active,
                     onChooseSource = { choosingSource = true },
+                    onActivate = vm::activateWallpaper,
                     onRotate = vm::rotateNow,
                     current = state.history.firstOrNull(),
                     currentFavorite = state.history.firstOrNull()?.let {
@@ -269,8 +268,6 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
                     },
                 )
             }
-
-            item { SetupCard(rememberSetupState()) }
 
             item {
                 StatusPanel(state)
@@ -340,6 +337,7 @@ private fun WallpaperHero(
     state: UiState,
     active: SourceDefinition?,
     onChooseSource: () -> Unit,
+    onActivate: () -> Unit,
     onRotate: () -> Unit,
     current: dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper?,
     currentFavorite: Boolean,
@@ -420,7 +418,7 @@ private fun WallpaperHero(
                     )
                 }
             }
-            HeroActions(state, onChooseSource, onRotate)
+            HeroActions(state, onChooseSource, onActivate, onRotate)
         }
     }
 }
@@ -429,18 +427,19 @@ private fun WallpaperHero(
 private fun HeroActions(
     state: UiState,
     onChooseSource: () -> Unit,
+    onActivate: () -> Unit,
     onRotate: () -> Unit,
 ) {
     val fontScale = LocalDensity.current.fontScale
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         if (maxWidth < 360.dp * fontScale) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChangeNowButton(state, onRotate, Modifier.fillMaxWidth())
+                WallpaperActionButton(state, onActivate, onRotate, Modifier.fillMaxWidth())
                 ChooseSourceButton(onChooseSource, Modifier.fillMaxWidth())
             }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                ChangeNowButton(state, onRotate, Modifier.weight(1f))
+                WallpaperActionButton(state, onActivate, onRotate, Modifier.weight(1f))
                 ChooseSourceButton(onChooseSource, Modifier.weight(1f))
             }
         }
@@ -448,20 +447,32 @@ private fun HeroActions(
 }
 
 @Composable
-private fun ChangeNowButton(state: UiState, onRotate: () -> Unit, modifier: Modifier) {
+private fun WallpaperActionButton(
+    state: UiState,
+    onActivate: () -> Unit,
+    onRotate: () -> Unit,
+    modifier: Modifier,
+) {
+    val activate = !state.wallpaperActive
     Button(
-        onClick = onRotate,
-        enabled = state.source != null && state.settings.enabled && state.status !is Rotator.Status.Working,
+        onClick = if (activate) onActivate else onRotate,
+        enabled = activate || state.source != null && state.status !is Rotator.Status.Working,
         modifier = modifier.height(50.dp),
         shape = MaterialTheme.shapes.medium,
     ) {
-        if (state.status is Rotator.Status.Working) {
+        if (!activate && state.status is Rotator.Status.Working) {
             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
         } else {
-            Icon(Icons.Filled.Refresh, contentDescription = null)
+            Icon(
+                if (activate) Icons.Filled.Wallpaper else Icons.Filled.Refresh,
+                contentDescription = null,
+            )
         }
         Spacer(Modifier.width(8.dp))
-        Text(stringResource(R.string.action_change_now), maxLines = 1)
+        Text(
+            stringResource(if (activate) R.string.action_activate_wallpaper else R.string.action_change_now),
+            maxLines = 1,
+        )
     }
 }
 
@@ -481,6 +492,7 @@ private fun StatusPill(state: UiState, modifier: Modifier = Modifier) {
     val (label, working) = when {
         state.status is Rotator.Status.Working -> stringResource(R.string.now_sampling) to true
         state.status is Rotator.Status.Failed -> stringResource(R.string.now_needs_attention) to false
+        !state.wallpaperActive -> stringResource(R.string.now_inactive) to false
         state.source == null -> stringResource(R.string.now_not_ready) to false
         else -> stringResource(R.string.now_ready) to false
     }
@@ -505,15 +517,11 @@ private fun StatusPill(state: UiState, modifier: Modifier = Modifier) {
 @Composable
 private fun StatusPanel(state: UiState) {
     AnimatedVisibility(
-        visible = state.engineBlocked || state.status is Rotator.Status.Failed,
+        visible = state.status is Rotator.Status.Failed,
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        val message = when {
-            state.engineBlocked -> stringResource(R.string.now_engine_blocked)
-            state.status is Rotator.Status.Failed -> state.status.reason.localizedMessage()
-            else -> ""
-        }
+        val message = (state.status as? Rotator.Status.Failed)?.reason?.localizedMessage().orEmpty()
         Surface(
             color = MaterialTheme.colorScheme.errorContainer,
             contentColor = MaterialTheme.colorScheme.onErrorContainer,
@@ -634,24 +642,6 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp, 16.dp, 16.dp, 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item { SetupCard(rememberSetupState()) }
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SectionHeading(stringResource(R.string.settings_destinations), stringResource(R.string.settings_destinations_detail))
-                    DestinationToggle(
-                        title = stringResource(R.string.settings_lock_screen),
-                        detail = stringResource(R.string.settings_lock_screen_detail),
-                        checked = state.settings.applyToLock,
-                        onChange = vm::setApplyToLock,
-                    )
-                    DestinationToggle(
-                        title = stringResource(R.string.settings_home_screen),
-                        detail = stringResource(R.string.settings_home_screen_detail),
-                        checked = state.settings.applyToHome,
-                        onChange = vm::setApplyToHome,
-                    )
-                }
-            }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     SectionHeading(stringResource(R.string.settings_how_often), stringResource(R.string.settings_interval_detail))
@@ -666,7 +656,7 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
                             Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(state.settings.interval.localizedLabel(), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                            Text(state.interval.localizedLabel(), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                             Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null)
                         }
                     }
@@ -702,7 +692,7 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(RotationInterval.entries, key = { it }) { option ->
-                        val selected = state.settings.interval == option
+                        val selected = state.interval == option
                         Surface(
                             modifier = Modifier.fillMaxWidth().clickable {
                                 vm.setInterval(option)
@@ -723,31 +713,6 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun DestinationToggle(title: String, detail: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Card(
-        onClick = { onChange(!checked) },
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    ) {
-        Row(
-            Modifier.padding(14.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Switch(checked = checked, onCheckedChange = onChange)
         }
     }
 }

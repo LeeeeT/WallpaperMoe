@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Wallpaper Moe</string>
-
-    <string name="channel_rotation">运行中</string>
-    <string name="channel_rotation_desc">允许自动更换壁纸</string>
+    <string name="wallpaper_description">你的 Wallpaper Moe 壁纸</string>
 
     <string name="nav_now">今天</string>
     <string name="nav_source">工作室</string>
@@ -11,8 +9,8 @@
 
     <string name="action_add_source">添加来源</string>
     <string name="action_activate_named_source">启用%1$s</string>
+    <string name="action_activate_wallpaper">启用 Wallpaper Moe</string>
     <string name="action_back">返回</string>
-    <string name="action_allow">允许</string>
     <string name="action_cancel">取消</string>
     <string name="action_change_now">立即更换</string>
     <string name="action_choose_channels">选择频道</string>
@@ -52,9 +50,9 @@
     <string name="now_active_source_picker_title">选择当前来源</string>
     <string name="now_source_picker_detail">自动更换和手动更换都会使用该来源。</string>
     <string name="now_ready">已就绪</string>
+    <string name="now_inactive">未启用</string>
     <string name="now_not_ready">未就绪</string>
     <string name="now_needs_attention">需要处理</string>
-    <string name="now_engine_blocked">无法在后台更换壁纸。请重新打开应用；如果问题持续，请将电池用量设为“不受限制”。</string>
     <string name="now_sampling">正在选择壁纸…</string>
     <string name="now_current_wallpaper_description">当前应用的壁纸</string>
     <string name="history_title">历史记录</string>
@@ -71,12 +69,6 @@
     <string name="wallpaper_artist">作者：%1$s</string>
     <string name="wallpaper_artist_unknown">查看作者</string>
 
-    <string name="settings_lock_screen">锁定屏幕</string>
-    <string name="settings_destinations">应用位置</string>
-    <string name="settings_destinations_detail">选择哪些屏幕会使用新壁纸。</string>
-    <string name="settings_lock_screen_detail">更换锁定屏幕的背景</string>
-    <string name="settings_home_screen">主屏幕</string>
-    <string name="settings_home_screen_detail">更换应用图标后面的背景</string>
     <string name="settings_how_often">更换频率</string>
     <string name="settings_choose_rhythm">选择节奏</string>
     <string name="settings_footer">壁纸会在息屏时更换，因此不会打断你的操作。</string>
@@ -85,12 +77,6 @@
     <string name="interval_1_hour">最多每小时一次</string>
     <string name="interval_6_hours">最多每 6 小时一次</string>
     <string name="interval_24_hours">最多每天一次</string>
-
-    <string name="setup_title">完成设置</string>
-    <string name="setup_notifications_title">允许通知</string>
-    <string name="setup_notifications_detail">用于让 Wallpaper Moe 自动更换壁纸。该通知不会发出提示音。</string>
-    <string name="setup_battery_title">解除电池用量限制</string>
-    <string name="setup_battery_detail">即使关闭应用，也能保持自动更换壁纸。</string>
 
     <string name="source_intro">创建你自己的壁纸组合。</string>
     <string name="source_library_empty">先选择壁纸来自哪里，再按喜好搭配。</string>
@@ -228,8 +214,5 @@
     <string name="failure_download">无法加载来自 %1$s 的壁纸</string>
     <string name="failure_cache_empty">尚无已保存的壁纸</string>
     <string name="failure_favorites_empty">收藏为空</string>
-    <string name="failure_no_target">尚未选择壁纸的应用位置</string>
-    <string name="failure_image_missing">该壁纸已不可用</string>
-    <string name="failure_apply">Android 无法应用该壁纸</string>
     <string name="failure_unexpected">更换壁纸时出现问题</string>
 </resources>

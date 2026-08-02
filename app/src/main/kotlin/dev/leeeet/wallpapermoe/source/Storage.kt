@@ -110,7 +110,7 @@ internal suspend fun adopt(produced: WallpaperSample, dir: File, prefix: String)
     withContext(Dispatchers.IO) {
         val target = File(dir, "$prefix-${System.currentTimeMillis()}-${System.nanoTime()}")
         val staged = File(dir, "${target.name}.part").apply { mkdirs() }
-        produced.prepared.copyTo(File(staged, STORED_IMAGE), overwrite = true)
+        produced.file.copyTo(File(staged, STORED_IMAGE), overwrite = true)
         File(staged, STORED_SAMPLE).writeText(
             documentJson.encodeToString(StoredSample(produced.id, produced.metadata)),
         )

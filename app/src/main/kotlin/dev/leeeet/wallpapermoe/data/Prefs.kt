@@ -3,7 +3,6 @@ package dev.leeeet.wallpapermoe.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -33,25 +32,11 @@ enum class RotationInterval(val minutes: Int) {
     }
 }
 
-data class MoeSettings(
-    val applyToLock: Boolean,
-    val applyToHome: Boolean,
-    val interval: RotationInterval,
-) {
-    val enabled: Boolean get() = applyToLock || applyToHome
-}
-
 class Prefs(private val context: Context) {
 
-    val settings: Flow<MoeSettings> = context.dataStore.data.map { p ->
-        MoeSettings(
-            applyToLock = p[KEY_APPLY_LOCK] ?: true,
-            applyToHome = p[KEY_APPLY_HOME] ?: true,
-            interval = RotationInterval.fromMinutes(p[KEY_INTERVAL] ?: 0),
-        )
+    val interval: Flow<RotationInterval> = context.dataStore.data.map { preferences ->
+        RotationInterval.fromMinutes(preferences[KEY_INTERVAL] ?: 0)
     }
-
-    suspend fun current(): MoeSettings = settings.first()
 
     /**
      * A random id minted once per install, for providers that require a client
@@ -69,8 +54,6 @@ class Prefs(private val context: Context) {
 
     suspend fun markRotated(at: Long) = edit { it[KEY_LAST_ROTATION] = at }
 
-    suspend fun setApplyToLock(v: Boolean) = edit { it[KEY_APPLY_LOCK] = v }
-    suspend fun setApplyToHome(v: Boolean) = edit { it[KEY_APPLY_HOME] = v }
     suspend fun setInterval(v: RotationInterval) = edit { it[KEY_INTERVAL] = v.minutes }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
@@ -78,8 +61,6 @@ class Prefs(private val context: Context) {
     }
 
     private companion object {
-        val KEY_APPLY_LOCK = booleanPreferencesKey("apply_to_lock")
-        val KEY_APPLY_HOME = booleanPreferencesKey("apply_to_home")
         val KEY_INTERVAL = intPreferencesKey("interval_minutes")
         val KEY_INSTALL_ID = stringPreferencesKey("install_id")
         val KEY_LAST_ROTATION = longPreferencesKey("last_rotation_at")

@@ -1,5 +1,5 @@
 {
-  description = "Wallpaper Moe - an Android app that rotates lock and home screen wallpapers";
+  description = "Wallpaper Moe - a customizable live wallpaper for Android";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

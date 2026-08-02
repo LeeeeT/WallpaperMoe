@@ -7,7 +7,7 @@ Your wallpaper collection, changing with you.
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Wallpaper Moe automatically refreshes your lock screen, home screen, or both. Build a source from online collections or your own favorites, choose a rhythm, and let the app handle the rest while the screen is off.
+Wallpaper Moe automatically refreshes your wallpaper. Build a source from online collections or your own favorites, choose a rhythm, and let the app handle the rest while the screen is off.
 
 | Today | Studio | Favorites |
 | :---: | :---: | :---: |
@@ -19,7 +19,7 @@ Wallpaper Moe automatically refreshes your lock screen, home screen, or both. Bu
 - **Favorites stay yours.** Tap the heart on any current or previous wallpaper. Favorites are copied to app storage and remain available even if history is pruned.
 - **Sources fit your taste.** Browse Pandora channels, discover static Nekos.best artwork categories, search Wallhaven, or rotate through wallpapers you have already favorited.
 - **Powerful without being fiddly.** Combine multiple sources randomly, in order, or as fallbacks. Keep wallpapers cached or prepared ahead of time for quick changes.
-- **Independent controls.** Choose the lock screen, home screen, or both, with intervals from every lock to once per day.
+- **Native screen choice.** Android lets you apply Wallpaper Moe to the home screen, lock screen, or both; rotation intervals range from every lock to once per day.
 - **Made for different screens.** The layout adapts from compact phones to tablets.
 
 ## Sources
@@ -43,9 +43,9 @@ Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` dev
 
 1. Download the latest APK from [GitHub Releases](../../releases).
 2. Install it. Android may ask you to allow installs from the app that opened the APK.
-3. Open Wallpaper Moe and complete the two setup prompts: allow notifications and unrestricted battery use.
-4. Open **Studio**, add a source, and mark it active.
-5. Use **Controls** to choose the destination and rotation interval.
+3. Open **Studio**, add a source, and mark it active.
+4. On **Today**, tap **Activate Wallpaper Moe**, then use Android’s wallpaper preview to choose the home screen, lock screen, or both.
+5. Use **Controls** to choose the rotation interval.
 
 Wallpaper changes are normally applied while the screen is off, so they do not interrupt you. **Change now** is available whenever you want an immediate refresh.
 
@@ -63,11 +63,7 @@ Wallpaper Moe does not operate a server and does not receive this data.
 
 ## Permissions
 
-- **Internet** downloads source lists, wallpapers, and original previews.
-- **Set wallpaper** changes the lock and home screen images you select.
-- **Notifications and foreground service** keep rotation available in the background. The status notification is silent.
-- **Run at startup** restores rotation after the device reboots.
-- **Unrestricted battery use** prevents Android from stopping background rotation.
+- **Internet** downloads source lists and wallpapers. No notification, startup, or battery-exemption permission is required.
 
 ## For contributors
 

@@ -65,7 +65,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -74,14 +73,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
-import coil3.network.NetworkHeaders
-import coil3.network.httpHeaders
-import coil3.request.ImageRequest
 import dev.leeeet.wallpapermoe.R
-import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.wallpaper.GallerySaveResult
 import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
-import dev.leeeet.wallpapermoe.wallpaper.originalImageCacheKey
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
@@ -156,7 +150,7 @@ private fun WallpaperThumbnail(
             .clickable(onClick = onPreview),
     ) {
         AsyncImage(
-            model = wallpaper.prepared,
+            model = wallpaper.file,
             contentDescription = stringResource(R.string.wallpaper_thumbnail_description),
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
@@ -313,7 +307,6 @@ internal fun WallpaperPreviewDialog(
     onSave: ((GallerySaveResult) -> Unit) -> Unit,
 ) {
     FullScreenDialog(onDismiss) {
-        val context = LocalContext.current
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
         val savedMessage = stringResource(R.string.gallery_save_success)
@@ -322,26 +315,10 @@ internal fun WallpaperPreviewDialog(
         var loading by remember(wallpaper.id) { mutableStateOf(true) }
         var failed by remember(wallpaper.id) { mutableStateOf(false) }
         var saving by remember(wallpaper.id) { mutableStateOf(false) }
-        var originalReady by remember(wallpaper.id) { mutableStateOf(false) }
+        var imageReady by remember(wallpaper.id) { mutableStateOf(false) }
         var transform by remember(wallpaper.id) { mutableStateOf(ImageTransform()) }
         var viewport by remember(wallpaper.id) { mutableStateOf(IntSize.Zero) }
         var imageSize by remember(wallpaper.id) { mutableStateOf(Size.Zero) }
-        val originalCacheKey = remember(wallpaper.id) {
-            wallpaper.originalImageCacheKey()
-        }
-        val preview = remember(wallpaper.id) {
-            wallpaper.metadata.imageUrl?.let { url ->
-                ImageRequest.Builder(context)
-                    .data(url)
-                    .diskCacheKey(originalCacheKey)
-                    .httpHeaders(
-                        NetworkHeaders.Builder()
-                            .set("User-Agent", APP_USER_AGENT)
-                            .build(),
-                    )
-                    .build()
-            } ?: wallpaper.prepared
-        }
         LaunchedEffect(viewport, imageSize) {
             transform = transform.copy(
                 offset = clampZoomOffset(transform.offset, transform.scale, viewport, imageSize),
@@ -349,7 +326,7 @@ internal fun WallpaperPreviewDialog(
         }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             AsyncImage(
-                model = preview,
+                model = wallpaper.file,
                 contentDescription = stringResource(R.string.wallpaper_preview_description),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
@@ -369,18 +346,18 @@ internal fun WallpaperPreviewDialog(
                 onLoading = {
                     loading = true
                     failed = false
-                    originalReady = false
+                    imageReady = false
                 },
                 onSuccess = { state ->
                     loading = false
                     failed = false
-                    originalReady = true
+                    imageReady = true
                     state.painter.intrinsicSize.takeIf(Size::hasArea)?.let { imageSize = it }
                 },
                 onError = {
                     loading = false
                     failed = true
-                    originalReady = false
+                    imageReady = false
                 },
             )
             if (loading) {
@@ -419,7 +396,7 @@ internal fun WallpaperPreviewDialog(
                     shadowElevation = 2.dp,
                 ) {
                     IconButton(
-                        enabled = originalReady && !saving,
+                        enabled = imageReady && !saving,
                         onClick = {
                             saving = true
                             onSave { result ->

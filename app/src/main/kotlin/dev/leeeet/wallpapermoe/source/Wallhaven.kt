@@ -73,10 +73,9 @@ data class Wallhaven(
         return download(
             candidate = image,
             identity = { "wallhaven:${it.id}" },
-            imageUrl = { it.url },
-            metadata = { WallpaperMetadata(imageUrl = it.url) },
+            url = { it.url },
+            metadata = { WallpaperMetadata() },
             dir = ctx.storage.dir(store),
-            ctx = ctx,
             provider = SourceProvider.WALLHAVEN,
         )
     }

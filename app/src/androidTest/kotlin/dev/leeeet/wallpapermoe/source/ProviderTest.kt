@@ -32,15 +32,14 @@ class ProviderTest {
     // -------------------------------------------------------------- wallhaven
 
     @Test
-    fun wallhavenProducesAnImageShapedForTheScreen() {
+    fun wallhavenKeepsTheDownloadedImageUntouched() {
         val sample = wallhaven("works").takeSample(env.ctx)
-        val produced = sample.prepared
+        val produced = sample.file
 
         assertEquals("works", produced.store)
-        assertTrue(sample.metadata.imageUrl!!.endsWith("/img/works.jpg"))
         val bitmap = BitmapFactory.decodeFile(produced.path)
-        assertEquals(Env.WIDTH, bitmap.width)
-        assertEquals(Env.HEIGHT, bitmap.height)
+        assertEquals(640, bitmap.width)
+        assertEquals(1280, bitmap.height)
     }
 
     @Test
@@ -151,7 +150,6 @@ class ProviderTest {
     fun nekosBestKeepsEveryAvailableAttributionField() {
         val sample = nekosBest(listOf("neko")).takeSample(env.ctx)
 
-        assertTrue(sample.metadata.imageUrl!!.endsWith("/img/nekos-neko-1.jpg"))
         assertEquals("https://art.example/neko-1", sample.metadata.sourceUrl)
         assertEquals("Artist 1", sample.metadata.artistName)
         assertEquals("https://artist.example/1", sample.metadata.artistUrl)
@@ -250,7 +248,7 @@ class ProviderTest {
     fun pandoraBuildsUrlsForTheScreenItIsAskedAbout() {
         val image = runBlocking { env.ctx.providers.pandora.image(listOf("c1")) }
 
-        assertEquals("https://cdn.example/webp/w1080/one.jpg", image!!.urlFor(1080))
+        assertEquals("https://cdn.example/webp/w1080/one.jpg", image!!.url)
     }
 
     @Test

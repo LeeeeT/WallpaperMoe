@@ -10,7 +10,6 @@ import dev.leeeet.wallpapermoe.source.SampleFailure
 import dev.leeeet.wallpapermoe.source.SourceProvider
 import dev.leeeet.wallpapermoe.source.SourceKind
 import dev.leeeet.wallpapermoe.source.WallhavenSorting
-import dev.leeeet.wallpapermoe.wallpaper.ApplyFailure
 
 @Composable
 fun Tab.localizedLabel(): String = stringResource(
@@ -64,7 +63,6 @@ private fun SourceProvider.localizedName(): String = stringResource(
 @Composable
 fun Rotator.Failure.localizedMessage(): String = when (this) {
     is Rotator.Failure.Sampling -> reason.localizedMessage()
-    is Rotator.Failure.Applying -> reason.localizedMessage()
     Rotator.Failure.Unexpected -> stringResource(R.string.failure_unexpected)
 }
 
@@ -80,15 +78,6 @@ private fun SampleFailure.localizedMessage(): String = when (this) {
     SampleFailure.FavoritesEmpty -> stringResource(R.string.failure_favorites_empty)
     SampleFailure.Unexpected -> stringResource(R.string.failure_unexpected)
 }
-
-@Composable
-private fun ApplyFailure.localizedMessage(): String = stringResource(
-    when (this) {
-        ApplyFailure.NO_TARGET -> R.string.failure_no_target
-        ApplyFailure.IMAGE_MISSING -> R.string.failure_image_missing
-        ApplyFailure.SYSTEM_REJECTED -> R.string.failure_apply
-    },
-)
 
 @Composable
 fun DraftProblem.localizedMessage(): String = when (this) {

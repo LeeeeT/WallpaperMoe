@@ -34,7 +34,7 @@ class WallpaperArchiveTest {
         return WallpaperSample(
             number.toString(),
             file,
-            WallpaperMetadata(imageUrl = "https://example.com/$number.jpg"),
+            WallpaperMetadata(sourceUrl = "https://example.com/$number"),
         )
     }
 
@@ -53,16 +53,16 @@ class WallpaperArchiveTest {
         archive.rememberApplied(sample(1))
         val historyItem = archive.history.value.single()
         archive.addFavorite(historyItem)
-        historyItem.prepared.delete()
+        historyItem.file.delete()
 
         val reloaded = WallpaperArchive(root)
         reloaded.load()
         val favorite = reloaded.favorites.value.single()
-        assertTrue(favorite.prepared.exists())
-        assertEquals("image-1", favorite.prepared.readText())
+        assertTrue(favorite.file.exists())
+        assertEquals("image-1", favorite.file.readText())
 
         reloaded.removeFavorite(favorite.id)
-        assertFalse(favorite.prepared.exists())
+        assertFalse(favorite.file.exists())
         assertTrue(reloaded.favorites.value.isEmpty())
     }
 
@@ -74,7 +74,7 @@ class WallpaperArchiveTest {
         val reloaded = WallpaperArchive(root)
         reloaded.load()
         assertEquals(WallpaperMetadata(), reloaded.history.value.single().metadata)
-        assertEquals("image", reloaded.history.value.single().prepared.readText())
+        assertEquals("image", reloaded.history.value.single().file.readText())
     }
 
     @Test
