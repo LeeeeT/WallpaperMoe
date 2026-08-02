@@ -244,6 +244,10 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setActiveSource(id: SourceId) = viewModelScope.launch { Graph.sources.setActive(id) }
 
+    fun reorderSources(ids: List<SourceId>) = viewModelScope.launch {
+        Graph.sources.reorderSources(ids)
+    }
+
     fun deleteSource(id: SourceId) = viewModelScope.launch { Graph.sources.delete(id) }
 
     fun loadChannels(force: Boolean = false) = viewModelScope.launch {
@@ -280,6 +284,10 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
 
     fun removeFavorite(id: String) = viewModelScope.launch {
         runCatching { Graph.archive.removeFavorite(id) }
+    }
+
+    fun reorderFavorites(ids: List<String>) = viewModelScope.launch {
+        runCatching { Graph.archive.reorderFavorites(ids) }
     }
 
     fun removeFavorites(ids: Set<String>) = viewModelScope.launch {

@@ -70,6 +70,32 @@ class SourceRepositoryTest {
     }
 
     @Test
+    fun sourceOrderCanBeChangedAndComesBackFromDisk() = runBlocking {
+        val first = wallhavenDefinition("first")
+        val second = wallhavenDefinition("second")
+        val third = wallhavenDefinition("third")
+        listOf(first, second, third).forEach { assertTrue(repository.upsert(it)) }
+
+        assertTrue(repository.reorderSources(listOf(third.id, first.id, second.id)))
+        assertEquals(listOf(third, first, second), repository.library.value.sources)
+
+        val reopened = SourceRepository(file, storage)
+        reopened.load()
+        assertEquals(listOf(third, first, second), reopened.library.value.sources)
+    }
+
+    @Test
+    fun sourceOrderRejectsAnythingButTheCurrentDefinitions() = runBlocking {
+        val first = wallhavenDefinition("first")
+        val second = wallhavenDefinition("second")
+        listOf(first, second).forEach { assertTrue(repository.upsert(it)) }
+
+        assertFalse(repository.reorderSources(listOf(first.id, first.id)))
+        assertFalse(repository.reorderSources(listOf(first.id)))
+        assertEquals(listOf(first, second), repository.library.value.sources)
+    }
+
+    @Test
     fun aReferencedDefinitionCannotBeDeleted() {
         val child = wallhavenDefinition()
         val ready = SourceDefinition(

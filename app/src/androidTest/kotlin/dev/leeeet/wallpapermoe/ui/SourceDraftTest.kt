@@ -100,6 +100,32 @@ class SourceDraftTest {
     }
 
     @Test
+    fun combineKeepsIntentionalDuplicateReferencesInOrder() {
+        val first = SourceDefinition(
+            newSourceId(),
+            "pandora-1",
+            SourceRecipe.Pandora(listOf("first"), emptyList()),
+        )
+        val second = SourceDefinition(
+            newSourceId(),
+            "pandora-2",
+            SourceRecipe.Pandora(listOf("second"), emptyList()),
+        )
+        val draft = SourceDraft(
+            "combine-1",
+            SourceRecipeDraft.Combine(
+                CombineMode.ROUND_ROBIN,
+                listOf(first.id, second.id, first.id),
+            ),
+        )
+        val id = newSourceId()
+
+        assertNull(draft.validationProblem(id, SourceLibrary(listOf(first, second))))
+        val saved = draft.toDefinition(id).recipe as SourceRecipe.Combine
+        assertEquals(listOf(first.id, second.id, first.id), saved.sourceIds)
+    }
+
+    @Test
     fun favoritesDefaultsToRandomAndCanSaveImmediately() {
         val id = newSourceId()
         val draft = newSourceDraft(SourceKind.FAVORITES, SourceLibrary())

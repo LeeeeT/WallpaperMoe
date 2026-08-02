@@ -305,6 +305,7 @@ private fun NowScreen(state: UiState, vm: MoeViewModel) {
             onToggleRemoval = { wallpaper ->
                 pendingFavoriteRemovals = pendingFavoriteRemovals.toggle(wallpaper.id)
             },
+            onReorder = vm::reorderFavorites,
         )
     }
 

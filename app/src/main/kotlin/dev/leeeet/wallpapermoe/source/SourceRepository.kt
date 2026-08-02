@@ -53,6 +53,16 @@ class SourceRepository(
         persistAndPublish(next)
     }
 
+    suspend fun reorderSources(ids: List<SourceId>): Boolean = mutex.withLock {
+        val current = _library.value
+        if (ids == current.sources.map(SourceDefinition::id)) return@withLock true
+        if (ids.size != current.sources.size || ids.toSet().size != ids.size) return@withLock false
+        val byId = current.sources.associateBy(SourceDefinition::id)
+        if (ids.any { it !in byId }) return@withLock false
+        persistAndPublish(current.copy(sources = ids.map(byId::getValue)))
+        true
+    }
+
     suspend fun delete(id: SourceId): DeleteResult = mutex.withLock {
         val current = _library.value
         if (current.sources.none { it.id == id }) return@withLock DeleteResult.MISSING

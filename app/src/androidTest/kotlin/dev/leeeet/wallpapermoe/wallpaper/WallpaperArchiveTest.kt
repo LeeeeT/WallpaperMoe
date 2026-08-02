@@ -92,4 +92,32 @@ class WallpaperArchiveTest {
             archive.favorites.value.map { it.id },
         )
     }
+
+    @Test
+    fun favoritesCanBeReorderedAndComeBackInThatOrder() = runBlocking {
+        (1..3).forEach {
+            archive.rememberApplied(sample(it))
+            archive.addFavorite(archive.history.value.first())
+        }
+
+        assertTrue(archive.reorderFavorites(listOf("1", "3", "2")))
+        assertEquals(listOf("1", "3", "2"), archive.favorites.value.map { it.id })
+
+        val reloaded = WallpaperArchive(root)
+        reloaded.load()
+        assertEquals(listOf("1", "3", "2"), reloaded.favorites.value.map { it.id })
+    }
+
+    @Test
+    fun favoriteOrderRejectsMissingDuplicateAndUnknownItems() = runBlocking {
+        (1..2).forEach {
+            archive.rememberApplied(sample(it))
+            archive.addFavorite(archive.history.value.first())
+        }
+
+        assertFalse(archive.reorderFavorites(listOf("1")))
+        assertFalse(archive.reorderFavorites(listOf("1", "1")))
+        assertFalse(archive.reorderFavorites(listOf("1", "unknown")))
+        assertEquals(listOf("2", "1"), archive.favorites.value.map { it.id })
+    }
 }

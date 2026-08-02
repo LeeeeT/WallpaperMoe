@@ -48,6 +48,17 @@ class FavoritesTest {
     }
 
     @Test
+    fun roundRobinUsesTheOrderChosenInFavorites() = runBlocking {
+        favorite(1)
+        favorite(2)
+        favorite(3)
+        env.archive.reorderFavorites(listOf("1", "3", "2"))
+
+        val source = Favorites(SelectionMode.ROUND_ROBIN, "reordered-favorites")
+        assertEquals(listOf("1", "3", "2"), List(3) { source.sample(env.ctx).id })
+    }
+
+    @Test
     fun randomReturnsAnOwnedFavoriteWithoutChangingIt() = runBlocking {
         favorite(1)
         val sample = Favorites(SelectionMode.RANDOM, "favorites").sample(env.ctx)

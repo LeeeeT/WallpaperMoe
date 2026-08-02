@@ -25,8 +25,8 @@
     <string name="action_discard">破棄</string>
     <string name="action_discard_changes">変更を破棄</string>
     <string name="action_keep_editing">編集を続ける</string>
-    <string name="action_move_down">下へ移動</string>
-    <string name="action_move_up">上へ移動</string>
+    <string name="action_move_earlier">前へ移動</string>
+    <string name="action_move_later">後ろへ移動</string>
     <string name="action_remove_reference">ソースを外す</string>
     <string name="action_save_selection">選択を保存</string>
     <string name="action_save_source">ソースを保存</string>
@@ -59,6 +59,7 @@
     <string name="history_empty">適用した壁紙がここに表示されます。</string>
     <string name="favorites_title">お気に入り</string>
     <string name="favorites_empty">「きょう」でハートをタップすると壁紙をここに保存できます。</string>
+    <string name="favorites_reorder_hint">長押ししてドラッグすると並べ替えられます</string>
     <string name="wallpaper_thumbnail_description">保存された壁紙</string>
     <string name="wallpaper_preview_description">元の壁紙のプレビュー</string>
     <string name="preview_unavailable">元の画像を読み込めませんでした。</string>

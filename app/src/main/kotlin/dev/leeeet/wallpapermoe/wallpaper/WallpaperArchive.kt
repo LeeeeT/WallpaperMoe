@@ -103,6 +103,20 @@ class WallpaperArchive(private val root: File) {
 
     suspend fun removeFavorite(id: String) = removeFavorites(setOf(id))
 
+    suspend fun reorderFavorites(ids: List<String>): Boolean = mutex.withLock {
+        val current = currentDocument()
+        if (ids == current.favorites.map(Record::id)) return@withLock true
+        if (ids.size != current.favorites.size || ids.toSet().size != ids.size) return@withLock false
+        val byId = current.favorites.associateBy(Record::id)
+        if (ids.any { it !in byId }) return@withLock false
+        withContext(Dispatchers.IO) {
+            val next = current.copy(favorites = ids.map(byId::getValue))
+            write(next)
+            publish(next)
+        }
+        true
+    }
+
     suspend fun removeFavorites(ids: Set<String>) = mutex.withLock {
         if (ids.isEmpty()) return@withLock
         withContext(Dispatchers.IO) {

@@ -25,8 +25,8 @@
     <string name="action_discard">Discard</string>
     <string name="action_discard_changes">Discard changes</string>
     <string name="action_keep_editing">Keep editing</string>
-    <string name="action_move_down">Move down</string>
-    <string name="action_move_up">Move up</string>
+    <string name="action_move_earlier">Move earlier</string>
+    <string name="action_move_later">Move later</string>
     <string name="action_remove_reference">Remove source</string>
     <string name="action_save_selection">Save selection</string>
     <string name="action_save_source">Save source</string>
@@ -59,6 +59,7 @@
     <string name="history_empty">Applied wallpapers will appear here.</string>
     <string name="favorites_title">Favorites</string>
     <string name="favorites_empty">Tap a heart on Today to keep a wallpaper here.</string>
+    <string name="favorites_reorder_hint">Long-press and drag to reorder</string>
     <string name="wallpaper_thumbnail_description">Saved wallpaper</string>
     <string name="wallpaper_preview_description">Original wallpaper preview</string>
     <string name="preview_unavailable">Could not load the original image.</string>

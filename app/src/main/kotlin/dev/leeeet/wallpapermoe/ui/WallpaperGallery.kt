@@ -5,6 +5,7 @@
 
 package dev.leeeet.wallpapermoe.ui
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -49,8 +52,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -63,6 +68,8 @@ import coil3.request.ImageRequest
 import dev.leeeet.wallpapermoe.R
 import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyGridState
 
 @Composable
 internal fun HistorySection(
@@ -178,12 +185,29 @@ internal fun FavoritesDialog(
     onDismiss: () -> Unit,
     onPreview: (SavedWallpaper) -> Unit,
     onToggleRemoval: (SavedWallpaper) -> Unit,
+    onReorder: (List<String>) -> Unit,
 ) {
+    var ordered by remember(favorites.map(SavedWallpaper::id)) { mutableStateOf(favorites) }
+    val gridState = rememberLazyGridState()
+    val haptic = LocalHapticFeedback.current
+    val reorderState = rememberReorderableLazyGridState(gridState) { from, to ->
+        ordered = ordered.moved(from.index, to.index)
+        haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+    }
     FullScreenDialog(onDismiss) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.favorites_title)) },
+                    title = {
+                        Column {
+                            Text(stringResource(R.string.favorites_title))
+                            Text(
+                                stringResource(R.string.favorites_reorder_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
                             Icon(
@@ -207,18 +231,57 @@ internal fun FavoritesDialog(
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(148.dp),
                     modifier = Modifier.fillMaxSize().padding(padding),
+                    state = gridState,
                     contentPadding = PaddingValues(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    items(favorites, key = SavedWallpaper::id) { wallpaper ->
-                        WallpaperThumbnail(
-                            wallpaper = wallpaper,
-                            favorite = wallpaper.id !in pendingRemovals,
-                            onPreview = { onPreview(wallpaper) },
-                            onFavorite = { onToggleRemoval(wallpaper) },
-                            modifier = Modifier.fillMaxWidth().aspectRatio(.7f),
-                        )
+                    itemsIndexed(ordered, key = { _, wallpaper -> wallpaper.id }) { index, wallpaper ->
+                        ReorderableItem(reorderState, key = wallpaper.id) { isDragging ->
+                            val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(.7f)
+                                    .longPressDraggableHandle(
+                                        onDragStarted = {
+                                            haptic.performHapticFeedback(
+                                                HapticFeedbackType.GestureThresholdActivate,
+                                            )
+                                        },
+                                        onDragStopped = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                            onReorder(ordered.map(SavedWallpaper::id))
+                                        },
+                                    )
+                                    .reorderActions(
+                                        onMoveEarlier = if (index == 0) null else {
+                                            {
+                                                ordered = ordered.moved(index, index - 1).also {
+                                                    onReorder(it.map(SavedWallpaper::id))
+                                                }
+                                            }
+                                        },
+                                        onMoveLater = if (index == ordered.lastIndex) null else {
+                                            {
+                                                ordered = ordered.moved(index, index + 1).also {
+                                                    onReorder(it.map(SavedWallpaper::id))
+                                                }
+                                            }
+                                        },
+                                    ),
+                                shape = MaterialTheme.shapes.large,
+                                shadowElevation = elevation,
+                            ) {
+                                WallpaperThumbnail(
+                                    wallpaper = wallpaper,
+                                    favorite = wallpaper.id !in pendingRemovals,
+                                    onPreview = { onPreview(wallpaper) },
+                                    onFavorite = { onToggleRemoval(wallpaper) },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
                     }
                 }
             }

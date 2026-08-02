@@ -25,8 +25,8 @@
     <string name="action_discard">放弃</string>
     <string name="action_discard_changes">放弃更改</string>
     <string name="action_keep_editing">继续编辑</string>
-    <string name="action_move_down">下移</string>
-    <string name="action_move_up">上移</string>
+    <string name="action_move_earlier">向前移动</string>
+    <string name="action_move_later">向后移动</string>
     <string name="action_remove_reference">移除来源</string>
     <string name="action_save_selection">保存所选</string>
     <string name="action_save_source">保存来源</string>
@@ -59,6 +59,7 @@
     <string name="history_empty">用过的壁纸会显示在这里。</string>
     <string name="favorites_title">收藏</string>
     <string name="favorites_empty">在“今天”页面点按爱心即可把壁纸保存到这里。</string>
+    <string name="favorites_reorder_hint">长按并拖动即可重新排序</string>
     <string name="wallpaper_thumbnail_description">已保存的壁纸</string>
     <string name="wallpaper_preview_description">原图预览</string>
     <string name="preview_unavailable">无法加载原图。</string>

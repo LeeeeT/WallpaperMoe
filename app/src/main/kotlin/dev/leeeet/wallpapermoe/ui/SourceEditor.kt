@@ -7,8 +7,10 @@ package dev.leeeet.wallpapermoe.ui
 
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -30,13 +32,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -65,14 +69,18 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -88,7 +96,15 @@ import dev.leeeet.wallpapermoe.source.WallhavenAspect
 import dev.leeeet.wallpapermoe.source.WallhavenSorting
 import dev.leeeet.wallpapermoe.source.kind
 import dev.leeeet.wallpapermoe.source.referencesTo
+import sh.calvin.reorderable.ReorderableColumn
+import sh.calvin.reorderable.ReorderableCollectionItemScope
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.ReorderableListItemScope
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import java.util.UUID
 import kotlin.math.roundToInt
+
+private const val STUDIO_HEADER_COUNT = 2
 
 @Composable
 fun SourceScreen(state: UiState, vm: MoeViewModel) {
@@ -101,6 +117,17 @@ fun SourceScreen(state: UiState, vm: MoeViewModel) {
 @Composable
 private fun SourceLibraryScreen(library: SourceLibrary, vm: MoeViewModel) {
     var pickingType by remember { mutableStateOf(false) }
+    var sources by remember(library.sources) { mutableStateOf(library.sources) }
+    val listState = rememberLazyListState()
+    val haptic = LocalHapticFeedback.current
+    val reorderState = rememberReorderableLazyListState(listState) { from, to ->
+        val fromIndex = from.index - STUDIO_HEADER_COUNT
+        val toIndex = to.index - STUDIO_HEADER_COUNT
+        if (fromIndex in sources.indices && toIndex in sources.indices) {
+            sources = sources.moved(fromIndex, toIndex)
+            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+        }
+    }
 
     Box(Modifier.fillMaxSize()) {
         Box(
@@ -112,6 +139,7 @@ private fun SourceLibraryScreen(library: SourceLibrary, vm: MoeViewModel) {
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
+                state = listState,
                 contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 104.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -137,8 +165,35 @@ private fun SourceLibraryScreen(library: SourceLibrary, vm: MoeViewModel) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    items(library.sources, key = SourceDefinition::id) { definition ->
-                        LibrarySourceCard(definition, library, vm)
+                    itemsIndexed(sources, key = { _, definition -> definition.id }) { index, definition ->
+                        ReorderableItem(reorderState, key = definition.id) { isDragging ->
+                            LibrarySourceCard(
+                                definition = definition,
+                                library = library,
+                                vm = vm,
+                                modifier = Modifier.reorderActions(
+                                    onMoveEarlier = if (index == 0) null else {
+                                        {
+                                            sources = sources.moved(index, index - 1).also {
+                                                vm.reorderSources(it.map(SourceDefinition::id))
+                                            }
+                                        }
+                                    },
+                                    onMoveLater = if (index == sources.lastIndex) null else {
+                                        {
+                                            sources = sources.moved(index, index + 1).also {
+                                                vm.reorderSources(it.map(SourceDefinition::id))
+                                            }
+                                        }
+                                    },
+                                ),
+                                dragScope = this,
+                                isDragging = isDragging,
+                                onDragStopped = {
+                                    vm.reorderSources(sources.map(SourceDefinition::id))
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -184,15 +239,28 @@ private fun EmptyStudio(onCreate: () -> Unit) {
 }
 
 @Composable
-private fun LibrarySourceCard(definition: SourceDefinition, library: SourceLibrary, vm: MoeViewModel) {
+private fun LibrarySourceCard(
+    definition: SourceDefinition,
+    library: SourceLibrary,
+    vm: MoeViewModel,
+    modifier: Modifier,
+    dragScope: ReorderableCollectionItemScope,
+    isDragging: Boolean,
+    onDragStopped: () -> Unit,
+) {
     var deleteDialog by remember { mutableStateOf(false) }
     val references = library.referencesTo(definition.id)
     val active = definition.id == library.activeSourceId
+    val interactionSource = remember { MutableInteractionSource() }
+    val haptic = LocalHapticFeedback.current
+    val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
 
     Card(
         onClick = { vm.editSource(definition.id) },
-        modifier = Modifier.fillMaxWidth(),
+        interactionSource = interactionSource,
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         colors = CardDefaults.cardColors(
             containerColor = if (active) MaterialTheme.colorScheme.primaryContainer
             else MaterialTheme.colorScheme.surfaceContainer,
@@ -239,6 +307,26 @@ private fun LibrarySourceCard(definition: SourceDefinition, library: SourceLibra
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
+            }
+            Box(
+                modifier = with(dragScope) {
+                    Modifier
+                        .size(48.dp)
+                        .draggableHandle(
+                            onDragStarted = {
+                                haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                            },
+                            onDragStopped = {
+                                haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                onDragStopped()
+                            },
+                            interactionSource = interactionSource,
+                        )
+                        .clearAndSetSemantics {}
+                },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Filled.DragHandle, contentDescription = null)
             }
             IconButton(onClick = { deleteDialog = true }) {
                 Icon(
@@ -711,23 +799,56 @@ private fun ManyEditor(
 ) {
     var choosing by remember(draftId) { mutableStateOf(false) }
     var creating by remember(draftId) { mutableStateOf(false) }
+    var references by remember(draftId) {
+        mutableStateOf(sourceIds.map(::EditableReference))
+    }
+    val haptic = LocalHapticFeedback.current
+    LaunchedEffect(sourceIds) {
+        if (references.map(EditableReference::sourceId) != sourceIds) {
+            references = references.reconciledWith(sourceIds)
+        }
+    }
+    fun update(next: List<EditableReference>) {
+        references = next
+        onSources(next.map(EditableReference::sourceId))
+    }
+
     SectionHeading(stringResource(R.string.source_list_title), description)
-    if (sourceIds.isEmpty()) EmptyReference(stringResource(R.string.source_list_empty))
-    sourceIds.forEachIndexed { index, id ->
-        val definition = library.sources.firstOrNull { it.id == id } ?: return@forEachIndexed
-        ReferenceRow(
-            definition = definition,
-            library = library,
-            onOpen = { vm.editSource(id) },
-            onRemove = { onSources(sourceIds.filterIndexed { at, _ -> at != index }) },
-            onMoveUp = if (index == 0) null else {{ onSources(sourceIds.swapped(index, index - 1)) }},
-            onMoveDown = if (index == sourceIds.lastIndex) null else {{ onSources(sourceIds.swapped(index, index + 1)) }},
-        )
+    if (references.isEmpty()) EmptyReference(stringResource(R.string.source_list_empty))
+    ReorderableColumn(
+        list = references,
+        onSettle = { from, to -> update(references.moved(from, to)) },
+        onMove = { haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick) },
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) { index, reference, isDragging ->
+        key(reference.key) {
+            ReorderableItem {
+                val definition = library.sources.firstOrNull {
+                    it.id == reference.sourceId
+                } ?: return@ReorderableItem
+                ReferenceRow(
+                    definition = definition,
+                    library = library,
+                    onOpen = { vm.editSource(reference.sourceId) },
+                    onRemove = { update(references.filterNot { it.key == reference.key }) },
+                    modifier = Modifier.reorderActions(
+                        onMoveEarlier = if (index == 0) null else {
+                            { update(references.moved(index, index - 1)) }
+                        },
+                        onMoveLater = if (index == references.lastIndex) null else {
+                            { update(references.moved(index, index + 1)) }
+                        },
+                    ),
+                    dragScope = this,
+                    isDragging = isDragging,
+                )
+            }
+        }
     }
     ReferenceActions({ choosing = true }, { creating = true })
     if (choosing) {
         SourceReferencePicker(draftId, library, { choosing = false }) {
-            onSources(sourceIds + it)
+            update(references + EditableReference(it))
             choosing = false
         }
     }
@@ -742,10 +863,17 @@ private fun ManyEditor(
     }
 }
 
-private fun <T> List<T>.swapped(first: Int, second: Int): List<T> = toMutableList().also {
-    val value = it[first]
-    it[first] = it[second]
-    it[second] = value
+private data class EditableReference(
+    val sourceId: SourceId,
+    val key: String = UUID.randomUUID().toString(),
+)
+
+private fun List<EditableReference>.reconciledWith(sourceIds: List<SourceId>): List<EditableReference> {
+    val unused = toMutableList()
+    return sourceIds.map { sourceId ->
+        val existing = unused.indexOfFirst { it.sourceId == sourceId }
+        if (existing == -1) EditableReference(sourceId) else unused.removeAt(existing)
+    }
 }
 
 @Composable
@@ -779,13 +907,17 @@ private fun ReferenceRow(
     library: SourceLibrary,
     onOpen: () -> Unit,
     onRemove: () -> Unit,
-    onMoveUp: (() -> Unit)? = null,
-    onMoveDown: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    dragScope: ReorderableListItemScope? = null,
+    isDragging: Boolean = false,
 ) {
+    val haptic = LocalHapticFeedback.current
+    val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainer,
+        shadowElevation = elevation,
     ) {
         Row(
             Modifier.padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
@@ -802,14 +934,24 @@ private fun ReferenceRow(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            onMoveUp?.let {
-                IconButton(onClick = it) {
-                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.action_move_up))
-                }
-            }
-            onMoveDown?.let {
-                IconButton(onClick = it) {
-                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = stringResource(R.string.action_move_down))
+            dragScope?.let { scope ->
+                Box(
+                    modifier = with(scope) {
+                        Modifier
+                            .size(48.dp)
+                            .draggableHandle(
+                                onDragStarted = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                },
+                                onDragStopped = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                },
+                            )
+                            .clearAndSetSemantics {}
+                    },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Filled.DragHandle, contentDescription = null)
                 }
             }
             IconButton(onClick = onRemove) {
