@@ -139,7 +139,8 @@
     <string name="combine_sources_detail">含めるソースを選びます。</string>
     <string name="cache_description">壁紙を保存して、あとでオフラインでも使えるようにします。</string>
     <string name="cache_images_to_keep">保存する壁紙の数</string>
-    <string name="cache_refresh_interval">新しい壁紙を追加</string>
+    <string name="cache_refresh_interval">壁紙を更新</string>
+    <string name="cache_refresh_never">しない</string>
     <string name="cache_refresh_hourly">1 時間ごと</string>
     <string name="cache_refresh_6_hours">6 時間ごと</string>
     <string name="cache_refresh_daily">1 日 1 回</string>
@@ -195,6 +196,9 @@
     <string name="summary_keep_ready_passthrough">準備なし</string>
     <plurals name="summary_cache">
         <item quantity="other">%1$d 枚を保持し、%2$s 1 枚追加</item>
+    </plurals>
+    <plurals name="summary_cache_never">
+        <item quantity="other">%1$d 枚を保持し、更新しない</item>
     </plurals>
     <plurals name="summary_cache_interval">
         <item quantity="other">%1$d 時間ごとに</item>

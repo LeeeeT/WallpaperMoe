@@ -177,6 +177,26 @@ class SourceDraftTest {
     }
 
     @Test
+    fun neverRefreshingCacheRoundTripsAsZeroHours() {
+        val childId = newSourceId()
+        val ownerId = newSourceId()
+        val draft = SourceDraft(
+            name = "keep-ready-1",
+            recipe = SourceRecipeDraft.KeepReady(
+                sourceId = childId,
+                cacheEnabled = true,
+                cacheRefresh = CacheRefresh.NEVER,
+            ),
+        )
+
+        val definition = draft.toDefinition(ownerId)
+        val recipe = definition.recipe as SourceRecipe.KeepReady
+        assertEquals(0, recipe.cache?.refreshHours)
+        val reopened = definition.toDraft().recipe as SourceRecipeDraft.KeepReady
+        assertEquals(CacheRefresh.NEVER, reopened.cacheRefresh)
+    }
+
+    @Test
     fun namesAreTrimmedUniqueAndCaseSensitive() {
         val saved = SourceDefinition(
             newSourceId(),

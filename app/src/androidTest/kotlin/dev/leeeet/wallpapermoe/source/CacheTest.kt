@@ -36,7 +36,7 @@ class CacheTest {
     }
 
     @Test
-    fun servesFromDiskOnceItIsFull() {
+    fun neverRefreshFillsThenOnlyServesFromDisk() {
         val cache = cache(source = wallhaven("one"), capacity = 2, refreshHours = 0)
         cache.take(env.ctx)
         cache.take(env.ctx)

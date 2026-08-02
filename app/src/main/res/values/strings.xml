@@ -140,7 +140,8 @@
     <string name="combine_sources_detail">Choose which sources to include.</string>
     <string name="cache_description">Save wallpapers to reuse later, even when you’re offline.</string>
     <string name="cache_images_to_keep">Wallpapers to save</string>
-    <string name="cache_refresh_interval">Add a new wallpaper</string>
+    <string name="cache_refresh_interval">Refresh a wallpaper</string>
+    <string name="cache_refresh_never">Never</string>
     <string name="cache_refresh_hourly">Every hour</string>
     <string name="cache_refresh_6_hours">Every 6 hours</string>
     <string name="cache_refresh_daily">Once a day</string>
@@ -202,6 +203,10 @@
     <plurals name="summary_cache">
         <item quantity="one">Keep %1$d image, add one %2$s</item>
         <item quantity="other">Keep %1$d images, add one %2$s</item>
+    </plurals>
+    <plurals name="summary_cache_never">
+        <item quantity="one">Keep %1$d image without refreshing</item>
+        <item quantity="other">Keep %1$d images without refreshing</item>
     </plurals>
     <plurals name="summary_cache_interval">
         <item quantity="one">every hour</item>

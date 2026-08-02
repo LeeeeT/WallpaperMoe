@@ -26,6 +26,7 @@ data class SourceDraft(
 
 /** How often a cache is allowed to pull one more image in. */
 enum class CacheRefresh(val hours: Int) {
+    NEVER(0),
     HOURLY(1),
     SIX_HOURS(6),
     DAILY(24),

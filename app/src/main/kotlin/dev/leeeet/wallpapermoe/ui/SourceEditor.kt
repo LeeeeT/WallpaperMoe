@@ -1362,16 +1362,26 @@ private fun SourceDefinition.localizedSummary(library: SourceLibrary): String = 
         CombineMode.FALLTHROUGH -> value.sourceIds.summary(R.plurals.summary_sources_fallthrough)
     }
     is SourceRecipe.KeepReady -> {
-        val cacheSummary = if (value.cache == null) null else pluralStringResource(
-            R.plurals.summary_cache,
-            value.cache.capacity,
-            value.cache.capacity,
-            pluralStringResource(
-                R.plurals.summary_cache_interval,
-                value.cache.refreshHours,
-                value.cache.refreshHours,
-            ),
-        )
+        val cacheSummary = value.cache?.let { cache ->
+            if (cache.refreshHours == 0) {
+                pluralStringResource(
+                    R.plurals.summary_cache_never,
+                    cache.capacity,
+                    cache.capacity,
+                )
+            } else {
+                pluralStringResource(
+                    R.plurals.summary_cache,
+                    cache.capacity,
+                    cache.capacity,
+                    pluralStringResource(
+                        R.plurals.summary_cache_interval,
+                        cache.refreshHours,
+                        cache.refreshHours,
+                    ),
+                )
+            }
+        }
         val prefetchSummary = if (value.prefetch == null) null else pluralStringResource(
             R.plurals.summary_prefetch,
             value.prefetch.depth,

@@ -33,6 +33,7 @@ fun RotationInterval.localizedLabel(): String = stringResource(
 @Composable
 fun CacheRefresh.localizedLabel(): String = stringResource(
     when (this) {
+        CacheRefresh.NEVER -> R.string.cache_refresh_never
         CacheRefresh.HOURLY -> R.string.cache_refresh_hourly
         CacheRefresh.SIX_HOURS -> R.string.cache_refresh_6_hours
         CacheRefresh.DAILY -> R.string.cache_refresh_daily

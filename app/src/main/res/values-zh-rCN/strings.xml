@@ -139,7 +139,8 @@
     <string name="combine_sources_detail">选择要包含的来源。</string>
     <string name="cache_description">保存壁纸以便稍后使用，即使离线也可用。</string>
     <string name="cache_images_to_keep">要保存的壁纸数量</string>
-    <string name="cache_refresh_interval">添加新壁纸</string>
+    <string name="cache_refresh_interval">刷新一张壁纸</string>
+    <string name="cache_refresh_never">从不</string>
     <string name="cache_refresh_hourly">每小时</string>
     <string name="cache_refresh_6_hours">每 6 小时</string>
     <string name="cache_refresh_daily">每天一次</string>
@@ -195,6 +196,9 @@
     <string name="summary_keep_ready_passthrough">不做准备</string>
     <plurals name="summary_cache">
         <item quantity="other">保留 %1$d 张，%2$s添加一张</item>
+    </plurals>
+    <plurals name="summary_cache_never">
+        <item quantity="other">保留 %1$d 张，不再刷新</item>
     </plurals>
     <plurals name="summary_cache_interval">
         <item quantity="other">每 %1$d 小时</item>
