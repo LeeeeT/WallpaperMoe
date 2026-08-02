@@ -28,7 +28,7 @@ Open **Studio** to create and reuse named sources:
 
 | Source | What it does |
 | --- | --- |
-| **Keep ready** | Adds optional caching and prefetching to an existing source. |
+| **Keep ready** | Adds caching, prefetching, or both to an existing source. |
 | **Combine** | Uses several existing sources randomly, in order, or as fallbacks. |
 | **Favorites** | Samples your on-device favorites randomly or in round-robin order. |
 | **Wallhaven** | Searches wallhaven.cc by query, category, purity, aspect ratio, and order. |

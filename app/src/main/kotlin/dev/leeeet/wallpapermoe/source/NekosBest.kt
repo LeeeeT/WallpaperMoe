@@ -52,7 +52,7 @@ data class NekosBest(
 
         dir.pruneSamples()
         return WallpaperSample(
-            id = newWallpaperId("nekos-best:${image.url}"),
+            id = wallpaperId("nekos-best:${image.url}"),
             file = destination,
             metadata = WallpaperMetadata(
                 sourceUrl = image.sourceUrl,

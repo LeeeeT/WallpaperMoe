@@ -66,6 +66,7 @@
     <string name="gallery_save_success">Saved to gallery</string>
     <string name="gallery_save_already_saved">Already in gallery</string>
     <string name="gallery_save_failure">Couldn’t save to gallery</string>
+    <string name="link_open_failure">Couldn’t open the link</string>
     <string name="wallpaper_artist">Art by %1$s</string>
     <string name="wallpaper_artist_unknown">View artist</string>
 
@@ -184,7 +185,6 @@
     <string name="summary_wallhaven">%1$s · %2$s</string>
     <string name="summary_nekos_best">%1$s · %2$s</string>
     <string name="summary_source_reference">%1$s · %2$s</string>
-    <string name="summary_keep_ready_passthrough">No preparation</string>
     <plurals name="summary_cache">
         <item quantity="one">Keep %1$d image, add one %2$s</item>
         <item quantity="other">Keep %1$d images, add one %2$s</item>
@@ -214,7 +214,8 @@
     <string name="validation_cache_capacity">Save at least one wallpaper</string>
     <string name="validation_prefetch_depth">Prepare at least one wallpaper</string>
     <string name="validation_keep_ready_source">Choose the source to keep ready</string>
-    <string name="validation_combine_empty">Add at least one source to Combine</string>
+    <string name="validation_keep_ready_option">Turn on Cache, Prefetch, or both</string>
+    <string name="validation_combine_sources">Add at least two sources to Combine</string>
 
     <string name="channels_unavailable">Could not reach Pandora</string>
     <string name="categories_unavailable">Could not load artwork choices</string>

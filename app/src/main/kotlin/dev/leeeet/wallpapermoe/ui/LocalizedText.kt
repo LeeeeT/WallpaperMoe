@@ -92,7 +92,8 @@ fun DraftProblem.localizedMessage(): String = when (this) {
     DraftProblem.CacheCapacityInvalid -> stringResource(R.string.validation_cache_capacity)
     DraftProblem.PrefetchDepthInvalid -> stringResource(R.string.validation_prefetch_depth)
     DraftProblem.KeepReadySourceMissing -> stringResource(R.string.validation_keep_ready_source)
-    DraftProblem.CombineEmpty -> stringResource(R.string.validation_combine_empty)
+    DraftProblem.KeepReadyOptionMissing -> stringResource(R.string.validation_keep_ready_option)
+    DraftProblem.CombineSourcesMissing -> stringResource(R.string.validation_combine_sources)
     DraftProblem.MissingReference -> stringResource(R.string.validation_source_reference_missing)
     DraftProblem.ReferenceCycle -> stringResource(R.string.validation_source_reference_cycle)
 }

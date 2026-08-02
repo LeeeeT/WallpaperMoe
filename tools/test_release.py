@@ -38,7 +38,7 @@ class VersionTest(unittest.TestCase):
     def test_version_file_rejects_unknown_keys(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "version.properties"
-            path.write_text("versionName=1.0.0\nversionCode=1\nlegacy=1\n")
+            path.write_text("versionName=1.0.0\nversionCode=1\nunexpected=1\n")
             with self.assertRaises(ReleaseError):
                 read_version(path)
 

@@ -9,7 +9,7 @@ data class RoundRobin(
 ) : Source {
 
     init {
-        require(sources.isNotEmpty())
+        require(sources.size >= 2)
     }
 
     /** Where the next take lands, kept in this source's folder. */

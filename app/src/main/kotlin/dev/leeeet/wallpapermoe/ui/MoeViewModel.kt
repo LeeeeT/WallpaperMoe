@@ -310,15 +310,15 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun addFavorite(wallpaper: SavedWallpaper) = viewModelScope.launch {
-        runCatching { graph.archive.addFavorite(wallpaper) }
+        graph.archive.addFavorite(wallpaper)
     }
 
     fun removeFavorite(id: String) = viewModelScope.launch {
-        runCatching { graph.archive.removeFavorite(id) }
+        graph.archive.removeFavorites(setOf(id))
     }
 
     fun reorderFavorites(ids: List<String>) = viewModelScope.launch {
-        runCatching { graph.archive.reorderFavorites(ids) }
+        graph.archive.reorderFavorites(ids)
     }
 
     fun saveToGallery(
@@ -336,7 +336,7 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun removeFavorites(ids: Set<String>) = viewModelScope.launch {
-        runCatching { graph.archive.removeFavorites(ids) }
+        graph.archive.removeFavorites(ids)
     }
 
     private data class CoreState(

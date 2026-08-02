@@ -91,7 +91,8 @@ sealed interface DraftProblem {
     data object CacheCapacityInvalid : DraftProblem
     data object PrefetchDepthInvalid : DraftProblem
     data object KeepReadySourceMissing : DraftProblem
-    data object CombineEmpty : DraftProblem
+    data object KeepReadyOptionMissing : DraftProblem
+    data object CombineSourcesMissing : DraftProblem
     data object MissingReference : DraftProblem
     data object ReferenceCycle : DraftProblem
 }
@@ -121,12 +122,13 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
 
         is SourceRecipeDraft.KeepReady -> when {
             value.sourceId.isNullOrBlank() -> DraftProblem.KeepReadySourceMissing
+            !value.cacheEnabled && !value.prefetchEnabled -> DraftProblem.KeepReadyOptionMissing
             value.cacheEnabled && value.cacheCapacity < 1 -> DraftProblem.CacheCapacityInvalid
             value.prefetchEnabled && value.prefetchDepth < 1 -> DraftProblem.PrefetchDepthInvalid
             else -> null
         }
         is SourceRecipeDraft.Combine ->
-            if (value.sourceIds.isEmpty()) DraftProblem.CombineEmpty else null
+            if (value.sourceIds.size < 2) DraftProblem.CombineSourcesMissing else null
     }
     if (recipeProblem != null) return recipeProblem
 

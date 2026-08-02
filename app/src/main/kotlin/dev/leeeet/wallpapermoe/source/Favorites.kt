@@ -26,8 +26,9 @@ data class Favorites(
             }
         }
         val selected = favorites[index].let { WallpaperSample(it.id, it.file, it.metadata) }
-        val adopted = adopt(selected, ctx.storage.dir(store), "s")
-        ctx.storage.dir(store).pruneSamples()
+        val dir = ctx.storage.dir(store)
+        val adopted = adopt(selected, dir, "s")
+        dir.pruneSamples()
         return adopted
     }
 }

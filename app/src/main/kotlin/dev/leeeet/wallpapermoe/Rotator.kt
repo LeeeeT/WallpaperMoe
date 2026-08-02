@@ -118,7 +118,7 @@ class Rotator(
             rememberCurrent(sampled.file)
             onWallpaperChanged()
             prefs.markRotated(System.currentTimeMillis())
-            runCatching { archive.rememberApplied(sampled) }
+            archive.rememberApplied(sampled)
             _status.value = Status.Idle
         } catch (e: CancellationException) {
             _status.value = Status.Idle
@@ -132,6 +132,6 @@ class Rotator(
     private suspend fun rememberCurrent(applied: File) = withContext(Dispatchers.IO) {
         val tmp = File(currentFile.absolutePath + ".tmp")
         applied.copyTo(tmp, overwrite = true)
-        check(tmp.renameTo(currentFile))
+        currentFile.replaceWith(tmp)
     }
 }

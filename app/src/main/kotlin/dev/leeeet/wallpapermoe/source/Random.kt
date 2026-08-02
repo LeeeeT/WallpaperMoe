@@ -8,7 +8,7 @@ data class Random(
 ) : Source {
 
     init {
-        require(sources.isNotEmpty())
+        require(sources.size >= 2)
     }
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample {

@@ -82,7 +82,7 @@ class SourceDraftTest {
         val combine = SourceDefinition(
             combineId,
             "combine-1",
-            SourceRecipe.Combine(CombineMode.RANDOM, listOf(nekosId)),
+            SourceRecipe.Combine(CombineMode.RANDOM, listOf(nekosId, nekosId)),
         )
         val library = SourceLibrary(listOf(nekos, combine))
         val draft = SourceDraft(
@@ -142,7 +142,7 @@ class SourceDraftTest {
     }
 
     @Test
-    fun keepReadyMaySaveWithBothOptionsOff() {
+    fun keepReadyRequiresAtLeastOneOption() {
         val childId = newSourceId()
         val child = SourceDefinition(
             childId,
@@ -154,10 +154,10 @@ class SourceDraftTest {
             recipe = SourceRecipeDraft.KeepReady(sourceId = childId),
         )
 
-        assertNull(draft.validationProblem(ownerId, SourceLibrary(listOf(child))))
-        val saved = draft.toDefinition(ownerId).recipe as SourceRecipe.KeepReady
-        assertNull(saved.cache)
-        assertNull(saved.prefetch)
+        assertEquals(
+            DraftProblem.KeepReadyOptionMissing,
+            draft.validationProblem(ownerId, SourceLibrary(listOf(child))),
+        )
     }
 
     @Test
@@ -266,7 +266,9 @@ class SourceDraftTest {
         val repeated = first.toDraft()
         assertNull(repeated.validationProblem(firstId, library))
 
-        val cycle = second.toDraft().copy(recipe = SourceRecipeDraft.KeepReady(firstId))
+        val cycle = second.toDraft().copy(
+            recipe = SourceRecipeDraft.KeepReady(firstId, cacheEnabled = true),
+        )
         assertEquals(DraftProblem.ReferenceCycle, cycle.validationProblem(secondId, library))
     }
 }

@@ -25,57 +25,70 @@ data class Cache(
         val entries: List<String>,
         val cursor: Int,
         val lastAddedAt: Long,
-    )
+    ) {
+        init {
+            require(entries.distinct().size == entries.size)
+            require(entries.all { it.isNotBlank() && java.io.File(it).name == it })
+            require(lastAddedAt >= 0)
+        }
+    }
 
     private val mutex = Mutex()
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample = mutex.withLock {
         val dir = ctx.storage.dir(store)
         val state = dir.loadState<State>() ?: State(emptyList(), 0, 0L)
-        val live = dir.liveNames(state.entries)
+        state.entries.forEach { java.io.File(dir, it).readStoredSample() }
+        sweepOrphans(dir, state.entries)
         val now = System.currentTimeMillis()
         val due = refreshHours > 0 && now - state.lastAddedAt >= refreshHours * 3_600_000L
 
-        if (live.size < capacity || due) {
-            try {
-                return@withLock take(source, ctx, dir, state, live, now)
+        if (state.entries.size < capacity || due) {
+            val produced = try {
+                source.sample(ctx)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: SampleException) {
-                // Fatal to an empty store; a store with images serves those.
-                if (live.isEmpty()) throw e
+                if (state.entries.isEmpty()) throw e
+                null
             } catch (e: Exception) {
-                if (live.isEmpty()) throw SampleException(SampleFailure.Unexpected, e)
+                if (state.entries.isEmpty()) throw SampleException(SampleFailure.Unexpected, e)
+                null
             }
+            if (produced != null) return@withLock store(produced, dir, state, now)
         }
 
-        if (live.isEmpty()) throw SampleException(SampleFailure.CacheEmpty)
-        serve(dir, state, live)
+        if (state.entries.isEmpty()) throw SampleException(SampleFailure.CacheEmpty)
+        serve(dir, state)
     }
 
-    private suspend fun take(
-        source: Source,
-        ctx: SampleContext,
+    private suspend fun store(
+        produced: WallpaperSample,
         dir: File,
         state: State,
-        live: List<String>,
         now: Long,
     ): WallpaperSample {
-        val adopted = adopt(source.sample(ctx), dir, "c")
+        val adopted = adopt(produced, dir, "c")
         val entryName = requireNotNull(adopted.file.parentFile).name
-        val entries = (live + entryName).let { all ->
-            val overflow = all.size - capacity
-            if (overflow <= 0) return@let all
-            all.take(overflow).forEach { java.io.File(dir, it).deleteRecursively() }
-            all.drop(overflow)
-        }
+        val all = state.entries + entryName
+        val overflow = (all.size - capacity).coerceAtLeast(0)
+        val removed = all.take(overflow)
+        val entries = all.drop(overflow)
         dir.saveState(state.copy(entries = entries, lastAddedAt = now))
+        removed.forEach { java.io.File(dir, it).deleteRecursively() }
         return adopted
     }
 
-    private fun serve(dir: java.io.File, state: State, live: List<String>): WallpaperSample {
-        val index = ((state.cursor % live.size) + live.size) % live.size
-        dir.saveState(state.copy(entries = live, cursor = state.cursor + 1))
-        return checkNotNull(java.io.File(dir, live[index]).storedSample())
+    private fun serve(dir: java.io.File, state: State): WallpaperSample {
+        val index = ((state.cursor % state.entries.size) + state.entries.size) % state.entries.size
+        dir.saveState(state.copy(cursor = state.cursor + 1))
+        return java.io.File(dir, state.entries[index]).readStoredSample()
+    }
+
+    private fun sweepOrphans(dir: File, entries: List<String>) {
+        val live = entries.toSet()
+        dir.listFiles().orEmpty()
+            .filter { (it.name.startsWith("c-") && it.name !in live) || it.name.startsWith(".c-") }
+            .forEach { it.deleteRecursively() }
     }
 }

@@ -66,6 +66,7 @@
     <string name="gallery_save_success">已保存到相册</string>
     <string name="gallery_save_already_saved">已在相册中</string>
     <string name="gallery_save_failure">无法保存到相册</string>
+    <string name="link_open_failure">无法打开链接</string>
     <string name="wallpaper_artist">作者：%1$s</string>
     <string name="wallpaper_artist_unknown">查看作者</string>
 
@@ -179,7 +180,6 @@
     <string name="summary_wallhaven">%1$s · %2$s</string>
     <string name="summary_nekos_best">%1$s · %2$s</string>
     <string name="summary_source_reference">%1$s · %2$s</string>
-    <string name="summary_keep_ready_passthrough">不做准备</string>
     <plurals name="summary_cache">
         <item quantity="other">保留 %1$d 张，%2$s添加一张</item>
     </plurals>
@@ -205,7 +205,8 @@
     <string name="validation_cache_capacity">请至少保存一张壁纸</string>
     <string name="validation_prefetch_depth">请至少准备一张壁纸</string>
     <string name="validation_keep_ready_source">请选择要保持就绪的来源</string>
-    <string name="validation_combine_empty">请至少向组合中添加一个来源</string>
+    <string name="validation_keep_ready_option">请启用缓存、预取或两者</string>
+    <string name="validation_combine_sources">请至少向组合中添加两个来源</string>
 
     <string name="channels_unavailable">无法连接 Pandora</string>
     <string name="categories_unavailable">无法加载作品类型</string>

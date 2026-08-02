@@ -1390,9 +1390,7 @@ private fun SourceDefinition.localizedSummary(library: SourceLibrary): String = 
             value.prefetch.depth,
             value.prefetch.depth,
         )
-        val detail = listOfNotNull(cacheSummary, prefetchSummary)
-            .ifEmpty { listOf(stringResource(R.string.summary_keep_ready_passthrough)) }
-            .joinToString(" · ")
+        val detail = listOfNotNull(cacheSummary, prefetchSummary).joinToString(" · ")
         stringResource(R.string.summary_source_reference, library.nameOf(value.sourceId), detail)
     }
 }

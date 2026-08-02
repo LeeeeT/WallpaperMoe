@@ -62,7 +62,7 @@ class SerializationTest {
         assertThrows(Exception::class.java) {
             documentJson.decodeFromString(
                 SourceLibrary.serializer(),
-                """{"sources":[],"obsolete":true}""",
+                """{"sources":[],"unexpected":true}""",
             )
         }
     }

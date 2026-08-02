@@ -1,5 +1,6 @@
 package dev.leeeet.wallpapermoe.source
 
+import dev.leeeet.wallpapermoe.replaceWith
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,18 +26,15 @@ class SourceRepository(
     val source: StateFlow<Source?> = _source.asStateFlow()
 
     suspend fun load() = mutex.withLock {
-        storage.prepare()
         val loaded = withContext(Dispatchers.IO) {
-            runCatching {
-                if (!file.exists()) return@runCatching SourceLibrary()
+            if (file.exists()) {
                 documentJson.decodeFromString(SourceLibrary.serializer(), file.readText())
-            }.getOrNull()
+            } else {
+                SourceLibrary()
+            }
         }
-        // Documents from earlier authoring schemas and malformed/incomplete documents are
-        // intentionally discarded: this project has no configuration compatibility contract.
-        val accepted = loaded?.takeIf { it.problem == null } ?: SourceLibrary()
-        if (file.exists()) write(accepted)
-        publish(accepted)
+        check(loaded.problem == null) { "Saved source library is invalid: ${loaded.problem}" }
+        publish(loaded)
     }
 
     suspend fun upsert(definition: SourceDefinition): Boolean = mutex.withLock {
@@ -49,7 +47,7 @@ class SourceRepository(
 
     suspend fun setActive(id: SourceId?) = mutex.withLock {
         val next = _library.value.copy(activeSourceId = id)
-        if (next.problem != null) return@withLock
+        require(next.problem == null)
         persistAndPublish(next)
     }
 
@@ -81,9 +79,10 @@ class SourceRepository(
     }
 
     private suspend fun publish(value: SourceLibrary) {
-        _library.value = value
-        _source.value = value.resolveActiveSource()
+        val resolved = value.resolveActiveSource()
         storage.sweep(value.sources.flatMapTo(mutableSetOf()) { it.stateStores })
+        _library.value = value
+        _source.value = resolved
     }
 
     private suspend fun write(value: SourceLibrary) = withContext(Dispatchers.IO) {
@@ -91,6 +90,6 @@ class SourceRepository(
         file.parentFile?.mkdirs()
         val tmp = File(file.absolutePath + ".tmp")
         tmp.writeText(text)
-        check(tmp.renameTo(file))
+        file.replaceWith(tmp)
     }
 }

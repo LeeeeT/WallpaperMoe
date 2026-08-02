@@ -7,6 +7,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -96,17 +97,6 @@ class StorageTest {
     }
 
     @Test
-    fun prepareDiscardsTheOldFileOnlySchemaOnce() = runBlocking {
-        val old = write(storage.dir("old/cache"), "cached.wp")
-        storage.prepare()
-        assertFalse(old.exists())
-
-        val current = write(storage.dir("current/cache"), "kept.wp")
-        storage.prepare()
-        assertTrue(current.exists())
-    }
-
-    @Test
     fun stateRoundTripsThroughTheFolder() {
         val dir = storage.dir("s")
         assertNull("no state yet reads as nothing", dir.loadState<ProbeState>())
@@ -116,15 +106,10 @@ class StorageTest {
     }
 
     @Test
-    fun corruptStateReadsAsNothing() {
+    fun corruptStateIsRejected() {
         val dir = storage.dir("s")
         File(dir, "state.json").writeText("{ this is not json")
-        assertNull(dir.loadState<ProbeState>())
-    }
-
-    @Test
-    fun eachStoreNameIsItsOwn() {
-        assertEquals(200, (1..200).map { newStoreName() }.toSet().size)
+        assertThrows(Exception::class.java) { dir.loadState<ProbeState>() }
     }
 
     @Test
@@ -186,21 +171,11 @@ class StorageTest {
     }
 
     @Test
-    fun liveNamesDropsWhatIsMissingOrEmpty() {
+    fun finalizedStoredSamplesMustBeComplete() {
         val dir = storage.dir("s")
-        stored(dir, "there")
         stored(dir, "empty", bytes = 0)
 
-        assertEquals(
-            listOf("there"),
-            dir.liveNames(listOf("there", "empty", "never-existed")),
-        )
-    }
-
-    @Test
-    fun liveNamesKeepsTheOrderItWasGiven() {
-        val dir = storage.dir("s")
-        listOf("c", "a", "b").forEach { stored(dir, it) }
-        assertEquals(listOf("c", "a", "b"), dir.liveNames(listOf("c", "a", "b")))
+        assertThrows(IllegalStateException::class.java) { File(dir, "empty").readStoredSample() }
+        assertThrows(IllegalStateException::class.java) { File(dir, "missing").readStoredSample() }
     }
 }

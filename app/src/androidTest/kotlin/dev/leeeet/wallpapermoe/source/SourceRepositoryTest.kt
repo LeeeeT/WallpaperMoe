@@ -7,6 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.io.File
@@ -125,21 +126,10 @@ class SourceRepositoryTest {
     }
 
     @Test
-    fun theOldEmbeddedDocumentIsDiscarded() {
+    fun malformedSavedDocumentIsRejected() {
         file.parentFile!!.mkdirs()
-        file.writeText("""{"source":{"type":"wallhaven"}}""")
-        runBlocking { repository.load() }
-        assertEquals(SourceLibrary(), repository.library.value)
-    }
-
-    @Test
-    fun thePreviousOneRuntimeSourcePerConfigDocumentIsDiscarded() {
-        file.parentFile!!.mkdirs()
-        file.writeText(
-            """{"sources":[{"id":"${newSourceId()}","name":"old","config":{"type":"cache"}}]}""",
-        )
-        runBlocking { repository.load() }
-        assertEquals(SourceLibrary(), repository.library.value)
+        file.writeText("not json")
+        assertThrows(Exception::class.java) { runBlocking { repository.load() } }
     }
 
     @Test
@@ -164,27 +154,16 @@ class SourceRepositoryTest {
     }
 
     @Test
-    fun keepReadyWithBothOptionsOffPassesItsInputThrough() {
-        val input = wallhavenDefinition()
-        val ready = SourceDefinition(
-            newSourceId(),
-            "keep-ready-1",
-            SourceRecipe.KeepReady(input.id),
-        )
-
-        assertTrue(SourceLibrary(listOf(input, ready), ready.id).resolveActiveSource() is Wallhaven)
-    }
-
-    @Test
     fun combineCompilesTheSelectedMode() {
-        val input = wallhavenDefinition()
+        val first = wallhavenDefinition("first")
+        val second = wallhavenDefinition("second")
         CombineMode.entries.forEach { mode ->
             val combine = SourceDefinition(
                 newSourceId(),
                 "combine-${mode.name}",
-                SourceRecipe.Combine(mode, listOf(input.id)),
+                SourceRecipe.Combine(mode, listOf(first.id, second.id)),
             )
-            val source = SourceLibrary(listOf(input, combine), combine.id).resolveActiveSource()
+            val source = SourceLibrary(listOf(first, second, combine), combine.id).resolveActiveSource()
             assertTrue(
                 when (mode) {
                     CombineMode.RANDOM -> source is Random

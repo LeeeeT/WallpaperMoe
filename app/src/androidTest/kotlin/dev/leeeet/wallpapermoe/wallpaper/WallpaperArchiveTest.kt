@@ -8,6 +8,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.io.File
@@ -53,7 +54,8 @@ class WallpaperArchiveTest {
         archive.rememberApplied(sample(1))
         val historyItem = archive.history.value.single()
         archive.addFavorite(historyItem)
-        historyItem.file.delete()
+        (2..21).forEach { archive.rememberApplied(sample(it)) }
+        assertFalse(historyItem.file.exists())
 
         val reloaded = WallpaperArchive(root)
         reloaded.load()
@@ -61,9 +63,18 @@ class WallpaperArchiveTest {
         assertTrue(favorite.file.exists())
         assertEquals("image-1", favorite.file.readText())
 
-        reloaded.removeFavorite(favorite.id)
+        reloaded.removeFavorites(setOf(favorite.id))
         assertFalse(favorite.file.exists())
         assertTrue(reloaded.favorites.value.isEmpty())
+    }
+
+    @Test
+    fun aDocumentReferencingAMissingFileIsRejected() {
+        runBlocking { archive.rememberApplied(sample(1)) }
+        archive.history.value.single().file.delete()
+
+        val reloaded = WallpaperArchive(root)
+        assertThrows(IllegalStateException::class.java) { runBlocking { reloaded.load() } }
     }
 
     @Test

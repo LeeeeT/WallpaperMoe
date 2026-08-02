@@ -54,7 +54,7 @@ class PandoraApi(
         )
         val parsed = Http.json.decodeFromString<LockViewResponse>(body)
         return parsed.items.firstNotNullOfOrNull { item ->
-            if (item.itemType != null && item.itemType != TYPE_IMAGE) {
+            if (item.itemType != TYPE_IMAGE) {
                 return@firstNotNullOfOrNull null
             }
             val id = item.id?.takeIf { it.isNotBlank() } ?: return@firstNotNullOfOrNull null
@@ -110,7 +110,7 @@ private data class ClUrl(
 )
 
 @Serializable
-private data class IndexResponse(val items: List<IndexItem> = emptyList())
+private data class IndexResponse(val items: List<IndexItem>)
 
 @Serializable
 private data class IndexItem(
@@ -120,7 +120,7 @@ private data class IndexItem(
 )
 
 @Serializable
-private data class LockViewResponse(val items: List<LockViewItem> = emptyList())
+private data class LockViewResponse(val items: List<LockViewItem>)
 
 @Serializable
 private data class LockViewItem(

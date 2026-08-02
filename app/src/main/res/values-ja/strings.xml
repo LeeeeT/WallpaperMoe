@@ -66,6 +66,7 @@
     <string name="gallery_save_success">ギャラリーに保存しました</string>
     <string name="gallery_save_already_saved">ギャラリーに保存済みです</string>
     <string name="gallery_save_failure">ギャラリーに保存できませんでした</string>
+    <string name="link_open_failure">リンクを開けませんでした</string>
     <string name="wallpaper_artist">作者: %1$s</string>
     <string name="wallpaper_artist_unknown">作者を見る</string>
 
@@ -179,7 +180,6 @@
     <string name="summary_wallhaven">%1$s · %2$s</string>
     <string name="summary_nekos_best">%1$s · %2$s</string>
     <string name="summary_source_reference">%1$s · %2$s</string>
-    <string name="summary_keep_ready_passthrough">準備なし</string>
     <plurals name="summary_cache">
         <item quantity="other">%1$d 枚を保持し、%2$s 1 枚追加</item>
     </plurals>
@@ -205,7 +205,8 @@
     <string name="validation_cache_capacity">壁紙を 1 枚以上保存してください</string>
     <string name="validation_prefetch_depth">壁紙を 1 枚以上用意してください</string>
     <string name="validation_keep_ready_source">準備しておくソースを選んでください</string>
-    <string name="validation_combine_empty">組み合わせにソースを 1 つ以上追加してください</string>
+    <string name="validation_keep_ready_option">キャッシュ、プリフェッチ、または両方を有効にしてください</string>
+    <string name="validation_combine_sources">組み合わせにソースを 2 つ以上追加してください</string>
 
     <string name="channels_unavailable">Pandora に接続できませんでした</string>
     <string name="categories_unavailable">作品の種類を読み込めませんでした</string>

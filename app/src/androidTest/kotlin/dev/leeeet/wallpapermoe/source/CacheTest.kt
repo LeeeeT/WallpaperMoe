@@ -4,6 +4,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import java.io.File
@@ -108,15 +109,13 @@ class CacheTest {
     }
 
     @Test
-    fun forgetsEntriesWhoseFilesWentAway() {
+    fun rejectsStateThatReferencesAMissingEntry() {
         val cache = cache(source = wallhaven("one"), capacity = 4, refreshHours = 0)
         cache.take(env.ctx)
         cache.take(env.ctx)
         File(env.storage.dir(cache.store), entries(cache).first()).deleteRecursively()
 
-        cache.take(env.ctx)
-        assertEquals(2, entries(cache).size)
-        assertTrue(entries(cache).all { File(env.storage.dir(cache.store), it).exists() })
+        assertThrows(IllegalStateException::class.java) { cache.take(env.ctx) }
     }
 
     @Test

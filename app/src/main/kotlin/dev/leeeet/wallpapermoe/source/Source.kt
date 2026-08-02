@@ -45,11 +45,8 @@ data class WallpaperMetadata(
     }
 }
 
-fun newWallpaperId(providerIdentity: String? = null): String = if (providerIdentity == null) {
-    UUID.randomUUID().toString()
-} else {
+fun wallpaperId(providerIdentity: String): String =
     UUID.nameUUIDFromBytes(providerIdentity.toByteArray(StandardCharsets.UTF_8)).toString()
-}
 
 class SampleContext(
     val providers: Providers,

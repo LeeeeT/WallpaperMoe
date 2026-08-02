@@ -28,9 +28,6 @@ object Http {
 
     val json: Json = Json {
         ignoreUnknownKeys = true
-        isLenient = true
-        coerceInputValues = true
-        explicitNulls = false
     }
 }
 

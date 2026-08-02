@@ -52,7 +52,7 @@ class NekosBestApi(private val baseUrl: String = "https://nekos.best/api/v2") {
 }
 
 @Serializable
-private data class ImageResponse(val results: List<ImageItem> = emptyList())
+private data class ImageResponse(val results: List<ImageItem>)
 
 @Serializable
 private data class ImageItem(

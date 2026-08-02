@@ -1,5 +1,6 @@
 package dev.leeeet.wallpapermoe.source
 
+import android.graphics.BitmapFactory
 import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.net.Http
 import dev.leeeet.wallpapermoe.net.await
@@ -28,7 +29,7 @@ internal suspend fun <T> download(
         throw SampleException(SampleFailure.DownloadFailed(provider), e)
     }
     dir.pruneSamples()
-    return WallpaperSample(newWallpaperId(identity(candidate)), destination, metadata(candidate))
+    return WallpaperSample(wallpaperId(identity(candidate)), destination, metadata(candidate))
 }
 
 internal suspend fun downloadFile(url: String, destination: File) {
@@ -42,4 +43,7 @@ internal suspend fun downloadFile(url: String, destination: File) {
         destination.outputStream().use { output -> response.body.byteStream().copyTo(output) }
     }
     if (destination.length() == 0L) throw IOException("empty image response")
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(destination.absolutePath, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw IOException("invalid image response")
 }

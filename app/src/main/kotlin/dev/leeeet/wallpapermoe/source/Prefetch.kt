@@ -49,14 +49,15 @@ data class Prefetch(
     private fun takeBuffered(dir: java.io.File): WallpaperSample? {
         for (buffered in buffered(dir)) {
             val target = java.io.File(dir, "s-${System.currentTimeMillis()}-${System.nanoTime()}")
-            if (buffered.renameTo(target)) return target.storedSample()
+            if (buffered.renameTo(target)) return target.readStoredSample()
         }
         return null
     }
 
     /** Oldest first: names carry the wall clock, so the order survives a reboot. */
     private fun buffered(dir: java.io.File): List<java.io.File> = dir.listFiles().orEmpty()
-        .filter { it.name.startsWith("r-") && it.storedSample() != null }
+        .filter { it.name.startsWith("r-") }
+        .onEach { it.readStoredSample() }
         .sortedBy { it.name }
 
     /** `tryLock`: one refill runs at a time, and the rest return at once. */
@@ -67,15 +68,18 @@ data class Prefetch(
                 // Half-copied buffer files a crash left behind. Only the one
                 // running refill creates these, so they are safe to clear here.
                 dir.listFiles().orEmpty()
-                    .filter { it.name.startsWith("r-") && it.name.endsWith(".part") }
+                    .filter { it.name.startsWith(".r-") && it.name.endsWith(".part") }
                     .forEach { it.deleteRecursively() }
                 while (buffered(dir).size < depth) {
-                    adopt(source.sample(ctx), dir, "r")
+                    val produced = try {
+                        source.sample(ctx)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        return@launch
+                    }
+                    adopt(produced, dir, "r")
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                // Stop at the first failure; the next rotation retries.
             } finally {
                 filling.unlock()
             }

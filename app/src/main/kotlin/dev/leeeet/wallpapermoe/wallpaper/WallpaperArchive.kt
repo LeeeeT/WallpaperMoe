@@ -1,5 +1,6 @@
 package dev.leeeet.wallpapermoe.wallpaper
 
+import dev.leeeet.wallpapermoe.replaceWith
 import dev.leeeet.wallpapermoe.source.WallpaperSample
 import dev.leeeet.wallpapermoe.source.WallpaperMetadata
 import dev.leeeet.wallpapermoe.source.documentJson
@@ -54,33 +55,29 @@ class WallpaperArchive(private val root: File) {
             root.mkdirs()
             historyDir.mkdirs()
             favoritesDir.mkdirs()
-            val decoded = runCatching {
+            val document = if (documentFile.exists()) {
                 documentJson.decodeFromString<Document>(documentFile.readText())
-            }.getOrNull() ?: Document(emptyList(), emptyList())
-            val clean = Document(
-                history = decoded.history.liveIn(historyDir).take(HISTORY_LIMIT),
-                favorites = decoded.favorites.liveIn(favoritesDir),
-            )
-            sweep(historyDir, clean.history)
-            sweep(favoritesDir, clean.favorites)
-            write(clean)
-            publish(clean)
+            } else {
+                Document(emptyList(), emptyList())
+            }
+            document.validate()
+            sweep(historyDir, document.history)
+            sweep(favoritesDir, document.favorites)
+            publish(document)
         }
     }
 
     suspend fun rememberApplied(sample: WallpaperSample) = mutex.withLock {
         withContext(Dispatchers.IO) {
             val current = currentDocument()
-            val duplicate = current.history.firstOrNull { it.id == sample.id }
-            val record = copyInto(sample, historyDir, duplicate)
+            val record = copyInto(sample, historyDir)
             val nextHistory = (listOf(record) + current.history.filterNot {
                 it.id == sample.id
             }).take(HISTORY_LIMIT)
-            val removed = current.history.filter { old -> nextHistory.none { it.id == old.id } }
-            removed.forEach { File(historyDir, it.fileName).delete() }
             val next = current.copy(history = nextHistory)
             write(next)
             publish(next)
+            sweep(historyDir, nextHistory)
         }
     }
 
@@ -88,20 +85,16 @@ class WallpaperArchive(private val root: File) {
         withContext(Dispatchers.IO) {
             val current = currentDocument()
             if (current.favorites.any { it.id == wallpaper.id }) return@withContext
-            val source = current.history.firstOrNull {
-                it.id == wallpaper.id
-            }?.toSaved(historyDir) ?: wallpaper
             val record = copyInto(
-                WallpaperSample(source.id, source.file, source.metadata),
+                WallpaperSample(wallpaper.id, wallpaper.file, wallpaper.metadata),
                 favoritesDir,
             )
             val next = current.copy(favorites = listOf(record) + current.favorites)
             write(next)
             publish(next)
+            sweep(favoritesDir, next.favorites)
         }
     }
-
-    suspend fun removeFavorite(id: String) = removeFavorites(setOf(id))
 
     suspend fun reorderFavorites(ids: List<String>): Boolean = mutex.withLock {
         val current = currentDocument()
@@ -121,24 +114,22 @@ class WallpaperArchive(private val root: File) {
         if (ids.isEmpty()) return@withLock
         withContext(Dispatchers.IO) {
             val current = currentDocument()
-            val removed = current.favorites.filter { it.id in ids }
-            if (removed.isEmpty()) return@withContext
-            removed.forEach { File(favoritesDir, it.fileName).delete() }
+            if (current.favorites.none { it.id in ids }) return@withContext
             val next = current.copy(
                 favorites = current.favorites.filterNot { it.id in ids },
             )
             write(next)
             publish(next)
+            sweep(favoritesDir, next.favorites)
         }
     }
 
-    private fun copyInto(sample: WallpaperSample, directory: File, reuse: Record? = null): Record {
-        val fileName = reuse?.fileName ?: "${UUID.randomUUID()}.wp"
+    private fun copyInto(sample: WallpaperSample, directory: File): Record {
+        val fileName = "${UUID.randomUUID()}.wp"
         val target = File(directory, fileName)
         val staged = File(directory, "$fileName.tmp")
         sample.file.copyTo(staged, overwrite = true)
-        target.delete()
-        check(staged.renameTo(target))
+        target.replaceWith(staged)
         return Record(sample.id, sample.metadata, fileName, System.currentTimeMillis())
     }
 
@@ -153,17 +144,30 @@ class WallpaperArchive(private val root: File) {
     }
 
     private fun write(document: Document) {
+        document.validate()
         root.mkdirs()
         val staged = File(root, "archive.json.tmp")
         staged.writeText(documentJson.encodeToString(Document.serializer(), document))
-        check(staged.renameTo(documentFile))
+        documentFile.replaceWith(staged)
     }
 
-    private fun List<Record>.liveIn(directory: File): List<Record> = filter {
-        it.id.isNotBlank() && File(directory, it.fileName).let { file ->
-            file.isFile && file.length() > 0L
+    private fun Document.validate() {
+        check(history.size <= HISTORY_LIMIT)
+        validate(history, historyDir)
+        validate(favorites, favoritesDir)
+    }
+
+    private fun validate(records: List<Record>, directory: File) {
+        check(records.distinctBy(Record::id).size == records.size)
+        check(records.distinctBy(Record::fileName).size == records.size)
+        records.forEach {
+            check(it.id.isNotBlank())
+            check(it.fileName.isNotBlank() && File(it.fileName).name == it.fileName)
+            check(File(directory, it.fileName).let { file ->
+                file.isFile && file.length() > 0L
+            })
         }
-    }.distinctBy(Record::id)
+    }
 
     private fun sweep(directory: File, live: List<Record>) {
         val names = live.mapTo(mutableSetOf(), Record::fileName)

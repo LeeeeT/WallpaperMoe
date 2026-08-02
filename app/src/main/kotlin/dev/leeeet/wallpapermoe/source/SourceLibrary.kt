@@ -128,7 +128,10 @@ sealed interface SourceRecipe {
         val cache: CacheOptions? = null,
         val prefetch: PrefetchOptions? = null,
     ) : SourceRecipe {
-        init { require(sourceId.isNotBlank()) }
+        init {
+            require(sourceId.isNotBlank())
+            require(cache != null || prefetch != null)
+        }
     }
 
     @Serializable
@@ -137,7 +140,7 @@ sealed interface SourceRecipe {
         val mode: CombineMode,
         val sourceIds: List<SourceId>,
     ) : SourceRecipe {
-        init { require(sourceIds.isNotEmpty()) }
+        init { require(sourceIds.size >= 2) }
     }
 }
 
@@ -238,7 +241,7 @@ fun SourceLibrary.upserting(definition: SourceDefinition): SourceLibrary = copy(
 /** Compiles the active authoring recipe graph into the existing runtime source implementations. */
 fun SourceLibrary.resolveActiveSource(): Source? {
     val active = activeSourceId ?: return null
-    if (problem != null) return null
+    check(problem == null) { "Cannot resolve invalid source library: $problem" }
     val definitions = sources.associateBy { it.id }
     val resolved = mutableMapOf<SourceId, Source>()
 

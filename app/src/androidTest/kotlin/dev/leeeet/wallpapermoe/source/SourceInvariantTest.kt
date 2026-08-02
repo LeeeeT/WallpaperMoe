@@ -6,10 +6,11 @@ import org.junit.Test
 class SourceInvariantTest {
 
     @Test
-    fun runtimeCompositionsCannotBeEmpty() {
-        assertThrows(IllegalArgumentException::class.java) { RoundRobin(emptyList(), "r") }
-        assertThrows(IllegalArgumentException::class.java) { Random(emptyList()) }
-        assertThrows(IllegalArgumentException::class.java) { Fallthrough(emptyList()) }
+    fun runtimeCompositionsRequireMultipleSources() {
+        val probe = wallhaven()
+        assertThrows(IllegalArgumentException::class.java) { RoundRobin(listOf(probe), "r") }
+        assertThrows(IllegalArgumentException::class.java) { Random(listOf(probe)) }
+        assertThrows(IllegalArgumentException::class.java) { Fallthrough(listOf(probe)) }
     }
 
     @Test

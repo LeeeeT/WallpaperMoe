@@ -12,16 +12,16 @@ class WallhavenApi(private val baseUrl: String = "https://wallhaven.cc/api/v1") 
     data class Image(val id: String, val url: String)
 
     data class Query(
-        val text: String = "",
-        val general: Boolean = true,
-        val anime: Boolean = false,
-        val people: Boolean = false,
-        val sfw: Boolean = true,
-        val sketchy: Boolean = false,
-        val nsfw: Boolean = false,
-        val ratios: String? = null,
-        val sorting: String = "random",
-        val apiKey: String = "",
+        val text: String,
+        val general: Boolean,
+        val anime: Boolean,
+        val people: Boolean,
+        val sfw: Boolean,
+        val sketchy: Boolean,
+        val nsfw: Boolean,
+        val ratios: String?,
+        val sorting: String,
+        val apiKey: String,
     )
 
     suspend fun image(q: Query): Image? {
@@ -52,7 +52,7 @@ class WallhavenApi(private val baseUrl: String = "https://wallhaven.cc/api/v1") 
 }
 
 @Serializable
-private data class SearchResponse(val data: List<SearchItem> = emptyList())
+private data class SearchResponse(val data: List<SearchItem>)
 
 @Serializable
 private data class SearchItem(

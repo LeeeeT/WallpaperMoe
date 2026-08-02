@@ -86,7 +86,7 @@ class SelectionTest {
 
     @Test
     fun randomFailsWhenTheSourceItPickedFails() {
-        val source = Random(listOf(wallhaven(Env.FAILS)))
+        val source = Random(listOf(wallhaven(Env.FAILS), wallhaven(Env.FAILS)))
         assertEquals(
             SampleFailure.ProviderUnavailable(SourceProvider.WALLHAVEN),
             source.sampleFailure(env.ctx).failure,

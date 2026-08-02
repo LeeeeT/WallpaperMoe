@@ -312,6 +312,8 @@ internal fun WallpaperPreviewDialog(
         val savedMessage = stringResource(R.string.gallery_save_success)
         val alreadySavedMessage = stringResource(R.string.gallery_save_already_saved)
         val failedMessage = stringResource(R.string.gallery_save_failure)
+        val linkFailedMessage = stringResource(R.string.link_open_failure)
+        val uriHandler = LocalUriHandler.current
         var loading by remember(wallpaper.id) { mutableStateOf(true) }
         var failed by remember(wallpaper.id) { mutableStateOf(false) }
         var saving by remember(wallpaper.id) { mutableStateOf(false) }
@@ -319,6 +321,19 @@ internal fun WallpaperPreviewDialog(
         var transform by remember(wallpaper.id) { mutableStateOf(ImageTransform()) }
         var viewport by remember(wallpaper.id) { mutableStateOf(IntSize.Zero) }
         var imageSize by remember(wallpaper.id) { mutableStateOf(Size.Zero) }
+        fun showMessage(message: String) {
+            scope.launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+            }
+        }
+        fun openUri(uri: String) {
+            try {
+                uriHandler.openUri(uri)
+            } catch (_: Exception) {
+                showMessage(linkFailedMessage)
+            }
+        }
         LaunchedEffect(viewport, imageSize) {
             transform = transform.copy(
                 offset = clampZoomOffset(transform.offset, transform.scale, viewport, imageSize),
@@ -401,17 +416,13 @@ internal fun WallpaperPreviewDialog(
                             saving = true
                             onSave { result ->
                                 saving = false
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(
-                                        message = when (result) {
-                                            GallerySaveResult.Saved -> savedMessage
-                                            GallerySaveResult.AlreadySaved -> alreadySavedMessage
-                                            GallerySaveResult.Failed -> failedMessage
-                                        },
-                                        duration = SnackbarDuration.Short,
-                                    )
-                                }
+                                showMessage(
+                                    when (result) {
+                                        GallerySaveResult.Saved -> savedMessage
+                                        GallerySaveResult.AlreadySaved -> alreadySavedMessage
+                                        GallerySaveResult.Failed -> failedMessage
+                                    },
+                                )
                             }
                         },
                     ) {
@@ -433,17 +444,20 @@ internal fun WallpaperPreviewDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 SnackbarHost(snackbarHostState, Modifier.fillMaxWidth())
-                WallpaperAttribution(wallpaper)
+                WallpaperAttribution(wallpaper, onOpenUri = ::openUri)
             }
         }
     }
 }
 
 @Composable
-private fun WallpaperAttribution(wallpaper: SavedWallpaper, modifier: Modifier = Modifier) {
+private fun WallpaperAttribution(
+    wallpaper: SavedWallpaper,
+    onOpenUri: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val metadata = wallpaper.metadata
     if (metadata.artistName == null && metadata.artistUrl == null && metadata.sourceUrl == null) return
-    val uriHandler = LocalUriHandler.current
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
@@ -459,14 +473,14 @@ private fun WallpaperAttribution(wallpaper: SavedWallpaper, modifier: Modifier =
                 stringResource(R.string.wallpaper_artist, it)
             } ?: stringResource(R.string.wallpaper_artist_unknown)
             if (metadata.artistUrl != null) {
-                TextButton(onClick = { runCatching { uriHandler.openUri(metadata.artistUrl) } }) {
+                TextButton(onClick = { onOpenUri(metadata.artistUrl) }) {
                     Text(artistLabel, color = Color.White)
                 }
             } else if (metadata.artistName != null) {
                 Text(artistLabel, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp))
             }
             metadata.sourceUrl?.let { sourceUrl ->
-                TextButton(onClick = { runCatching { uriHandler.openUri(sourceUrl) } }) {
+                TextButton(onClick = { onOpenUri(sourceUrl) }) {
                     Text(stringResource(R.string.action_view_source), color = Color.White)
                 }
             }
