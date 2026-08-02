@@ -41,6 +41,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,6 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +80,7 @@ import coil3.request.ImageRequest
 import dev.leeeet.wallpapermoe.R
 import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
+import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 
@@ -303,10 +308,14 @@ internal fun WallpaperPreviewDialog(
     favorite: Boolean,
     onDismiss: () -> Unit,
     onFavorite: () -> Unit,
-    onSave: () -> Unit,
+    onSave: ((Boolean) -> Unit) -> Unit,
 ) {
     FullScreenDialog(onDismiss) {
         val context = LocalContext.current
+        val snackbarHostState = remember { SnackbarHostState() }
+        val scope = rememberCoroutineScope()
+        val savedMessage = stringResource(R.string.gallery_save_success)
+        val failedMessage = stringResource(R.string.gallery_save_failure)
         var loading by remember(wallpaper.id) { mutableStateOf(true) }
         var failed by remember(wallpaper.id) { mutableStateOf(false) }
         var transform by remember(wallpaper.id) { mutableStateOf(ImageTransform()) }
@@ -397,7 +406,19 @@ internal fun WallpaperPreviewDialog(
                     contentColor = Color.White,
                     shadowElevation = 2.dp,
                 ) {
-                    IconButton(onClick = onSave) {
+                    IconButton(
+                        onClick = {
+                            onSave { success ->
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar(
+                                        message = if (success) savedMessage else failedMessage,
+                                        duration = SnackbarDuration.Short,
+                                    )
+                                }
+                            }
+                        },
+                    ) {
                         Icon(
                             Icons.Filled.SaveAlt,
                             contentDescription = stringResource(R.string.action_save_to_gallery),
@@ -406,7 +427,18 @@ internal fun WallpaperPreviewDialog(
                 }
                 FavoriteButton(favorite = favorite, onClick = onFavorite)
             }
-            WallpaperAttribution(wallpaper, Modifier.align(Alignment.BottomCenter))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                SnackbarHost(snackbarHostState, Modifier.fillMaxWidth())
+                WallpaperAttribution(wallpaper)
+            }
         }
     }
 }
@@ -417,7 +449,7 @@ private fun WallpaperAttribution(wallpaper: SavedWallpaper, modifier: Modifier =
     if (metadata.artistName == null && metadata.artistUrl == null && metadata.sourceUrl == null) return
     val uriHandler = LocalUriHandler.current
     Surface(
-        modifier = modifier.navigationBarsPadding().padding(12.dp),
+        modifier = modifier,
         shape = MaterialTheme.shapes.large,
         color = Color.Black.copy(alpha = .72f),
         contentColor = Color.White,

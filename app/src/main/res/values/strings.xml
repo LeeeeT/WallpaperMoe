@@ -65,6 +65,8 @@
     <string name="wallpaper_thumbnail_description">Saved wallpaper</string>
     <string name="wallpaper_preview_description">Original wallpaper preview</string>
     <string name="preview_unavailable">Could not load the original image.</string>
+    <string name="gallery_save_success">Saved to gallery</string>
+    <string name="gallery_save_failure">Couldn’t save to gallery</string>
     <string name="wallpaper_artist">Art by %1$s</string>
     <string name="wallpaper_artist_unknown">View artist</string>
 

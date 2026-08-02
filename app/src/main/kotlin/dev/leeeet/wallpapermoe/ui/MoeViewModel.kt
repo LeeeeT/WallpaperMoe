@@ -15,6 +15,7 @@ import dev.leeeet.wallpapermoe.source.SourceKind
 import dev.leeeet.wallpapermoe.source.SourceLibrary
 import dev.leeeet.wallpapermoe.source.newSourceId
 import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -290,8 +291,16 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         runCatching { Graph.archive.reorderFavorites(ids) }
     }
 
-    fun saveToGallery(wallpaper: SavedWallpaper) = viewModelScope.launch {
-        runCatching { Graph.gallerySaver.save(wallpaper) }
+    fun saveToGallery(wallpaper: SavedWallpaper, onResult: (Boolean) -> Unit) = viewModelScope.launch {
+        val success = try {
+            Graph.gallerySaver.save(wallpaper)
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            false
+        }
+        onResult(success)
     }
 
     fun removeFavorites(ids: Set<String>) = viewModelScope.launch {

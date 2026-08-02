@@ -65,6 +65,8 @@
     <string name="wallpaper_thumbnail_description">保存された壁紙</string>
     <string name="wallpaper_preview_description">元の壁紙のプレビュー</string>
     <string name="preview_unavailable">元の画像を読み込めませんでした。</string>
+    <string name="gallery_save_success">ギャラリーに保存しました</string>
+    <string name="gallery_save_failure">ギャラリーに保存できませんでした</string>
     <string name="wallpaper_artist">作者: %1$s</string>
     <string name="wallpaper_artist_unknown">作者を見る</string>
 
