@@ -1,6 +1,8 @@
 package dev.leeeet.wallpapermoe.ui
 
 import dev.leeeet.wallpapermoe.source.CombineMode
+import dev.leeeet.wallpapermoe.source.CacheRefresh
+import dev.leeeet.wallpapermoe.source.PandoraChannel
 import dev.leeeet.wallpapermoe.source.SelectionMode
 import dev.leeeet.wallpapermoe.source.SourceDefinition
 import dev.leeeet.wallpapermoe.source.SourceKind
@@ -16,6 +18,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SourceDraftTest {
+
+    private fun channel(id: String) = PandoraChannel(id, id)
 
     @Test
     fun wallhavenDefaultsToEveryAspectRatio() {
@@ -104,12 +108,12 @@ class SourceDraftTest {
         val first = SourceDefinition(
             newSourceId(),
             "pandora-1",
-            SourceRecipe.Pandora(listOf("first"), emptyList()),
+            SourceRecipe.Pandora(listOf(channel("first"))),
         )
         val second = SourceDefinition(
             newSourceId(),
             "pandora-2",
-            SourceRecipe.Pandora(listOf("second"), emptyList()),
+            SourceRecipe.Pandora(listOf(channel("second"))),
         )
         val draft = SourceDraft(
             "combine-1",
@@ -143,7 +147,7 @@ class SourceDraftTest {
         val child = SourceDefinition(
             childId,
             "pandora-1",
-            SourceRecipe.Pandora(listOf("c"), emptyList()),
+            SourceRecipe.Pandora(listOf(channel("c"))),
         )
         val ownerId = newSourceId()
         val draft = newSourceDraft(SourceKind.KEEP_READY, SourceLibrary(listOf(child))).copy(
@@ -172,12 +176,12 @@ class SourceDraftTest {
         ).toDefinition(newSourceId()).recipe as SourceRecipe.KeepReady
 
         assertEquals(40, recipe.cache?.capacity)
-        assertEquals(6, recipe.cache?.refreshHours)
+        assertEquals(CacheRefresh.SIX_HOURS, recipe.cache?.refresh)
         assertEquals(5, recipe.prefetch?.depth)
     }
 
     @Test
-    fun neverRefreshingCacheRoundTripsAsZeroHours() {
+    fun neverRefreshingCacheRoundTrips() {
         val childId = newSourceId()
         val ownerId = newSourceId()
         val draft = SourceDraft(
@@ -191,7 +195,7 @@ class SourceDraftTest {
 
         val definition = draft.toDefinition(ownerId)
         val recipe = definition.recipe as SourceRecipe.KeepReady
-        assertEquals(0, recipe.cache?.refreshHours)
+        assertEquals(CacheRefresh.NEVER, recipe.cache?.refresh)
         val reopened = definition.toDraft().recipe as SourceRecipeDraft.KeepReady
         assertEquals(CacheRefresh.NEVER, reopened.cacheRefresh)
     }
@@ -201,7 +205,7 @@ class SourceDraftTest {
         val saved = SourceDefinition(
             newSourceId(),
             "pandora-1",
-            SourceRecipe.Pandora(listOf("c"), emptyList()),
+            SourceRecipe.Pandora(listOf(channel("c"))),
         )
         val library = SourceLibrary(listOf(saved))
         val duplicateId = newSourceId()
@@ -211,7 +215,7 @@ class SourceDraftTest {
         assertEquals(DraftProblem.DuplicateName, duplicate.validationProblem(duplicateId, library))
         assertNull(
             differentlyCased.copy(
-                recipe = SourceRecipeDraft.Pandora(listOf("c")),
+                recipe = SourceRecipeDraft.Pandora(listOf(channel("c"))),
             ).validationProblem(duplicateId, library),
         )
     }
@@ -223,12 +227,12 @@ class SourceDraftTest {
                 SourceDefinition(
                     newSourceId(),
                     "combine-1",
-                    SourceRecipe.Pandora(listOf("c"), emptyList()),
+                    SourceRecipe.Pandora(listOf(channel("c"))),
                 ),
                 SourceDefinition(
                     newSourceId(),
                     "combine-3",
-                    SourceRecipe.Pandora(listOf("c"), emptyList()),
+                    SourceRecipe.Pandora(listOf(channel("c"))),
                 ),
             ),
         )
@@ -255,7 +259,7 @@ class SourceDraftTest {
         val second = SourceDefinition(
             secondId,
             "pandora-1",
-            SourceRecipe.Pandora(listOf("c"), emptyList()),
+            SourceRecipe.Pandora(listOf(channel("c"))),
         )
         val library = SourceLibrary(listOf(first, second))
 

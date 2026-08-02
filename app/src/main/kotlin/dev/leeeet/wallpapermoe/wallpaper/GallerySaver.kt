@@ -5,70 +5,44 @@ import android.content.ContentValues
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
-import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
-import dev.leeeet.wallpapermoe.net.Http
-import dev.leeeet.wallpapermoe.net.await
-import kotlinx.coroutines.CancellationException
+import coil3.ImageLoader
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
 import java.io.IOException
-import java.util.UUID
+import java.security.MessageDigest
+
+enum class GallerySaveResult {
+    Saved,
+    AlreadySaved,
+    Failed,
+}
 
 internal class GallerySaver(
-    private val scratchDir: File,
+    private val imageLoader: ImageLoader,
     private val sink: GallerySink,
-    private val client: OkHttpClient = Http.client,
 ) {
-    init {
-        scratchDir.mkdirs()
-    }
+    private val mutex = Mutex()
 
-    suspend fun save(wallpaper: SavedWallpaper) = withContext(Dispatchers.IO) {
-        val original = wallpaper.metadata.imageUrl?.let { url ->
-            try {
-                downloadOriginal(url)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                null
+    suspend fun save(wallpaper: SavedWallpaper): GallerySaveResult = mutex.withLock {
+        withContext(Dispatchers.IO) {
+            val cached = wallpaper.metadata.imageUrl?.let {
+                val key = requireNotNull(wallpaper.originalImageCacheKey())
+                imageLoader.diskCache?.openSnapshot(key)
+                    ?: throw IOException("original image cache entry is unavailable")
+            }
+            cached.use {
+                val source = cached?.data?.toFile() ?: wallpaper.prepared
+                val image = inspect(source)
+                val displayName = "WallpaperMoe_${source.sha256()}.${image.extension}"
+                sink.write(source, image.mimeType, displayName)
             }
         }
-        val image = original ?: inspect(wallpaper.prepared, temporary = false)
-        try {
-            sink.write(
-                image.file,
-                image.mimeType,
-                "WallpaperMoe_${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(8)}.${image.extension}",
-            )
-        } finally {
-            if (image.temporary) image.file.delete()
-        }
     }
 
-    private suspend fun downloadOriginal(url: String): GalleryImage {
-        val staged = File(scratchDir, "gallery-${UUID.randomUUID()}.download")
-        try {
-            val request = Request.Builder()
-                .url(url)
-                .header("User-Agent", APP_USER_AGENT)
-                .header("Accept", "image/*")
-                .build()
-            client.await(request).use { response ->
-                if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
-                staged.outputStream().use { output -> response.body.byteStream().copyTo(output) }
-            }
-            if (staged.length() <= 0L) throw IOException("empty image response")
-            return inspect(staged, temporary = true)
-        } catch (e: Exception) {
-            staged.delete()
-            throw e
-        }
-    }
-
-    private fun inspect(file: File, temporary: Boolean): GalleryImage {
+    private fun inspect(file: File): GalleryImage {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw IOException("invalid image")
@@ -83,23 +57,37 @@ internal class GallerySaver(
             "image/heif" -> "heif"
             else -> throw IOException("unsupported image type")
         }
-        return GalleryImage(file, mimeType, extension, temporary)
+        return GalleryImage(mimeType, extension)
     }
 }
 
+internal fun SavedWallpaper.originalImageCacheKey(): String? =
+    metadata.imageUrl?.let { "wallpaper-original:$it" }
+
 internal fun interface GallerySink {
-    fun write(source: File, mimeType: String, displayName: String)
+    fun write(source: File, mimeType: String, displayName: String): GallerySaveResult
 }
 
 internal class MediaStoreGallerySink(private val resolver: ContentResolver) : GallerySink {
-    override fun write(source: File, mimeType: String, displayName: String) {
+    override fun write(source: File, mimeType: String, displayName: String): GallerySaveResult {
+        val collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        val exists = resolver.query(
+            collection,
+            arrayOf(MediaStore.Images.Media._ID),
+            "${MediaStore.Images.Media.DISPLAY_NAME} = ? AND " +
+                "${MediaStore.Images.Media.RELATIVE_PATH} = ? AND " +
+                "${MediaStore.Images.Media.IS_PENDING} = 0",
+            arrayOf(displayName, ALBUM_PATH),
+            null,
+        )?.use { it.moveToFirst() } == true
+        if (exists) return GallerySaveResult.AlreadySaved
+
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, displayName)
             put(MediaStore.Images.Media.MIME_TYPE, mimeType)
-            put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/Wallpaper Moe")
+            put(MediaStore.Images.Media.RELATIVE_PATH, ALBUM_PATH)
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }
-        val collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         val item = resolver.insert(collection, values) ?: throw IOException("gallery insert failed")
         try {
             resolver.openOutputStream(item, "w")?.use { output ->
@@ -110,16 +98,37 @@ internal class MediaStoreGallerySink(private val resolver: ContentResolver) : Ga
             if (resolver.update(item, values, null, null) != 1) {
                 throw IOException("gallery publish failed")
             }
+            return GallerySaveResult.Saved
         } catch (e: Exception) {
             resolver.delete(item, null, null)
             throw e
         }
     }
+
+    private companion object {
+        val ALBUM_PATH = "${Environment.DIRECTORY_PICTURES}/Wallpaper Moe/"
+    }
 }
 
-private data class GalleryImage(
-    val file: File,
-    val mimeType: String,
-    val extension: String,
-    val temporary: Boolean,
-)
+private fun File.sha256(): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    inputStream().use { input ->
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        while (true) {
+            val count = input.read(buffer)
+            if (count < 0) break
+            digest.update(buffer, 0, count)
+        }
+    }
+    val hex = CharArray(64)
+    digest.digest().forEachIndexed { index, byte ->
+        val value = byte.toInt() and 0xff
+        hex[index * 2] = HEX[value ushr 4]
+        hex[index * 2 + 1] = HEX[value and 0x0f]
+    }
+    return String(hex)
+}
+
+private data class GalleryImage(val mimeType: String, val extension: String)
+
+private const val HEX = "0123456789abcdef"

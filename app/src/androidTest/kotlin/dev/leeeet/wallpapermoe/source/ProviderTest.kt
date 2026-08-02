@@ -237,7 +237,6 @@ class ProviderTest {
         assertEquals(listOf("c1", "c2"), channels.map { it.id })
         assertEquals("Travel", channels[0].name)
         assertEquals(42, channels[0].subscribers)
-        assertTrue(channels[0].recommended)
         assertTrue("a channel with no id is unusable", channels.none { it.name.contains("nameless") })
     }
 

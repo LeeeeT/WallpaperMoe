@@ -1,6 +1,5 @@
 package dev.leeeet.wallpapermoe.service
 
-import android.app.ForegroundServiceStartNotAllowedException
 import android.content.Context
 import android.content.Intent
 import dev.leeeet.wallpapermoe.data.MoeSettings
@@ -31,10 +30,7 @@ object Engine {
             context.startForegroundService(Intent(context, RotationService::class.java))
             _blocked.value = false
             true
-        } catch (e: ForegroundServiceStartNotAllowedException) {
-            _blocked.value = true
-            false
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             _blocked.value = true
             false
         }

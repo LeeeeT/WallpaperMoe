@@ -10,7 +10,7 @@ data class Favorites(
 ) : Source {
 
     @Serializable
-    private data class State(val next: Int = 0)
+    private data class State(val next: Int)
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample {
         val favorites = ctx.archive.favorites.value

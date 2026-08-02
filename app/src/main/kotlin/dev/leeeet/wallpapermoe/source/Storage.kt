@@ -92,7 +92,7 @@ private const val KEEP_SAMPLES = 2
 @Serializable
 private data class StoredSample(
     val id: String,
-    val metadata: WallpaperMetadata = WallpaperMetadata(),
+    val metadata: WallpaperMetadata,
 )
 
 private const val STORED_IMAGE = "image.wp"

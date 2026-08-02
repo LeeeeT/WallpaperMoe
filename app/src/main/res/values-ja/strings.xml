@@ -66,6 +66,7 @@
     <string name="wallpaper_preview_description">元の壁紙のプレビュー</string>
     <string name="preview_unavailable">元の画像を読み込めませんでした。</string>
     <string name="gallery_save_success">ギャラリーに保存しました</string>
+    <string name="gallery_save_already_saved">ギャラリーに保存済みです</string>
     <string name="gallery_save_failure">ギャラリーに保存できませんでした</string>
     <string name="wallpaper_artist">作者: %1$s</string>
     <string name="wallpaper_artist_unknown">作者を見る</string>
@@ -180,9 +181,6 @@
     <string name="sorting_favorites">お気に入り数順</string>
 
     <string name="summary_anything">すべて</string>
-    <plurals name="summary_channels">
-        <item quantity="other">%1$d 個のチャンネル</item>
-    </plurals>
     <plurals name="summary_sources_in_turn">
         <item quantity="other">%1$d 個のソースを順番に</item>
     </plurals>

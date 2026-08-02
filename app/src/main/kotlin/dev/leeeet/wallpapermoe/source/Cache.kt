@@ -22,16 +22,16 @@ data class Cache(
     /** What the cache remembers between samples, kept in its folder. Entries are oldest first. */
     @Serializable
     private data class State(
-        val entries: List<String> = emptyList(),
-        val cursor: Int = 0,
-        val lastAddedAt: Long = 0L,
+        val entries: List<String>,
+        val cursor: Int,
+        val lastAddedAt: Long,
     )
 
     private val mutex = Mutex()
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample = mutex.withLock {
         val dir = ctx.storage.dir(store)
-        val state = dir.loadState<State>() ?: State()
+        val state = dir.loadState<State>() ?: State(emptyList(), 0, 0L)
         val live = dir.liveNames(state.entries)
         val now = System.currentTimeMillis()
         val due = refreshHours > 0 && now - state.lastAddedAt >= refreshHours * 3_600_000L

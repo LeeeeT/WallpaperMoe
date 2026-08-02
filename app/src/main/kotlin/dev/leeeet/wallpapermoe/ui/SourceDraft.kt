@@ -1,9 +1,13 @@
 package dev.leeeet.wallpapermoe.ui
 
 import dev.leeeet.wallpapermoe.source.CacheOptions
+import dev.leeeet.wallpapermoe.source.CacheRefresh
+import dev.leeeet.wallpapermoe.source.CACHE_CAPACITY_RANGE
+import dev.leeeet.wallpapermoe.source.CACHE_CAPACITY_STEP
 import dev.leeeet.wallpapermoe.source.CombineMode
 import dev.leeeet.wallpapermoe.source.SelectionMode
 import dev.leeeet.wallpapermoe.source.LibraryProblem
+import dev.leeeet.wallpapermoe.source.PandoraChannel
 import dev.leeeet.wallpapermoe.source.PrefetchOptions
 import dev.leeeet.wallpapermoe.source.SourceDefinition
 import dev.leeeet.wallpapermoe.source.SourceId
@@ -16,7 +20,6 @@ import dev.leeeet.wallpapermoe.source.kind
 import dev.leeeet.wallpapermoe.source.problem
 import dev.leeeet.wallpapermoe.source.referencedSourceIds
 import dev.leeeet.wallpapermoe.source.upserting
-import kotlin.math.abs
 
 /** Incomplete user input for one visible source. Persistence identity lives in the editor session. */
 data class SourceDraft(
@@ -24,28 +27,13 @@ data class SourceDraft(
     val recipe: SourceRecipeDraft,
 )
 
-/** How often a cache is allowed to pull one more image in. */
-enum class CacheRefresh(val hours: Int) {
-    NEVER(0),
-    HOURLY(1),
-    SIX_HOURS(6),
-    DAILY(24),
-    ;
-
-    companion object {
-        /** Snaps a stored interval onto the choices the editor offers. */
-        fun nearest(hours: Int): CacheRefresh = entries.minBy { abs(it.hours - hours) }
-    }
-}
-
 sealed interface SourceRecipeDraft {
     data class Favorites(
         val mode: SelectionMode = SelectionMode.RANDOM,
     ) : SourceRecipeDraft
 
     data class Pandora(
-        val channelIds: List<String> = emptyList(),
-        val channelLabels: List<String> = emptyList(),
+        val channels: List<PandoraChannel> = emptyList(),
     ) : SourceRecipeDraft
 
     data class Wallhaven(
@@ -118,7 +106,7 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
     val recipeProblem = when (val value = recipe) {
         is SourceRecipeDraft.Favorites -> null
         is SourceRecipeDraft.Pandora ->
-            if (value.channelIds.isEmpty()) DraftProblem.PandoraChannelMissing else null
+            if (value.channels.isEmpty()) DraftProblem.PandoraChannelMissing else null
 
         is SourceRecipeDraft.Wallhaven -> when {
             !value.general && !value.anime && !value.people -> DraftProblem.WallhavenCategoryMissing
@@ -149,7 +137,10 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
         LibraryProblem.ReferenceCycle -> DraftProblem.ReferenceCycle
         LibraryProblem.BlankName -> DraftProblem.BlankName
         LibraryProblem.DuplicateName -> DraftProblem.DuplicateName
-        else -> DraftProblem.MissingReference
+        LibraryProblem.InvalidId,
+        LibraryProblem.DuplicateId,
+        LibraryProblem.MissingActiveSource,
+        -> error("The existing source library is invalid")
     }
 }
 
@@ -161,14 +152,14 @@ fun SourceDraft.toDefinition(id: SourceId): SourceDefinition = SourceDefinition(
 
 private fun SourceRecipeDraft.toRecipe(): SourceRecipe = when (this) {
     is SourceRecipeDraft.Favorites -> SourceRecipe.Favorites(mode)
-    is SourceRecipeDraft.Pandora -> SourceRecipe.Pandora(channelIds, channelLabels)
+    is SourceRecipeDraft.Pandora -> SourceRecipe.Pandora(channels)
     is SourceRecipeDraft.Wallhaven -> SourceRecipe.Wallhaven(
         query, general, anime, people, sfw, sketchy, nsfw, aspects, sorting, apiKey,
     )
     is SourceRecipeDraft.NekosBest -> SourceRecipe.NekosBest(categories, mode)
     is SourceRecipeDraft.KeepReady -> SourceRecipe.KeepReady(
         sourceId = requireNotNull(sourceId),
-        cache = if (cacheEnabled) CacheOptions(cacheCapacity, cacheRefresh.hours) else null,
+        cache = if (cacheEnabled) CacheOptions(cacheCapacity, cacheRefresh) else null,
         prefetch = if (prefetchEnabled) PrefetchOptions(prefetchDepth) else null,
     )
     is SourceRecipeDraft.Combine -> SourceRecipe.Combine(mode, sourceIds)
@@ -178,7 +169,7 @@ fun SourceDefinition.toDraft(): SourceDraft = SourceDraft(name, recipe.toDraft()
 
 private fun SourceRecipe.toDraft(): SourceRecipeDraft = when (this) {
     is SourceRecipe.Favorites -> SourceRecipeDraft.Favorites(mode)
-    is SourceRecipe.Pandora -> SourceRecipeDraft.Pandora(channelIds.toList(), channelLabels.toList())
+    is SourceRecipe.Pandora -> SourceRecipeDraft.Pandora(channels.toList())
     is SourceRecipe.Wallhaven -> SourceRecipeDraft.Wallhaven(
         query, general, anime, people, sfw, sketchy, nsfw, aspects.toSet(), sorting, apiKey,
     )
@@ -186,8 +177,8 @@ private fun SourceRecipe.toDraft(): SourceRecipeDraft = when (this) {
     is SourceRecipe.KeepReady -> SourceRecipeDraft.KeepReady(
         sourceId = sourceId,
         cacheEnabled = cache != null,
-        cacheCapacity = cache?.capacity?.let(::snapCapacity) ?: DEFAULT_CACHE_CAPACITY,
-        cacheRefresh = cache?.refreshHours?.let(CacheRefresh::nearest) ?: CacheRefresh.DAILY,
+        cacheCapacity = cache?.capacity ?: DEFAULT_CACHE_CAPACITY,
+        cacheRefresh = cache?.refresh ?: CacheRefresh.DAILY,
         prefetchEnabled = prefetch != null,
         prefetchDepth = prefetch?.depth ?: DEFAULT_PREFETCH_DEPTH,
     )
@@ -223,17 +214,6 @@ fun SourceLibrary.canReference(ownerId: SourceId, candidateId: SourceId): Boolea
         return byId[id]?.recipe?.referencedSourceIds.orEmpty().any(::reachesOwner)
     }
     return !reachesOwner(candidateId)
-}
-
-/** The cache size the editor's slider can express, in steps of [CACHE_CAPACITY_STEP]. */
-val CACHE_CAPACITY_RANGE = 10..100
-const val CACHE_CAPACITY_STEP = 10
-
-/** Rounds a stored capacity onto a slider stop, so the editor always shows a reachable value. */
-private fun snapCapacity(capacity: Int): Int {
-    val clamped = capacity.coerceIn(CACHE_CAPACITY_RANGE)
-    val stops = CACHE_CAPACITY_RANGE.step(CACHE_CAPACITY_STEP)
-    return stops.minBy { abs(it - clamped) }
 }
 
 private const val DEFAULT_CACHE_CAPACITY = 20

@@ -76,7 +76,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -87,6 +86,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.leeeet.wallpapermoe.R
 import dev.leeeet.wallpapermoe.source.CombineMode
+import dev.leeeet.wallpapermoe.source.CacheRefresh
+import dev.leeeet.wallpapermoe.source.CACHE_CAPACITY_RANGE
+import dev.leeeet.wallpapermoe.source.CACHE_CAPACITY_STEP
+import dev.leeeet.wallpapermoe.source.PandoraChannel
 import dev.leeeet.wallpapermoe.source.SelectionMode
 import dev.leeeet.wallpapermoe.source.SourceRecipe
 import dev.leeeet.wallpapermoe.source.SourceDefinition
@@ -610,7 +613,7 @@ private fun NekosBestCategoryPicker(
     val categories by vm.nekosBestCategories.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.loadNekosBestCategories() }
     var selected by remember { mutableStateOf(config.categories.toSet()) }
-    val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .6f
+    val listMaxHeight = windowHeight() * .6f
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         Column(
@@ -628,7 +631,7 @@ private fun NekosBestCategoryPicker(
                 ) { CircularProgressIndicator() }
                 RemoteListState.Failed -> {
                     EmptyReference(stringResource(R.string.categories_unavailable))
-                    TextButton(onClick = { vm.loadNekosBestCategories(force = true) }) {
+                    TextButton(onClick = vm::retryNekosBestCategories) {
                         Text(stringResource(R.string.action_try_again))
                     }
                 }
@@ -791,7 +794,7 @@ private fun SingleReferenceEditor(
         SourceTypePicker(
             onDismiss = { creating = false },
             onPick = {
-                vm.createSource(it, attachToCurrent = true)
+                vm.createSource(it, SourceSaveTarget.PARENT)
                 creating = false
             },
         )
@@ -866,7 +869,7 @@ private fun ManyEditor(
         SourceTypePicker(
             onDismiss = { creating = false },
             onPick = {
-                vm.createSource(it, attachToCurrent = true)
+                vm.createSource(it, SourceSaveTarget.PARENT)
                 creating = false
             },
         )
@@ -1035,8 +1038,8 @@ private fun PandoraEditor(
         color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         Text(
-            if (config.channelIds.isEmpty()) stringResource(R.string.pandora_no_channels)
-            else config.channelLabels.ifEmpty { config.channelIds }.joinToString(", "),
+            if (config.channels.isEmpty()) stringResource(R.string.pandora_no_channels)
+            else config.channels.joinToString(", ", transform = PandoraChannel::name),
             modifier = Modifier.padding(14.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -1060,8 +1063,12 @@ private fun ChannelPicker(
 ) {
     val channels by vm.channels.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { vm.loadChannels() }
-    var selected by remember { mutableStateOf(config.channelIds.toSet()) }
-    val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .6f
+    var selected by remember { mutableStateOf(config.channels.map(PandoraChannel::id).toSet()) }
+    LaunchedEffect(channels) {
+        val available = (channels as? RemoteListState.Ready)?.items?.mapTo(mutableSetOf()) { it.id }
+        if (available != null) selected = selected.intersect(available)
+    }
+    val listMaxHeight = windowHeight() * .6f
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         Column(
@@ -1081,7 +1088,7 @@ private fun ChannelPicker(
                 }
                 RemoteListState.Failed -> {
                     EmptyReference(stringResource(R.string.channels_unavailable))
-                    TextButton(onClick = { vm.loadChannels(force = true) }) {
+                    TextButton(onClick = vm::retryChannels) {
                         Text(stringResource(R.string.action_try_again))
                     }
                 }
@@ -1111,14 +1118,13 @@ private fun ChannelPicker(
             }
             Button(
                 onClick = {
-                    val labels = when (val ready = channels) {
-                        is RemoteListState.Ready ->
-                            ready.items.filter { it.id in selected }.map { it.name }
-                        else -> emptyList()
-                    }
-                    onChange(config.copy(channelIds = selected.toList(), channelLabels = labels))
+                    val available = (channels as RemoteListState.Ready).items.associateBy { it.id }
+                    onChange(config.copy(channels = selected.map { id ->
+                        available.getValue(id).let { PandoraChannel(it.id, it.name) }
+                    }))
                     onDismiss()
                 },
+                enabled = channels is RemoteListState.Ready,
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(stringResource(R.string.action_save_selection)) }
         }
@@ -1302,7 +1308,7 @@ private fun SourceTypePicker(onDismiss: () -> Unit, onPick: (SourceKind) -> Unit
         ) {
             Text(stringResource(R.string.source_picker_title), style = MaterialTheme.typography.titleLarge)
             LazyColumn(
-                Modifier.heightIn(max = LocalConfiguration.current.screenHeightDp.dp * .6f),
+                Modifier.heightIn(max = windowHeight() * .6f),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(creatable, key = { it.kind }) { source ->
@@ -1339,10 +1345,7 @@ private fun SourceDefinition.localizedSummary(library: SourceLibrary): String = 
         SelectionMode.RANDOM -> stringResource(R.string.favorites_source_summary_random)
         SelectionMode.ROUND_ROBIN -> stringResource(R.string.favorites_source_summary_round_robin)
     }
-    is SourceRecipe.Pandora -> when {
-        value.channelLabels.isNotEmpty() -> value.channelLabels.joinToString(", ")
-        else -> pluralStringResource(R.plurals.summary_channels, value.channelIds.size, value.channelIds.size)
-    }
+    is SourceRecipe.Pandora -> value.channels.joinToString(", ", transform = PandoraChannel::name)
     is SourceRecipe.Wallhaven -> stringResource(
         R.string.summary_wallhaven,
         value.query.ifBlank { stringResource(R.string.summary_anything) },
@@ -1363,7 +1366,7 @@ private fun SourceDefinition.localizedSummary(library: SourceLibrary): String = 
     }
     is SourceRecipe.KeepReady -> {
         val cacheSummary = value.cache?.let { cache ->
-            if (cache.refreshHours == 0) {
+            if (cache.refresh == CacheRefresh.NEVER) {
                 pluralStringResource(
                     R.plurals.summary_cache_never,
                     cache.capacity,
@@ -1376,8 +1379,8 @@ private fun SourceDefinition.localizedSummary(library: SourceLibrary): String = 
                     cache.capacity,
                     pluralStringResource(
                         R.plurals.summary_cache_interval,
-                        cache.refreshHours,
-                        cache.refreshHours,
+                        cache.refresh.hours,
+                        cache.refresh.hours,
                     ),
                 )
             }

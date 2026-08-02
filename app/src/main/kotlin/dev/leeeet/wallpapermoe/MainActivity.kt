@@ -19,7 +19,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        Graph.init(applicationContext)
 
         setContent {
             MoeTheme {
@@ -30,11 +29,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** A foreground activity may always start a foreground service, so this repairs a refused start. */
+    /** A foreground activity is an Android-authorized place to apply the saved engine setting. */
     override fun onStart() {
         super.onStart()
         lifecycleScope.launch {
-            if (Graph.prefs.current().enabled) Engine.ensure(this@MainActivity)
+            val graph = (application as MoeApplication).graph
+            Engine.applySettings(this@MainActivity, graph.prefs.current())
         }
     }
 }

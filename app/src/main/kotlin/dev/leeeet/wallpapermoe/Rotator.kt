@@ -37,6 +37,8 @@ class Rotator(
     private val currentFile: File,
 ) {
 
+    enum class Trigger { SCREEN_OFF, MANUAL }
+
     sealed interface Status {
         data object Idle : Status
 
@@ -60,29 +62,27 @@ class Rotator(
      */
     private val running = Mutex()
 
-    /** Both flags are false for a manual "Change now". A rotation already under way wins. */
+    /** A rotation already under way wins. */
     suspend fun rotate(
-        respectInterval: Boolean,
-        onlyWhileScreenOff: Boolean,
+        trigger: Trigger,
         background: CoroutineScope,
     ) {
         if (!running.tryLock()) return
         try {
-            doRotate(respectInterval, onlyWhileScreenOff, background)
+            doRotate(trigger, background)
         } finally {
             running.unlock()
         }
     }
 
     private suspend fun doRotate(
-        respectInterval: Boolean,
-        onlyWhileScreenOff: Boolean,
+        trigger: Trigger,
         background: CoroutineScope,
     ) {
         val settings = prefs.current()
         if (!settings.enabled) return
 
-        if (respectInterval && settings.interval.minutes > 0) {
+        if (trigger == Trigger.SCREEN_OFF && settings.interval.minutes > 0) {
             val since = System.currentTimeMillis() - prefs.lastRotationAt.first()
             if (since < settings.interval.minutes * 60_000L) return
         }
@@ -115,7 +115,11 @@ class Rotator(
         }
 
         val targets = ApplyTargets(lock = settings.applyToLock, home = settings.applyToHome)
-        _status.value = when (val result = applier.apply(sampled.prepared, targets, onlyWhileScreenOff)) {
+        _status.value = when (val result = applier.apply(
+            sampled.prepared,
+            targets,
+            onlyWhileScreenOff = trigger == Trigger.SCREEN_OFF,
+        )) {
             is ApplyResult.Success -> {
                 prefs.markRotated(System.currentTimeMillis())
                 rememberCurrent(sampled.prepared)

@@ -29,7 +29,7 @@ enum class RotationInterval(val minutes: Int) {
     ;
 
     companion object {
-        fun fromMinutes(m: Int): RotationInterval = entries.firstOrNull { it.minutes == m } ?: EVERY_LOCK
+        fun fromMinutes(m: Int): RotationInterval = entries.single { it.minutes == m }
     }
 }
 
@@ -37,7 +37,6 @@ data class MoeSettings(
     val applyToLock: Boolean,
     val applyToHome: Boolean,
     val interval: RotationInterval,
-    val installId: String,
 ) {
     val enabled: Boolean get() = applyToLock || applyToHome
 }
@@ -49,7 +48,6 @@ class Prefs(private val context: Context) {
             applyToLock = p[KEY_APPLY_LOCK] ?: true,
             applyToHome = p[KEY_APPLY_HOME] ?: true,
             interval = RotationInterval.fromMinutes(p[KEY_INTERVAL] ?: 0),
-            installId = p[KEY_INSTALL_ID] ?: "",
         )
     }
 

@@ -263,9 +263,8 @@ fun newStoreName(): String = UUID.randomUUID().toString()
 
 fun pandora(
     channelIds: List<String>,
-    channelLabels: List<String> = emptyList(),
     store: String = newStoreName(),
-) = Pandora(channelIds, channelLabels, store)
+) = Pandora(channelIds, store)
 
 fun nekosBest(
     categories: List<String>,

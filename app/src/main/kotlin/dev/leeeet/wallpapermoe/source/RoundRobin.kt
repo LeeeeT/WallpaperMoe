@@ -14,7 +14,7 @@ data class RoundRobin(
 
     /** Where the next take lands, kept in this source's folder. */
     @Serializable
-    private data class State(val next: Int = 0)
+    private data class State(val next: Int)
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample {
         val dir = ctx.storage.dir(store)

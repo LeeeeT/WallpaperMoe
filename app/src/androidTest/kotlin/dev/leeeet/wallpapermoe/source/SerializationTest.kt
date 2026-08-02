@@ -21,14 +21,14 @@ class SerializationTest {
         val pandora = SourceDefinition(
             newSourceId(),
             "pandora-1",
-            SourceRecipe.Pandora(listOf("travel"), listOf("Travel")),
+            SourceRecipe.Pandora(listOf(PandoraChannel("travel", "Travel"))),
         )
         val ready = SourceDefinition(
             newSourceId(),
             "keep-ready-1",
             SourceRecipe.KeepReady(
                 pandora.id,
-                cache = CacheOptions(capacity = 20, refreshHours = 24),
+                cache = CacheOptions(capacity = 20, refresh = CacheRefresh.DAILY),
                 prefetch = PrefetchOptions(depth = 3),
             ),
         )
@@ -52,7 +52,32 @@ class SerializationTest {
         assertThrows(Exception::class.java) {
             documentJson.decodeFromString(
                 SourceRecipe.serializer(),
-                """{"type":"keep_ready","sourceId":"","cache":{"capacity":0,"refreshHours":24}}""",
+                """{"type":"keep_ready","sourceId":"","cache":{"capacity":0,"refresh":"DAILY"}}""",
+            )
+        }
+    }
+
+    @Test
+    fun savedDocumentsRejectUnknownFields() {
+        assertThrows(Exception::class.java) {
+            documentJson.decodeFromString(
+                SourceLibrary.serializer(),
+                """{"sources":[],"obsolete":true}""",
+            )
+        }
+    }
+
+    @Test
+    fun authoringOptionsOnlyRepresentEditorChoices() {
+        assertThrows(IllegalArgumentException::class.java) {
+            CacheOptions(capacity = 21, refresh = CacheRefresh.DAILY)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            SourceRecipe.Pandora(
+                listOf(
+                    PandoraChannel("travel", "Travel"),
+                    PandoraChannel("travel", "Travel again"),
+                ),
             )
         }
     }

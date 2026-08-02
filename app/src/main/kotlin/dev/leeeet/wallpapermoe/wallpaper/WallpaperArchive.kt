@@ -27,15 +27,15 @@ class WallpaperArchive(private val root: File) {
     @Serializable
     private data class Record(
         val id: String,
-        val metadata: WallpaperMetadata = WallpaperMetadata(),
+        val metadata: WallpaperMetadata,
         val fileName: String,
         val savedAt: Long,
     )
 
     @Serializable
     private data class Document(
-        val history: List<Record> = emptyList(),
-        val favorites: List<Record> = emptyList(),
+        val history: List<Record>,
+        val favorites: List<Record>,
     )
 
     private val mutex = Mutex()
@@ -56,7 +56,7 @@ class WallpaperArchive(private val root: File) {
             favoritesDir.mkdirs()
             val decoded = runCatching {
                 documentJson.decodeFromString<Document>(documentFile.readText())
-            }.getOrNull() ?: Document()
+            }.getOrNull() ?: Document(emptyList(), emptyList())
             val clean = Document(
                 history = decoded.history.liveIn(historyDir).take(HISTORY_LIMIT),
                 favorites = decoded.favorites.liveIn(favoritesDir),

@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
+import androidx.core.graphics.createBitmap
 import dev.leeeet.wallpapermoe.net.Http
 import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
 import dev.leeeet.wallpapermoe.net.await
@@ -94,7 +95,7 @@ class ImagePipeline(private val scratchDir: File) {
         val left = (scaledW - targetW) / 2
         val top = (scaledH - targetH) / 2
 
-        val out = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
+        val out = createBitmap(targetW, targetH)
         Canvas(out).drawBitmap(decoded, null, Rect(-left, -top, scaledW - left, scaledH - top), null)
         decoded.recycle()
         return out

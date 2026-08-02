@@ -90,7 +90,5 @@ class SampleException(
 
 /** Shared JSON rules for source definitions and their small runtime state files. */
 val documentJson: Json = Json {
-    ignoreUnknownKeys = true
-    coerceInputValues = true
     explicitNulls = false
 }

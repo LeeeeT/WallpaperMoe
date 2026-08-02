@@ -66,6 +66,7 @@
     <string name="wallpaper_preview_description">Original wallpaper preview</string>
     <string name="preview_unavailable">Could not load the original image.</string>
     <string name="gallery_save_success">Saved to gallery</string>
+    <string name="gallery_save_already_saved">Already in gallery</string>
     <string name="gallery_save_failure">Couldn’t save to gallery</string>
     <string name="wallpaper_artist">Art by %1$s</string>
     <string name="wallpaper_artist_unknown">View artist</string>
@@ -182,10 +183,6 @@
     <string name="sorting_favorites">Most favourited</string>
 
     <string name="summary_anything">Anything</string>
-    <plurals name="summary_channels">
-        <item quantity="one">%1$d channel</item>
-        <item quantity="other">%1$d channels</item>
-    </plurals>
     <plurals name="summary_sources_in_turn">
         <item quantity="one">%1$d source, in turn</item>
         <item quantity="other">%1$d sources, in turn</item>

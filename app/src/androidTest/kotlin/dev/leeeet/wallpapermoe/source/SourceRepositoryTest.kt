@@ -101,7 +101,7 @@ class SourceRepositoryTest {
         val ready = SourceDefinition(
             newSourceId(),
             "keep-ready-1",
-            SourceRecipe.KeepReady(child.id, cache = CacheOptions(20, 24)),
+            SourceRecipe.KeepReady(child.id, cache = CacheOptions(20, CacheRefresh.DAILY)),
         )
         runBlocking {
             repository.upsert(child)
@@ -150,7 +150,7 @@ class SourceRepositoryTest {
             "keep-ready-1",
             SourceRecipe.KeepReady(
                 input.id,
-                cache = CacheOptions(20, 24),
+                cache = CacheOptions(20, CacheRefresh.DAILY),
                 prefetch = PrefetchOptions(3),
             ),
         )

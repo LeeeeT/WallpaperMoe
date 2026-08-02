@@ -24,16 +24,28 @@ class PandoraApi(
     data class Channel(
         val id: String,
         val name: String,
-        val coverUrl: String?,
-        val recommended: Boolean,
         val subscribers: Int?,
     )
 
+    sealed interface Image {
+        val id: String
+        fun urlFor(widthPx: Int): String
+    }
+
     /** The CDN resizes by path, so the URL is built per width. */
-    data class Image(val id: String, val root: String?, val locator: String?, val fixed: String?) {
-        fun urlFor(widthPx: Int): String =
-            if (root != null && locator != null) "$root$FORMAT/w$widthPx/$locator"
-            else fixed ?: throw IllegalStateException()
+    private data class ResizableImage(
+        override val id: String,
+        val root: String,
+        val locator: String,
+    ) : Image {
+        override fun urlFor(widthPx: Int) = "$root$FORMAT/w$widthPx/$locator"
+    }
+
+    private data class FixedImage(
+        override val id: String,
+        val url: String,
+    ) : Image {
+        override fun urlFor(widthPx: Int) = url
     }
 
     suspend fun channels(): List<Channel> {
@@ -45,9 +57,6 @@ class PandoraApi(
             Channel(
                 id = id,
                 name = name,
-                coverUrl = item.clUrl?.toImage("")?.urlFor(COVER_WIDTH_PX)
-                    ?: item.screenUrl?.urlFull?.takeIf { it.isNotBlank() }?.toHttps(),
-                recommended = item.defSub == 1,
                 subscribers = item.subscribedNum,
             )
         }
@@ -98,12 +107,12 @@ class PandoraApi(
     private fun ClUrl.toImage(id: String): Image? {
         val root = urlRoot?.takeIf { it.isNotBlank() }?.toHttps()
         val loc = locator?.takeIf { it.isNotBlank() }
-        if (root != null && loc != null) return Image(id, root, loc, null)
+        if (root != null && loc != null) return ResizableImage(id, root, loc)
         val fixed = urlFull?.takeIf { it.isNotBlank() }
             ?: urlH?.takeIf { it.isNotBlank() }
             ?: urlM?.takeIf { it.isNotBlank() }
             ?: urlL?.takeIf { it.isNotBlank() }
-        return fixed?.let { Image(id, null, null, it.toHttps()) }
+        return fixed?.let { FixedImage(id, it.toHttps()) }
     }
 
     private fun String.toHttps() =
@@ -116,7 +125,6 @@ class PandoraApi(
         const val FEATURE_VER = "20160831"
         const val TYPE_IMAGE = "image"
         const val FORMAT = "webp"
-        const val COVER_WIDTH_PX = 480
     }
 }
 
@@ -139,10 +147,7 @@ private data class IndexResponse(val items: List<IndexItem> = emptyList())
 private data class IndexItem(
     val tagId: String? = null,
     val name: String? = null,
-    @SerialName("def_sub") val defSub: Int? = null,
     @SerialName("subscribed_num") val subscribedNum: Int? = null,
-    @SerialName("cl_url") val clUrl: ClUrl? = null,
-    @SerialName("screen_url") val screenUrl: ClUrl? = null,
 )
 
 @Serializable

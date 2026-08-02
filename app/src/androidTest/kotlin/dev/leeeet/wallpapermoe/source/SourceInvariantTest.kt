@@ -15,7 +15,7 @@ class SourceInvariantTest {
     @Test
     fun runtimeSourceSettingsCannotBeStructurallyInvalid() {
         val source = wallhaven()
-        assertThrows(IllegalArgumentException::class.java) { Pandora(emptyList(), emptyList(), "p") }
+        assertThrows(IllegalArgumentException::class.java) { Pandora(emptyList(), "p") }
         assertThrows(IllegalArgumentException::class.java) { Cache(source, 0, 24, "c") }
         assertThrows(IllegalArgumentException::class.java) { Cache(source, 20, -1, "c") }
         assertThrows(IllegalArgumentException::class.java) { Prefetch(source, 0, "p") }

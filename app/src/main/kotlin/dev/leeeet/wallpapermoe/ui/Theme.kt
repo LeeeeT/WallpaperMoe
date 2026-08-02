@@ -9,8 +9,11 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -46,6 +49,11 @@ private val MoeTypography = Typography(
 
 internal val MoeContentMaxWidth = 720.dp
 internal val MoeNavigationRailBreakpoint = 600.dp
+
+@Composable
+internal fun windowHeight(): Dp = with(LocalDensity.current) {
+    LocalWindowInfo.current.containerSize.height.toDp()
+}
 
 @Composable
 fun MoeTheme(

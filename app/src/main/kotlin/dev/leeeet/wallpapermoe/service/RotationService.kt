@@ -11,9 +11,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.IBinder
-import dev.leeeet.wallpapermoe.Graph
 import dev.leeeet.wallpapermoe.MainActivity
+import dev.leeeet.wallpapermoe.MoeApplication
 import dev.leeeet.wallpapermoe.R
+import dev.leeeet.wallpapermoe.Rotator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,14 +42,11 @@ class RotationService : Service() {
     override fun onCreate() {
         super.onCreate()
         isRunning = true
-        Graph.init(applicationContext)
         goForeground()
         register()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        goForeground()
-        register()
         if (intent?.action == ACTION_ROTATE_NOW) rotateNow()
         return START_STICKY
     }
@@ -78,9 +76,8 @@ class RotationService : Service() {
         // it has already downloaded.
         if (lockJob?.isActive == true) return
         lockJob = scope.launch {
-            Graph.rotator.rotate(
-                respectInterval = true,
-                onlyWhileScreenOff = true,
+            (application as MoeApplication).graph.rotator.rotate(
+                trigger = Rotator.Trigger.SCREEN_OFF,
                 background = scope,
             )
         }
@@ -96,9 +93,8 @@ class RotationService : Service() {
 
     private fun rotateNow() {
         scope.launch {
-            Graph.rotator.rotate(
-                respectInterval = false,
-                onlyWhileScreenOff = false,
+            (application as MoeApplication).graph.rotator.rotate(
+                trigger = Rotator.Trigger.MANUAL,
                 background = scope,
             )
         }

@@ -79,7 +79,9 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import dev.leeeet.wallpapermoe.R
 import dev.leeeet.wallpapermoe.net.APP_USER_AGENT
+import dev.leeeet.wallpapermoe.wallpaper.GallerySaveResult
 import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
+import dev.leeeet.wallpapermoe.wallpaper.originalImageCacheKey
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
@@ -308,23 +310,30 @@ internal fun WallpaperPreviewDialog(
     favorite: Boolean,
     onDismiss: () -> Unit,
     onFavorite: () -> Unit,
-    onSave: ((Boolean) -> Unit) -> Unit,
+    onSave: ((GallerySaveResult) -> Unit) -> Unit,
 ) {
     FullScreenDialog(onDismiss) {
         val context = LocalContext.current
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
         val savedMessage = stringResource(R.string.gallery_save_success)
+        val alreadySavedMessage = stringResource(R.string.gallery_save_already_saved)
         val failedMessage = stringResource(R.string.gallery_save_failure)
         var loading by remember(wallpaper.id) { mutableStateOf(true) }
         var failed by remember(wallpaper.id) { mutableStateOf(false) }
+        var saving by remember(wallpaper.id) { mutableStateOf(false) }
+        var originalReady by remember(wallpaper.id) { mutableStateOf(false) }
         var transform by remember(wallpaper.id) { mutableStateOf(ImageTransform()) }
         var viewport by remember(wallpaper.id) { mutableStateOf(IntSize.Zero) }
         var imageSize by remember(wallpaper.id) { mutableStateOf(Size.Zero) }
+        val originalCacheKey = remember(wallpaper.id) {
+            wallpaper.originalImageCacheKey()
+        }
         val preview = remember(wallpaper.id) {
             wallpaper.metadata.imageUrl?.let { url ->
                 ImageRequest.Builder(context)
                     .data(url)
+                    .diskCacheKey(originalCacheKey)
                     .httpHeaders(
                         NetworkHeaders.Builder()
                             .set("User-Agent", APP_USER_AGENT)
@@ -360,15 +369,18 @@ internal fun WallpaperPreviewDialog(
                 onLoading = {
                     loading = true
                     failed = false
+                    originalReady = false
                 },
                 onSuccess = { state ->
                     loading = false
                     failed = false
+                    originalReady = true
                     state.painter.intrinsicSize.takeIf(Size::hasArea)?.let { imageSize = it }
                 },
                 onError = {
                     loading = false
                     failed = true
+                    originalReady = false
                 },
             )
             if (loading) {
@@ -407,12 +419,19 @@ internal fun WallpaperPreviewDialog(
                     shadowElevation = 2.dp,
                 ) {
                     IconButton(
+                        enabled = originalReady && !saving,
                         onClick = {
-                            onSave { success ->
+                            saving = true
+                            onSave { result ->
+                                saving = false
                                 scope.launch {
                                     snackbarHostState.currentSnackbarData?.dismiss()
                                     snackbarHostState.showSnackbar(
-                                        message = if (success) savedMessage else failedMessage,
+                                        message = when (result) {
+                                            GallerySaveResult.Saved -> savedMessage
+                                            GallerySaveResult.AlreadySaved -> alreadySavedMessage
+                                            GallerySaveResult.Failed -> failedMessage
+                                        },
                                         duration = SnackbarDuration.Short,
                                     )
                                 }

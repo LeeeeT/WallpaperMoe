@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import dev.leeeet.wallpapermoe.R
 import dev.leeeet.wallpapermoe.Rotator
 import dev.leeeet.wallpapermoe.data.RotationInterval
+import dev.leeeet.wallpapermoe.source.CacheRefresh
 import dev.leeeet.wallpapermoe.source.SampleFailure
 import dev.leeeet.wallpapermoe.source.SourceProvider
 import dev.leeeet.wallpapermoe.source.SourceKind

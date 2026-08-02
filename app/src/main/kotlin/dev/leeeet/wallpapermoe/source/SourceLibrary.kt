@@ -34,16 +34,38 @@ enum class SourceKind(val slug: String) {
 enum class CombineMode { RANDOM, ROUND_ROBIN, FALLTHROUGH }
 
 @Serializable
-data class CacheOptions(val capacity: Int, val refreshHours: Int) {
+enum class CacheRefresh(val hours: Int) {
+    NEVER(0),
+    HOURLY(1),
+    SIX_HOURS(6),
+    DAILY(24),
+}
+
+val CACHE_CAPACITY_RANGE = 10..100
+const val CACHE_CAPACITY_STEP = 10
+
+@Serializable
+data class CacheOptions(val capacity: Int, val refresh: CacheRefresh) {
     init {
-        require(capacity > 0)
-        require(refreshHours >= 0)
+        require(capacity in CACHE_CAPACITY_RANGE)
+        require(capacity % CACHE_CAPACITY_STEP == 0)
     }
 }
 
 @Serializable
 data class PrefetchOptions(val depth: Int) {
     init { require(depth > 0) }
+}
+
+@Serializable
+data class PandoraChannel(
+    val id: String,
+    val name: String,
+) {
+    init {
+        require(id.isNotBlank())
+        require(name.isNotBlank())
+    }
 }
 
 /** Saved authoring recipes. These deliberately do not mirror the runtime [Source] hierarchy. */
@@ -56,10 +78,12 @@ sealed interface SourceRecipe {
     @Serializable
     @SerialName("pandora")
     data class Pandora(
-        val channelIds: List<String>,
-        val channelLabels: List<String>,
+        val channels: List<PandoraChannel>,
     ) : SourceRecipe {
-        init { require(channelIds.isNotEmpty()) }
+        init {
+            require(channels.isNotEmpty())
+            require(channels.distinctBy(PandoraChannel::id).size == channels.size)
+        }
     }
 
     @Serializable
@@ -223,8 +247,7 @@ fun SourceLibrary.resolveActiveSource(): Source? {
         when (val recipe = definition.recipe) {
             is SourceRecipe.Favorites -> Favorites(recipe.mode, "${definition.id}/favorites")
             is SourceRecipe.Pandora -> Pandora(
-                recipe.channelIds,
-                recipe.channelLabels,
+                recipe.channels.map(PandoraChannel::id),
                 "${definition.id}/pandora",
             )
             is SourceRecipe.Wallhaven -> Wallhaven(
@@ -259,7 +282,7 @@ fun SourceLibrary.resolveActiveSource(): Source? {
                     source = Cache(
                         source = source,
                         capacity = it.capacity,
-                        refreshHours = it.refreshHours,
+                        refreshHours = it.refresh.hours,
                         store = "${definition.id}/cache",
                     )
                 }

@@ -3,7 +3,7 @@ package dev.leeeet.wallpapermoe.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import dev.leeeet.wallpapermoe.Graph
+import dev.leeeet.wallpapermoe.MoeApplication
 import dev.leeeet.wallpapermoe.Rotator
 import dev.leeeet.wallpapermoe.data.MoeSettings
 import dev.leeeet.wallpapermoe.data.RotationInterval
@@ -14,6 +14,7 @@ import dev.leeeet.wallpapermoe.source.SourceId
 import dev.leeeet.wallpapermoe.source.SourceKind
 import dev.leeeet.wallpapermoe.source.SourceLibrary
 import dev.leeeet.wallpapermoe.source.newSourceId
+import dev.leeeet.wallpapermoe.wallpaper.GallerySaveResult
 import dev.leeeet.wallpapermoe.wallpaper.SavedWallpaper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,10 +55,12 @@ private data class EditorSession(
     val id: SourceId,
     val original: SourceDraft?,
     val draft: SourceDraft,
-    val attachToParent: Boolean = false,
+    val saveTarget: SourceSaveTarget,
 ) {
     val dirty: Boolean get() = draft != original
 }
+
+internal enum class SourceSaveTarget { LIBRARY, PARENT }
 
 private data class SourceEditing(
     val stack: List<EditorSession> = emptyList(),
@@ -76,6 +79,7 @@ sealed interface RemoteListState<out T> {
 
 class MoeViewModel(app: Application) : AndroidViewModel(app) {
 
+    private val graph = (app as MoeApplication).graph
     private val tab = MutableStateFlow(Tab.NOW)
     private val sourceEditing = MutableStateFlow(SourceEditing())
 
@@ -87,19 +91,19 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
 
     val state: StateFlow<UiState> = combine(
         combine(
-            Graph.prefs.settings,
-            Graph.sources.source,
-            Graph.sources.library,
-            Graph.rotator.status,
+            graph.prefs.settings,
+            graph.sources.source,
+            graph.sources.library,
+            graph.rotator.status,
             Engine.blocked,
         ) { settings, source, library, status, blocked ->
             CoreState(settings, source, library, status, blocked)
         },
-        combine(Graph.prefs.lastRotationAt, tab, sourceEditing) { rotation, selectedTab, editing ->
+        combine(graph.prefs.lastRotationAt, tab, sourceEditing) { rotation, selectedTab, editing ->
             Triple(rotation, selectedTab, editing)
         },
-        Graph.archive.history,
-        Graph.archive.favorites,
+        graph.archive.history,
+        graph.archive.favorites,
     ) { core, navigation, history, favorites ->
         val (lastRotation, currentTab, editing) = navigation
         UiState(
@@ -108,7 +112,7 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
             sourceLibrary = core.library,
             status = core.status,
             engineBlocked = core.engineBlocked,
-            currentWallpaper = Graph.currentWallpaper.takeIf { it.exists() && it.length() > 0 },
+            currentWallpaper = graph.currentWallpaper.takeIf { it.exists() && it.length() > 0 },
             wallpaperVersion = lastRotation,
             history = history,
             favorites = favorites,
@@ -123,7 +127,7 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = UiState(
-            settings = MoeSettings(true, true, RotationInterval.EVERY_LOCK, ""),
+            settings = MoeSettings(true, true, RotationInterval.EVERY_LOCK),
             source = null,
             sourceLibrary = SourceLibrary(),
             status = Rotator.Status.Idle,
@@ -153,20 +157,25 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         tab.value = value
     }
 
-    fun createSource(kind: SourceKind, attachToCurrent: Boolean = false) {
+    internal fun createSource(kind: SourceKind, saveTarget: SourceSaveTarget = SourceSaveTarget.LIBRARY) {
         val editing = sourceEditing.value
-        val draft = newSourceDraft(kind, Graph.sources.library.value)
+        val draft = newSourceDraft(kind, graph.sources.library.value)
         sourceEditing.value = editing.copy(
-            stack = editing.stack + EditorSession(newSourceId(), null, draft, attachToCurrent),
+            stack = editing.stack + EditorSession(newSourceId(), null, draft, saveTarget),
         )
     }
 
     fun editSource(id: SourceId) {
-        val definition = Graph.sources.library.value.sources.firstOrNull { it.id == id } ?: return
+        val definition = graph.sources.library.value.sources.firstOrNull { it.id == id } ?: return
         val draft = definition.toDraft()
         val editing = sourceEditing.value
         sourceEditing.value = editing.copy(
-            stack = editing.stack + EditorSession(definition.id, draft, draft),
+            stack = editing.stack + EditorSession(
+                definition.id,
+                draft,
+                draft,
+                SourceSaveTarget.LIBRARY,
+            ),
         )
     }
 
@@ -181,15 +190,15 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
     fun saveSource() {
         val editing = sourceEditing.value
         val session = editing.current ?: return
-        val library = Graph.sources.library.value
+        val library = graph.sources.library.value
         if (session.draft.validationProblem(session.id, library) != null) return
         viewModelScope.launch {
-            if (!Graph.sources.upsert(session.draft.toDefinition(session.id))) return@launch
+            if (!graph.sources.upsert(session.draft.toDefinition(session.id))) return@launch
 
             val stack = sourceEditing.value.stack
             if (stack.lastOrNull()?.id != session.id) return@launch
             val remaining = stack.dropLast(1).toMutableList()
-            if (remaining.isNotEmpty() && session.attachToParent) {
+            if (remaining.isNotEmpty() && session.saveTarget == SourceSaveTarget.PARENT) {
                 val parent = remaining.last()
                 remaining[remaining.lastIndex] = parent.copy(
                     draft = parent.draft.attach(session.id),
@@ -243,68 +252,95 @@ class MoeViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun setActiveSource(id: SourceId) = viewModelScope.launch { Graph.sources.setActive(id) }
+    fun setActiveSource(id: SourceId) = viewModelScope.launch { graph.sources.setActive(id) }
 
     fun reorderSources(ids: List<SourceId>) = viewModelScope.launch {
-        Graph.sources.reorderSources(ids)
+        graph.sources.reorderSources(ids)
     }
 
-    fun deleteSource(id: SourceId) = viewModelScope.launch { Graph.sources.delete(id) }
+    fun deleteSource(id: SourceId) = viewModelScope.launch { graph.sources.delete(id) }
 
-    fun loadChannels(force: Boolean = false) = viewModelScope.launch {
-        if (!force && _channels.value is RemoteListState.Ready) return@launch
+    fun loadChannels() {
+        if (_channels.value != RemoteListState.Idle) return
+        requestChannels()
+    }
+
+    fun retryChannels() {
+        if (_channels.value != RemoteListState.Failed) return
+        requestChannels()
+    }
+
+    private fun requestChannels() = viewModelScope.launch {
         _channels.value = RemoteListState.Loading
         _channels.value = try {
-            RemoteListState.Ready(Graph.providers.pandora.channels())
+            RemoteListState.Ready(graph.providers.pandora.channels())
         } catch (_: Exception) {
             RemoteListState.Failed
         }
     }
 
-    fun loadNekosBestCategories(force: Boolean = false) = viewModelScope.launch {
-        if (!force && _nekosBestCategories.value is RemoteListState.Ready) return@launch
+    fun loadNekosBestCategories() {
+        if (_nekosBestCategories.value != RemoteListState.Idle) return
+        requestNekosBestCategories()
+    }
+
+    fun retryNekosBestCategories() {
+        if (_nekosBestCategories.value != RemoteListState.Failed) return
+        requestNekosBestCategories()
+    }
+
+    private fun requestNekosBestCategories() = viewModelScope.launch {
         _nekosBestCategories.value = RemoteListState.Loading
         _nekosBestCategories.value = try {
-            RemoteListState.Ready(Graph.providers.nekosBest.imageCategories())
+            RemoteListState.Ready(graph.providers.nekosBest.imageCategories())
         } catch (_: Exception) {
             RemoteListState.Failed
         }
     }
 
-    fun setApplyToLock(v: Boolean) = viewModelScope.launch { Graph.prefs.setApplyToLock(v) }
-    fun setApplyToHome(v: Boolean) = viewModelScope.launch { Graph.prefs.setApplyToHome(v) }
-    fun setInterval(v: RotationInterval) = viewModelScope.launch { Graph.prefs.setInterval(v) }
+    fun setApplyToLock(v: Boolean) = viewModelScope.launch {
+        graph.prefs.setApplyToLock(v)
+        Engine.applySettings(getApplication(), graph.prefs.current())
+    }
+
+    fun setApplyToHome(v: Boolean) = viewModelScope.launch {
+        graph.prefs.setApplyToHome(v)
+        Engine.applySettings(getApplication(), graph.prefs.current())
+    }
+    fun setInterval(v: RotationInterval) = viewModelScope.launch { graph.prefs.setInterval(v) }
 
     fun rotateNow() = viewModelScope.launch {
-        if (Graph.prefs.settings.first().enabled) Engine.rotateNow(getApplication())
+        if (graph.prefs.settings.first().enabled) Engine.rotateNow(getApplication())
     }
 
     fun addFavorite(wallpaper: SavedWallpaper) = viewModelScope.launch {
-        runCatching { Graph.archive.addFavorite(wallpaper) }
+        runCatching { graph.archive.addFavorite(wallpaper) }
     }
 
     fun removeFavorite(id: String) = viewModelScope.launch {
-        runCatching { Graph.archive.removeFavorite(id) }
+        runCatching { graph.archive.removeFavorite(id) }
     }
 
     fun reorderFavorites(ids: List<String>) = viewModelScope.launch {
-        runCatching { Graph.archive.reorderFavorites(ids) }
+        runCatching { graph.archive.reorderFavorites(ids) }
     }
 
-    fun saveToGallery(wallpaper: SavedWallpaper, onResult: (Boolean) -> Unit) = viewModelScope.launch {
-        val success = try {
-            Graph.gallerySaver.save(wallpaper)
-            true
+    fun saveToGallery(
+        wallpaper: SavedWallpaper,
+        onResult: (GallerySaveResult) -> Unit,
+    ) = viewModelScope.launch {
+        val result = try {
+            graph.gallerySaver.save(wallpaper)
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
-            false
+            GallerySaveResult.Failed
         }
-        onResult(success)
+        onResult(result)
     }
 
     fun removeFavorites(ids: Set<String>) = viewModelScope.launch {
-        runCatching { Graph.archive.removeFavorites(ids) }
+        runCatching { graph.archive.removeFavorites(ids) }
     }
 
     private data class CoreState(

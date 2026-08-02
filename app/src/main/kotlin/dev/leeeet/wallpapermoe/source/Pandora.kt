@@ -2,15 +2,9 @@ package dev.leeeet.wallpapermoe.source
 
 import kotlinx.coroutines.CancellationException
 
-/**
- * Xiaomi's Pandora service, restricted to a set of its channels.
- *
- * [channelLabels] is denormalised alongside the ids so the editor can name what
- * was picked without a round trip.
- */
+/** Xiaomi's Pandora service, restricted to a set of its channels. */
 data class Pandora(
     val channelIds: List<String>,
-    val channelLabels: List<String>,
     val store: String,
 ) : Source {
 

@@ -7,17 +7,16 @@ import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import dev.leeeet.wallpapermoe.net.Http
-import dev.leeeet.wallpapermoe.service.Engine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MoeApplication : Application(), SingletonImageLoader.Factory {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    lateinit var graph: AppGraph
+        private set
 
     /** Shares the providers' OkHttp client, so pooling and timeouts are shared too. */
     override fun newImageLoader(context: PlatformContext): ImageLoader =
@@ -28,14 +27,11 @@ class MoeApplication : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
-        Graph.init(this)
+        graph = AppGraph(this)
 
         scope.launch {
-            Graph.archive.load()
-            Graph.sources.load()
-            Graph.prefs.settings
-                .distinctUntilChanged()
-                .collect { Engine.applySettings(this@MoeApplication, it) }
+            graph.archive.load()
+            graph.sources.load()
         }
     }
 }

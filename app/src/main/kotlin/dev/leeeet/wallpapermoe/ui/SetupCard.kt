@@ -127,14 +127,7 @@ fun SetupCard(state: SetupState, modifier: Modifier = Modifier) {
                             Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                             "package:${context.packageName}".toUri(),
                         )
-                        runCatching { context.startActivity(intent) }.onFailure {
-                            // Some ROMs strip the direct dialog; fall back to the list.
-                            runCatching {
-                                context.startActivity(
-                                    Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
-                                )
-                            }
-                        }
+                        context.startActivity(intent)
                     },
                 )
             }

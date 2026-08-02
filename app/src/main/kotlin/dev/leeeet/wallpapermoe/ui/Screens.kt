@@ -70,7 +70,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -535,7 +534,7 @@ private fun SourceSelectionSheet(
     onSelect: (SourceDefinition) -> Unit,
     onOpenStudio: () -> Unit,
 ) {
-    val listMaxHeight = LocalConfiguration.current.screenHeightDp.dp * .55f
+    val listMaxHeight = windowHeight() * .55f
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = expandedSheetState()) {
         Column(
             Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
@@ -698,7 +697,7 @@ private fun SettingsScreen(state: UiState, vm: MoeViewModel) {
             ) {
                 Text(stringResource(R.string.settings_choose_rhythm), style = MaterialTheme.typography.titleLarge)
                 LazyColumn(
-                    modifier = Modifier.heightIn(max = LocalConfiguration.current.screenHeightDp.dp * .6f),
+                    modifier = Modifier.heightIn(max = windowHeight() * .6f),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {

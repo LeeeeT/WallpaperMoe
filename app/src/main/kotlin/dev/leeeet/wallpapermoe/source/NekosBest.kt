@@ -19,7 +19,7 @@ data class NekosBest(
     }
 
     @Serializable
-    private data class State(val next: Int = 0)
+    private data class State(val next: Int)
 
     override suspend fun sample(ctx: SampleContext): WallpaperSample {
         val category = categories[categoryIndex(ctx)]

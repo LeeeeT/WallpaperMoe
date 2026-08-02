@@ -66,6 +66,7 @@
     <string name="wallpaper_preview_description">原图预览</string>
     <string name="preview_unavailable">无法加载原图。</string>
     <string name="gallery_save_success">已保存到相册</string>
+    <string name="gallery_save_already_saved">已在相册中</string>
     <string name="gallery_save_failure">无法保存到相册</string>
     <string name="wallpaper_artist">作者：%1$s</string>
     <string name="wallpaper_artist_unknown">查看作者</string>
@@ -180,9 +181,6 @@
     <string name="sorting_favorites">收藏最多</string>
 
     <string name="summary_anything">不限</string>
-    <plurals name="summary_channels">
-        <item quantity="other">%1$d 个频道</item>
-    </plurals>
     <plurals name="summary_sources_in_turn">
         <item quantity="other">轮流使用 %1$d 个来源</item>
     </plurals>
