@@ -31,7 +31,7 @@ Open **Studio** to create and reuse named sources:
 | **Keep ready** | Adds optional caching and prefetching to an existing source. |
 | **Combine** | Uses several existing sources randomly, in order, or as fallbacks. |
 | **Favorites** | Samples your on-device favorites randomly or in round-robin order. |
-| **Wallhaven** | Searches wallhaven.cc by query, category, purity, and order. |
+| **Wallhaven** | Searches wallhaven.cc by query, category, purity, aspect ratio, and order. |
 | **Nekos.best** | Discovers its current static-image categories and samples selected categories randomly or in round-robin order. |
 | **Pandora** | Samples from Xiaomi's public wallpaper channels. |
 

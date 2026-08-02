@@ -162,6 +162,10 @@
     <string name="wallhaven_sfw">SFW</string>
     <string name="wallhaven_sketchy">较敏感</string>
     <string name="wallhaven_nsfw">NSFW</string>
+    <string name="wallhaven_aspect_ratio">宽高比</string>
+    <string name="wallhaven_portrait">竖向</string>
+    <string name="wallhaven_square">方形</string>
+    <string name="wallhaven_landscape">横向</string>
     <string name="wallhaven_order">排序</string>
     <string name="wallhaven_api_key">API 密钥（NSFW 必需）</string>
     <string name="sorting_random">随机</string>
@@ -203,6 +207,7 @@
     <string name="validation_source_reference_cycle">这样会让两个来源互相使用</string>
     <string name="validation_wallhaven_category">请至少选择一个 Wallhaven 分类</string>
     <string name="validation_wallhaven_purity">请至少选择一个 Wallhaven 尺度等级</string>
+    <string name="validation_wallhaven_aspect">请至少选择一种宽高比</string>
     <string name="validation_wallhaven_nsfw_key">要包含 NSFW 图片，请输入 Wallhaven API 密钥</string>
     <string name="validation_nekos_best_category">请至少选择一个 Nekos.best 图片分类</string>
     <string name="validation_cache_capacity">请至少保存一张壁纸</string>

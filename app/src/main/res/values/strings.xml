@@ -164,6 +164,10 @@
     <string name="wallhaven_sfw">SFW</string>
     <string name="wallhaven_sketchy">Sketchy</string>
     <string name="wallhaven_nsfw">NSFW</string>
+    <string name="wallhaven_aspect_ratio">Aspect ratio</string>
+    <string name="wallhaven_portrait">Portrait</string>
+    <string name="wallhaven_square">Square</string>
+    <string name="wallhaven_landscape">Landscape</string>
     <string name="wallhaven_order">Order</string>
     <string name="wallhaven_api_key">API key (required for NSFW)</string>
     <string name="sorting_random">Random</string>
@@ -212,6 +216,7 @@
     <string name="validation_source_reference_cycle">These sources would end up using each other</string>
     <string name="validation_wallhaven_category">Choose at least one Wallhaven category</string>
     <string name="validation_wallhaven_purity">Choose at least one Wallhaven purity level</string>
+    <string name="validation_wallhaven_aspect">Choose at least one aspect ratio</string>
     <string name="validation_wallhaven_nsfw_key">Enter a Wallhaven API key to include NSFW images</string>
     <string name="validation_nekos_best_category">Choose at least one Nekos.best image category</string>
     <string name="validation_cache_capacity">Save at least one wallpaper</string>

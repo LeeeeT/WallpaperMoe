@@ -95,6 +95,7 @@ fun DraftProblem.localizedMessage(): String = when (this) {
     DraftProblem.PandoraChannelMissing -> stringResource(R.string.validation_pandora_channel)
     DraftProblem.WallhavenCategoryMissing -> stringResource(R.string.validation_wallhaven_category)
     DraftProblem.WallhavenPurityMissing -> stringResource(R.string.validation_wallhaven_purity)
+    DraftProblem.WallhavenAspectMissing -> stringResource(R.string.validation_wallhaven_aspect)
     DraftProblem.WallhavenNsfwKeyMissing -> stringResource(R.string.validation_wallhaven_nsfw_key)
     DraftProblem.NekosBestCategoryMissing -> stringResource(R.string.validation_nekos_best_category)
     DraftProblem.CacheCapacityInvalid -> stringResource(R.string.validation_cache_capacity)

@@ -241,7 +241,11 @@ class Env(nekosBestIntervalMs: Long = 0L) {
     }
 }
 
-fun wallhaven(query: String = "", store: String = query) = Wallhaven(
+fun wallhaven(
+    query: String = "",
+    store: String = query,
+    aspects: Set<WallhavenAspect> = WallhavenAspect.ALL,
+) = Wallhaven(
     query = query,
     general = true,
     anime = false,
@@ -249,6 +253,7 @@ fun wallhaven(query: String = "", store: String = query) = Wallhaven(
     sfw = true,
     sketchy = false,
     nsfw = false,
+    aspects = aspects,
     sorting = WallhavenSorting.RANDOM,
     apiKey = "",
     store = store,

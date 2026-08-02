@@ -6,6 +6,7 @@ import dev.leeeet.wallpapermoe.source.SourceDefinition
 import dev.leeeet.wallpapermoe.source.SourceKind
 import dev.leeeet.wallpapermoe.source.SourceLibrary
 import dev.leeeet.wallpapermoe.source.SourceRecipe
+import dev.leeeet.wallpapermoe.source.WallhavenAspect
 import dev.leeeet.wallpapermoe.source.newSourceId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,6 +16,29 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SourceDraftTest {
+
+    @Test
+    fun wallhavenDefaultsToEveryAspectRatio() {
+        val id = newSourceId()
+        val draft = newSourceDraft(SourceKind.WALLHAVEN, SourceLibrary())
+
+        assertNull(draft.validationProblem(id, SourceLibrary()))
+        val saved = draft.toDefinition(id).recipe as SourceRecipe.Wallhaven
+        assertEquals(WallhavenAspect.ALL, saved.aspects)
+    }
+
+    @Test
+    fun wallhavenRequiresAnAspectRatio() {
+        val draft = SourceDraft(
+            "wallhaven-1",
+            SourceRecipeDraft.Wallhaven(aspects = emptySet()),
+        )
+
+        assertEquals(
+            DraftProblem.WallhavenAspectMissing,
+            draft.validationProblem(newSourceId(), SourceLibrary()),
+        )
+    }
 
     @Test
     fun incompleteGroupedRecipesStayDrafts() {

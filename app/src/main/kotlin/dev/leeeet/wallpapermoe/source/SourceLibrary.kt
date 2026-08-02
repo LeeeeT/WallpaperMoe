@@ -72,12 +72,14 @@ sealed interface SourceRecipe {
         val sfw: Boolean,
         val sketchy: Boolean,
         val nsfw: Boolean,
+        val aspects: Set<WallhavenAspect>,
         val sorting: WallhavenSorting,
         val apiKey: String,
     ) : SourceRecipe {
         init {
             require(general || anime || people)
             require(sfw || sketchy || nsfw)
+            require(aspects.isNotEmpty())
             require(!nsfw || apiKey.isNotBlank())
         }
     }
@@ -233,6 +235,7 @@ fun SourceLibrary.resolveActiveSource(): Source? {
                 sfw = recipe.sfw,
                 sketchy = recipe.sketchy,
                 nsfw = recipe.nsfw,
+                aspects = recipe.aspects,
                 sorting = recipe.sorting,
                 apiKey = recipe.apiKey,
                 store = "${definition.id}/wallhaven",

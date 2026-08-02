@@ -19,6 +19,7 @@ class WallhavenApi(private val baseUrl: String = "https://wallhaven.cc/api/v1") 
         val sfw: Boolean = true,
         val sketchy: Boolean = false,
         val nsfw: Boolean = false,
+        val ratios: String? = null,
         val sorting: String = "random",
         val apiKey: String = "",
     )
@@ -28,6 +29,7 @@ class WallhavenApi(private val baseUrl: String = "https://wallhaven.cc/api/v1") 
             if (q.text.isNotBlank()) put("q", q.text.trim())
             put("categories", flags(q.general, q.anime, q.people))
             put("purity", flags(q.sfw, q.sketchy, q.nsfw))
+            q.ratios?.let { put("ratios", it) }
             put("sorting", q.sorting)
             if (q.apiKey.isNotBlank()) put("apikey", q.apiKey.trim())
         }

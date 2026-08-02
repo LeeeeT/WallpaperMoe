@@ -5,6 +5,17 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
 
 @Serializable
+enum class WallhavenAspect(val apiValues: List<String>) {
+    PORTRAIT(listOf("portrait")),
+    SQUARE(listOf("1x1", "3x2", "4x3", "5x4")),
+    LANDSCAPE(listOf("landscape"));
+
+    companion object {
+        val ALL: Set<WallhavenAspect> = entries.toSet()
+    }
+}
+
+@Serializable
 enum class WallhavenSorting(val apiValue: String) {
     RANDOM("random"),
     DATE_ADDED("date_added"),
@@ -22,6 +33,7 @@ data class Wallhaven(
     val sfw: Boolean,
     val sketchy: Boolean,
     val nsfw: Boolean,
+    val aspects: Set<WallhavenAspect>,
     val sorting: WallhavenSorting,
     val apiKey: String,
     val store: String,
@@ -30,6 +42,7 @@ data class Wallhaven(
     init {
         require(general || anime || people)
         require(sfw || sketchy || nsfw)
+        require(aspects.isNotEmpty())
         require(!nsfw || apiKey.isNotBlank())
     }
 
@@ -44,6 +57,7 @@ data class Wallhaven(
                     sfw = sfw,
                     sketchy = sketchy,
                     nsfw = nsfw,
+                    ratios = aspects.apiRatios(),
                     sorting = sorting.apiValue,
                     apiKey = apiKey,
                 ),
@@ -68,3 +82,10 @@ data class Wallhaven(
         )
     }
 }
+
+internal fun Set<WallhavenAspect>.apiRatios(): String? =
+    if (this == WallhavenAspect.ALL) null
+    else WallhavenAspect.entries
+        .filter { it in this }
+        .flatMap(WallhavenAspect::apiValues)
+        .joinToString(",")

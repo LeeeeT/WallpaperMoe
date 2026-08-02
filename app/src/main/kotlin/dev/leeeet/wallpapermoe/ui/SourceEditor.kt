@@ -84,6 +84,7 @@ import dev.leeeet.wallpapermoe.source.SourceDefinition
 import dev.leeeet.wallpapermoe.source.SourceId
 import dev.leeeet.wallpapermoe.source.SourceKind
 import dev.leeeet.wallpapermoe.source.SourceLibrary
+import dev.leeeet.wallpapermoe.source.WallhavenAspect
 import dev.leeeet.wallpapermoe.source.WallhavenSorting
 import dev.leeeet.wallpapermoe.source.kind
 import dev.leeeet.wallpapermoe.source.referencesTo
@@ -1017,6 +1018,32 @@ private fun WallhavenEditor(draft: SourceDraft, config: SourceRecipeDraft.Wallha
             onClick = { update(config.copy(nsfw = !config.nsfw)) },
             label = { Text(stringResource(R.string.wallhaven_nsfw)) },
         )
+    }
+    CompactChipGroup(stringResource(R.string.wallhaven_aspect_ratio)) {
+        WallhavenAspect.entries.forEach { aspect ->
+            FilterChip(
+                selected = aspect in config.aspects,
+                onClick = {
+                    val aspects = if (aspect in config.aspects) {
+                        config.aspects - aspect
+                    } else {
+                        config.aspects + aspect
+                    }
+                    update(config.copy(aspects = aspects))
+                },
+                label = {
+                    Text(
+                        stringResource(
+                            when (aspect) {
+                                WallhavenAspect.PORTRAIT -> R.string.wallhaven_portrait
+                                WallhavenAspect.SQUARE -> R.string.wallhaven_square
+                                WallhavenAspect.LANDSCAPE -> R.string.wallhaven_landscape
+                            },
+                        ),
+                    )
+                },
+            )
+        }
     }
     WallhavenOrderSelector(config.sorting) {
         update(config.copy(sorting = it))

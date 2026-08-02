@@ -162,6 +162,10 @@
     <string name="wallhaven_sfw">SFW</string>
     <string name="wallhaven_sketchy">際どい</string>
     <string name="wallhaven_nsfw">NSFW</string>
+    <string name="wallhaven_aspect_ratio">アスペクト比</string>
+    <string name="wallhaven_portrait">縦向き</string>
+    <string name="wallhaven_square">正方形</string>
+    <string name="wallhaven_landscape">横向き</string>
     <string name="wallhaven_order">並び順</string>
     <string name="wallhaven_api_key">API キー（NSFW に必要）</string>
     <string name="sorting_random">ランダム</string>
@@ -203,6 +207,7 @@
     <string name="validation_source_reference_cycle">ソース同士が互いを使うことになります</string>
     <string name="validation_wallhaven_category">Wallhaven のカテゴリを 1 つ以上選んでください</string>
     <string name="validation_wallhaven_purity">Wallhaven の健全度を 1 つ以上選んでください</string>
+    <string name="validation_wallhaven_aspect">アスペクト比を 1 つ以上選んでください</string>
     <string name="validation_wallhaven_nsfw_key">NSFW 画像を含めるには Wallhaven の API キーを入力してください</string>
     <string name="validation_nekos_best_category">Nekos.best の画像カテゴリを 1 つ以上選んでください</string>
     <string name="validation_cache_capacity">壁紙を 1 枚以上保存してください</string>

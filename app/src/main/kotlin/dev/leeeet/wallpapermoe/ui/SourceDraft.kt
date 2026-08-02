@@ -10,6 +10,7 @@ import dev.leeeet.wallpapermoe.source.SourceId
 import dev.leeeet.wallpapermoe.source.SourceKind
 import dev.leeeet.wallpapermoe.source.SourceLibrary
 import dev.leeeet.wallpapermoe.source.SourceRecipe
+import dev.leeeet.wallpapermoe.source.WallhavenAspect
 import dev.leeeet.wallpapermoe.source.WallhavenSorting
 import dev.leeeet.wallpapermoe.source.kind
 import dev.leeeet.wallpapermoe.source.problem
@@ -54,6 +55,7 @@ sealed interface SourceRecipeDraft {
         val sfw: Boolean = true,
         val sketchy: Boolean = false,
         val nsfw: Boolean = false,
+        val aspects: Set<WallhavenAspect> = WallhavenAspect.ALL,
         val sorting: WallhavenSorting = WallhavenSorting.RANDOM,
         val apiKey: String = "",
     ) : SourceRecipeDraft
@@ -94,6 +96,7 @@ sealed interface DraftProblem {
     data object PandoraChannelMissing : DraftProblem
     data object WallhavenCategoryMissing : DraftProblem
     data object WallhavenPurityMissing : DraftProblem
+    data object WallhavenAspectMissing : DraftProblem
     data object WallhavenNsfwKeyMissing : DraftProblem
     data object NekosBestCategoryMissing : DraftProblem
     data object CacheCapacityInvalid : DraftProblem
@@ -119,6 +122,7 @@ fun SourceDraft.validationProblem(ownerId: SourceId, library: SourceLibrary): Dr
         is SourceRecipeDraft.Wallhaven -> when {
             !value.general && !value.anime && !value.people -> DraftProblem.WallhavenCategoryMissing
             !value.sfw && !value.sketchy && !value.nsfw -> DraftProblem.WallhavenPurityMissing
+            value.aspects.isEmpty() -> DraftProblem.WallhavenAspectMissing
             value.nsfw && value.apiKey.isBlank() -> DraftProblem.WallhavenNsfwKeyMissing
             else -> null
         }
@@ -158,7 +162,7 @@ private fun SourceRecipeDraft.toRecipe(): SourceRecipe = when (this) {
     is SourceRecipeDraft.Favorites -> SourceRecipe.Favorites(mode)
     is SourceRecipeDraft.Pandora -> SourceRecipe.Pandora(channelIds, channelLabels)
     is SourceRecipeDraft.Wallhaven -> SourceRecipe.Wallhaven(
-        query, general, anime, people, sfw, sketchy, nsfw, sorting, apiKey,
+        query, general, anime, people, sfw, sketchy, nsfw, aspects, sorting, apiKey,
     )
     is SourceRecipeDraft.NekosBest -> SourceRecipe.NekosBest(categories, mode)
     is SourceRecipeDraft.KeepReady -> SourceRecipe.KeepReady(
@@ -175,7 +179,7 @@ private fun SourceRecipe.toDraft(): SourceRecipeDraft = when (this) {
     is SourceRecipe.Favorites -> SourceRecipeDraft.Favorites(mode)
     is SourceRecipe.Pandora -> SourceRecipeDraft.Pandora(channelIds.toList(), channelLabels.toList())
     is SourceRecipe.Wallhaven -> SourceRecipeDraft.Wallhaven(
-        query, general, anime, people, sfw, sketchy, nsfw, sorting, apiKey,
+        query, general, anime, people, sfw, sketchy, nsfw, aspects.toSet(), sorting, apiKey,
     )
     is SourceRecipe.NekosBest -> SourceRecipeDraft.NekosBest(categories.toList(), mode)
     is SourceRecipe.KeepReady -> SourceRecipeDraft.KeepReady(
