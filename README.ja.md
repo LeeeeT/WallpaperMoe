@@ -41,6 +41,8 @@ Wallpaper Moe は壁紙を自動で切り替えます。オンラインのコレ
 
 Wallpaper Moe には **Android 14 以降** と `arm64-v8a` または `x86_64` の端末が必要です。
 
+[![Obtainium で入手](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
+
 1. [GitHub Releases](../../releases) から最新の APK をダウンロードします。
 2. インストールします。APK を開いたアプリからのインストール許可を Android が求めることがあります。
 3. **スタジオ** を開いてソースを追加し、アクティブに設定します。

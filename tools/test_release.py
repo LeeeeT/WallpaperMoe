@@ -61,24 +61,21 @@ class AssetTest(unittest.TestCase):
             )
         return run
 
-    def test_build_creates_only_versioned_apk_and_sha256(self):
+    def test_build_creates_only_the_versioned_apk(self):
         with tempfile.TemporaryDirectory() as directory:
             release_output, dist = self.paths(directory)
+            dist.mkdir()
+            (dist / "wallpaper-moe-v1.3.0.apk").write_bytes(b"an earlier release")
             with (
                 mock.patch.object(release, "RELEASE_OUTPUT", release_output),
                 mock.patch.object(release, "DIST", dist),
                 mock.patch.object(release, "command", side_effect=self.successful_command(release_output)) as command,
             ):
-                asset, checksum = release.build_assets(Version(1, 4, 0, 12))
+                asset = release.build_asset(Version(1, 4, 0, 12))
 
             self.assertEqual(asset.name, "wallpaper-moe-v1.4.0.apk")
-            self.assertEqual(checksum.name, "wallpaper-moe-v1.4.0.apk.sha256")
             self.assertEqual(asset.read_bytes(), b"signed apk")
-            self.assertEqual(
-                checksum.read_text(),
-                f"{release.sha256(asset)}  wallpaper-moe-v1.4.0.apk\n",
-            )
-            self.assertFalse(any(dist.glob("*.aab")))
+            self.assertEqual([path.name for path in dist.iterdir()], [asset.name])
             gradle = command.call_args_list[0].args
             self.assertEqual(gradle, ("gradle", ":app:lintRelease", ":app:assembleRelease"))
 
@@ -98,7 +95,7 @@ class AssetTest(unittest.TestCase):
                 mock.patch.object(release, "command", side_effect=unsigned),
                 self.assertRaisesRegex(ReleaseError, "unsigned APK"),
             ):
-                release.build_assets(Version(1, 0, 0, 1))
+                release.build_asset(Version(1, 0, 0, 1))
 
     def test_build_rejects_android_debug_certificate(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -122,7 +119,7 @@ class AssetTest(unittest.TestCase):
                 mock.patch.object(release, "command", side_effect=debug_signed),
                 self.assertRaisesRegex(ReleaseError, "debug certificate"),
             ):
-                release.build_assets(Version(1, 0, 0, 1))
+                release.build_asset(Version(1, 0, 0, 1))
 
 
 if __name__ == "__main__":

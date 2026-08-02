@@ -41,6 +41,8 @@ Wallpaper Moe 会自动更换你的壁纸。用在线图库或自己的收藏搭
 
 Wallpaper Moe 需要 **Android 14 或更高版本**，且设备为 `arm64-v8a` 或 `x86_64` 架构。
 
+[![通过 Obtainium 获取](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
+
 1. 从 [GitHub Releases](../../releases) 下载最新的 APK。
 2. 安装。Android 可能会要求你允许来自打开该 APK 的应用的安装权限。
 3. 打开 **工作室**，添加一个来源并设为使用中。

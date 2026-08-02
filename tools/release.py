@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -217,18 +216,12 @@ def other_draft(current_tag: str) -> str | None:
     )
 
 
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def build_assets(version: Version) -> tuple[Path, Path]:
+def build_asset(version: Version) -> Path:
     if RELEASE_OUTPUT.exists():
         shutil.rmtree(RELEASE_OUTPUT)
-    DIST.mkdir(exist_ok=True)
+    if DIST.exists():
+        shutil.rmtree(DIST)
+    DIST.mkdir()
     command("gradle", ":app:lintRelease", ":app:assembleRelease")
 
     built = RELEASE_OUTPUT / "app-release.apk"
@@ -253,10 +246,8 @@ def build_assets(version: Version) -> tuple[Path, Path]:
         raise ReleaseError("release APK is signed with an Android debug certificate")
 
     asset = DIST / f"wallpaper-moe-{version.tag}.apk"
-    checksum = asset.with_suffix(f"{asset.suffix}.sha256")
     shutil.copy2(built, asset)
-    checksum.write_text(f"{sha256(asset)}  {asset.name}\n", encoding="utf-8")
-    return asset, checksum
+    return asset
 
 
 def verify_release_commit(tag: str) -> None:
@@ -307,7 +298,7 @@ def push_release(version: Version, origin_main: str) -> None:
         raise ReleaseError("origin changed during the release; inspect it before retrying")
 
 
-def publish_draft(version: Version, asset: Path, checksum: Path) -> str:
+def publish_draft(version: Version, asset: Path) -> str:
     existing = release_info(version.tag)
     if existing is not None:
         if not existing.get("isDraft"):
@@ -318,7 +309,6 @@ def publish_draft(version: Version, asset: Path, checksum: Path) -> str:
             "upload",
             version.tag,
             str(asset),
-            str(checksum),
             "--clobber",
         )
     else:
@@ -328,7 +318,6 @@ def publish_draft(version: Version, asset: Path, checksum: Path) -> str:
             "create",
             version.tag,
             str(asset),
-            str(checksum),
             "--draft",
             "--generate-notes",
             "--verify-tag",
@@ -366,7 +355,7 @@ def release(kind: str) -> None:
     if current_target == head or git_output("log", "-1", "--format=%s") == f"Release {current.tag}":
         version = current
         verify_release_commit(version.tag)
-        asset, checksum = build_assets(version)
+        asset = build_asset(version)
     else:
         if origin_main != head:
             raise ReleaseError("main must exactly match origin/main before starting a new release")
@@ -376,7 +365,7 @@ def release(kind: str) -> None:
         original = VERSION_FILE.read_bytes()
         write_version(version)
         try:
-            asset, checksum = build_assets(version)
+            asset = build_asset(version)
         except Exception:
             VERSION_FILE.write_bytes(original)
             raise
@@ -387,7 +376,7 @@ def release(kind: str) -> None:
         raise ReleaseError("version changed unexpectedly during the release")
     ensure_signed_tag(version)
     push_release(version, origin_main)
-    url = publish_draft(version, asset, checksum)
+    url = publish_draft(version, asset)
     print(f"Draft release ready: {url or version.tag}")
 
 

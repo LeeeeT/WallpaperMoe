@@ -41,6 +41,8 @@ Sources can be reused inside other sources, so a provider only needs to be confi
 
 Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` device.
 
+[![Get it on Obtainium](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
+
 1. Download the latest APK from [GitHub Releases](../../releases).
 2. Install it. Android may ask you to allow installs from the app that opened the APK.
 3. Open **Studio**, add a source, and mark it active.

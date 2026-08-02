@@ -67,6 +67,7 @@ android {
                 storePassword = releaseSigningValues.getValue("moe.storePassword")
                 keyAlias = releaseSigningValues.getValue("moe.keyAlias")
                 keyPassword = releaseSigningValues.getValue("moe.keyPassword")
+                enableV3Signing = true
             }
         }
     }
