@@ -1,0 +1,6 @@
+- New Nekos.best source that discovers its static-image categories on its own.
+- Wallhaven aspect-ratio filters, limited to the orientations that mean something.
+- Drag-and-drop ordering for combined sources and channel lists.
+- A never-refresh option for cached sources, plus a slider and picker in place of the cache steppers.
+- Saving to the gallery now reports what happened.
+- R8 shrinks the release APK.

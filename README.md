@@ -2,25 +2,14 @@
 
 **English** · [日本語](README.ja.md) · [简体中文](README.zh-CN.md)
 
-Your wallpaper collection, changing with you.
-
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Wallpaper Moe automatically refreshes your wallpaper. Build a source from online collections or your own favorites, choose a rhythm, and let the app handle the rest while the screen is off.
+Wallpaper Moe changes your Android wallpaper automatically, drawing from online collections or from your own favorites. Changes happen when the screen locks, as often as every lock or as rarely as once a day. Tapping the heart on **Today** keeps a wallpaper in storage until you remove it.
 
 | Today | Studio | Favorites |
 | :---: | :---: | :---: |
-| ![Today screen with the current wallpaper and history](docs/today.png) | ![Studio screen with reusable wallpaper sources](docs/studio.png) | ![On-device favorites gallery](docs/favorites.png) |
-
-## Why Wallpaper Moe?
-
-- **A calm daily view.** See the current wallpaper, change it immediately, browse the latest 20 wallpapers, and open their uncropped originals.
-- **Favorites stay yours.** Tap the heart on any current or previous wallpaper. Favorites are copied to app storage and remain available even if history is pruned.
-- **Sources fit your taste.** Browse Pandora channels, discover static Nekos.best artwork categories, search Wallhaven, or rotate through wallpapers you have already favorited.
-- **Powerful without being fiddly.** Combine multiple sources randomly, in order, or as fallbacks. Keep wallpapers cached or prepared ahead of time for quick changes.
-- **Native screen choice.** Android lets you apply Wallpaper Moe to the home screen, lock screen, or both; rotation intervals range from every lock to once per day.
-- **Made for different screens.** The layout adapts from compact phones to tablets.
+| ![Today screen with the current wallpaper and history](fastlane/metadata/android/en-US/images/phoneScreenshots/1.png) | ![Studio screen with reusable wallpaper sources](fastlane/metadata/android/en-US/images/phoneScreenshots/2.png) | ![On-device favorites gallery](fastlane/metadata/android/en-US/images/phoneScreenshots/3.png) |
 
 ## Sources
 
@@ -30,16 +19,16 @@ Open **Studio** to create and reuse named sources:
 | --- | --- |
 | **Keep ready** | Adds caching, prefetching, or both to an existing source. |
 | **Combine** | Uses several existing sources randomly, in order, or as fallbacks. |
-| **Favorites** | Samples your on-device favorites randomly or in round-robin order. |
+| **Favorites** | Samples the wallpapers you hearted, randomly or in round-robin order. |
 | **Wallhaven** | Searches wallhaven.cc by query, category, purity, aspect ratio, and order. |
-| **Nekos.best** | Discovers its current static-image categories and samples selected categories randomly or in round-robin order. |
+| **Nekos.best** | Samples selected categories randomly or in round-robin order. |
 | **Pandora** | Samples from Xiaomi's public wallpaper channels. |
 
-Sources can be reused inside other sources, so a provider only needs to be configured once. Select one source as active; it will be used for both automatic changes and **Change now**.
+Sources can be reused inside other sources, so a provider only needs to be configured once. One source is marked active, and it is the one every change draws from.
 
 ## Install
 
-Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` device.
+Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` device. It runs as a live wallpaper.
 
 [![Get it on Obtainium](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
 
@@ -47,25 +36,15 @@ Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` dev
 2. Install it. Android may ask you to allow installs from the app that opened the APK.
 3. Open **Studio**, add a source, and mark it active.
 4. On **Today**, tap **Activate Wallpaper Moe**, then use Android’s wallpaper preview to choose the home screen, lock screen, or both.
-5. Use **Controls** to choose the rotation interval.
-
-Wallpaper changes are normally applied while the screen is off, so they do not interrupt you. **Change now** is available whenever you want an immediate refresh.
 
 ## Privacy
 
-Wallpaper Moe has no accounts, ads, analytics, or tracking SDKs. Source settings, history, cached images, favorites, and any Wallhaven API key are stored only in the app's private on-device storage. Android backup is disabled for the app.
+Wallpaper Moe has no ads, analytics, or tracking SDKs. All data is stored on-device, and `INTERNET` is the only permission it requests.
 
 The app contacts only the provider sources you configure:
 
 - Pandora requests include the app version, locale, screen width, current time, and a random identifier created for that app installation.
 - Wallhaven requests include your selected filters and, when supplied, your API key.
-- Nekos.best requests include selected category names and the project URL in the required User-Agent. Image acquisitions share a process-wide queue paced to the API's 200-requests-per-minute, per-category limit. Artist and source attribution supplied by the API is retained with each wallpaper and shown in its preview.
-
-Wallpaper Moe does not operate a server and does not receive this data.
-
-## Permissions
-
-- **Internet** downloads source lists and wallpapers. No notification, startup, or battery-exemption permission is required.
 
 ## For contributors
 
@@ -83,10 +62,10 @@ nix develop --command gradle :app:lintDebug
 nix develop --command gradle :app:connectedDebugAndroidTest
 ```
 
-Instrumentation tests cover providers with a local mock server, source composition and persistence, image storage, draft validation, history, and favorites. The main code is organized under `app/src/main/kotlin/dev/leeeet/wallpapermoe/` by source, provider, networking, wallpaper, service, data, and UI concerns.
+The main code is organized under `app/src/main/kotlin/dev/leeeet/wallpapermoe/`.
 
 ## License and services
 
 Wallpaper Moe is available under the [MIT license](LICENSE).
 
-The project is not affiliated with, endorsed by, or connected to Xiaomi, wallhaven.cc, or Nekos.best. Wallpaper images remain subject to their creators' and providers' terms. Nekos.best content is available only for non-commercial use; Wallpaper Moe respects its per-category API rate limit and retains its attribution.
+The project is not affiliated with, endorsed by, or connected to wallhaven.cc, Nekos.best, or Xiaomi. Wallpaper images remain subject to their creators' and providers' terms.

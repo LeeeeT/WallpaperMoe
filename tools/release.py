@@ -17,6 +17,7 @@ from dataclasses import dataclass
 
 SEMVER = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
 VERSION_FILE = Path("version.properties")
+FASTLANE = Path("fastlane/metadata/android")
 RELEASE_OUTPUT = Path("app/build/outputs/apk/release")
 DIST = Path("dist")
 
@@ -149,13 +150,32 @@ def enter_repository() -> Path:
     return root
 
 
-def ensure_clean_main() -> None:
-    if git_output("status", "--porcelain=v1", "--untracked-files=all"):
-        raise ReleaseError("the worktree and index must be clean before releasing")
+def ensure_release_branch() -> None:
     if git_output("branch", "--show-current") != "main":
         raise ReleaseError("releases must start on the main branch")
     if optional_output("git", "remote", "get-url", "origin") is None:
         raise ReleaseError("the repository needs an origin remote")
+
+
+def ensure_worktree_clean(allowed: tuple[Path, ...] = ()) -> None:
+    permitted = {str(path) for path in allowed}
+    unexpected = sorted(
+        path
+        for path in (
+            line[3:]
+            for line in git_output("status", "--porcelain=v1", "--untracked-files=all").splitlines()
+        )
+        if path not in permitted
+    )
+    if unexpected:
+        raise ReleaseError(
+            f"only this release's changelogs may be uncommitted; found {', '.join(unexpected)}"
+        )
+
+
+def changelogs(version: Version) -> tuple[Path, ...]:
+    """The per-locale release notes, which stores key by Android version code."""
+    return tuple(sorted(FASTLANE.glob(f"*/changelogs/{version.code}.txt")))
 
 
 def tag_target(tag: str) -> str | None:
@@ -222,7 +242,7 @@ def build_asset(version: Version) -> Path:
     if DIST.exists():
         shutil.rmtree(DIST)
     DIST.mkdir()
-    command("gradle", ":app:lintRelease", ":app:assembleRelease")
+    command("gradle", ":app:verifyReleaseSigning", ":app:lintRelease", ":app:assembleRelease")
 
     built = RELEASE_OUTPUT / "app-release.apk"
     unsigned = RELEASE_OUTPUT / "app-release-unsigned.apk"
@@ -257,17 +277,22 @@ def verify_release_commit(tag: str) -> None:
     git("verify-commit", "HEAD")
 
 
-def create_release_commit(version: Version, original: bytes) -> None:
+def create_release_commit(version: Version, notes: tuple[Path, ...], original: bytes) -> None:
+    paths = [str(VERSION_FILE), *(str(path) for path in notes)]
     try:
-        git("add", str(VERSION_FILE))
-        changed = git_output("diff", "--cached", "--name-only")
-        if changed != str(VERSION_FILE):
-            raise ReleaseError(f"release commit would contain unexpected files: {changed}")
+        git("add", "--", *paths)
+        changed = git_output("diff", "--cached", "--name-only").splitlines()
+        unexpected = [path for path in changed if path not in set(paths)]
+        if unexpected:
+            raise ReleaseError(f"release commit would contain unexpected files: {', '.join(unexpected)}")
+        # Notes already committed by hand stage nothing; the bump never can.
+        if str(VERSION_FILE) not in changed:
+            raise ReleaseError("release commit would not contain the version bump")
         git("diff", "--cached", "--check")
         git("commit", "-S", "-m", f"Release {version.tag}")
     except Exception:
         if git_output("log", "-1", "--format=%s") != f"Release {version.tag}":
-            git("restore", "--staged", str(VERSION_FILE), check=False)
+            git("restore", "--staged", "--", *paths, check=False)
             VERSION_FILE.write_bytes(original)
         raise
 
@@ -332,7 +357,7 @@ def publish_draft(version: Version, asset: Path) -> str:
 def release(kind: str) -> None:
     require_tools()
     enter_repository()
-    ensure_clean_main()
+    ensure_release_branch()
     command("gh", "auth", "status")
     git("fetch", "--tags", "--prune", "origin")
 
@@ -354,12 +379,15 @@ def release(kind: str) -> None:
 
     if current_target == head or git_output("log", "-1", "--format=%s") == f"Release {current.tag}":
         version = current
+        ensure_worktree_clean()
         verify_release_commit(version.tag)
         asset = build_asset(version)
     else:
         if origin_main != head:
             raise ReleaseError("main must exactly match origin/main before starting a new release")
         version = current.bump(kind)
+        notes = changelogs(version)
+        ensure_worktree_clean(notes)
         if tag_target(version.tag) is not None or remote_tag_target(version.tag) is not None:
             raise ReleaseError(f"release tag {version.tag} already exists")
         original = VERSION_FILE.read_bytes()
@@ -369,7 +397,7 @@ def release(kind: str) -> None:
         except Exception:
             VERSION_FILE.write_bytes(original)
             raise
-        create_release_commit(version, original)
+        create_release_commit(version, notes, original)
         verify_release_commit(version.tag)
 
     if read_version() != version:

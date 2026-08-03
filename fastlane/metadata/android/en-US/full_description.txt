@@ -1,0 +1,25 @@
+Wallpaper Moe changes your Android wallpaper automatically, drawing from online collections or from your own favorites. Changes happen when the screen locks, as often as every lock or as rarely as once a day. Tapping the heart on Today keeps a wallpaper in storage until you remove it.
+
+Sources
+
+Open Studio to create and reuse named sources:
+
+- Keep ready adds caching, prefetching, or both to an existing source.
+- Combine uses several existing sources randomly, in order, or as fallbacks.
+- Favorites samples the wallpapers you hearted, randomly or in round-robin order.
+- Wallhaven searches wallhaven.cc by query, category, purity, aspect ratio, and order.
+- Nekos.best samples selected categories randomly or in round-robin order.
+- Pandora samples from Xiaomi's public wallpaper channels.
+
+Sources can be reused inside other sources, so a provider only needs to be configured once. One source is marked active, and it is the one every change draws from.
+
+Privacy
+
+Wallpaper Moe has no ads, analytics, or tracking SDKs. All data is stored on-device, and INTERNET is the only permission it requests.
+
+The app contacts only the provider sources you configure:
+
+- Pandora requests include the app version, locale, screen width, current time, and a random identifier created for that app installation.
+- Wallhaven requests include your selected filters and, when supplied, your API key.
+
+Wallpaper Moe requires Android 14 or newer on an arm64-v8a or x86_64 device, and runs as a live wallpaper. It is not affiliated with, endorsed by, or connected to wallhaven.cc, Nekos.best, or Xiaomi. Wallpaper images remain subject to their creators' and providers' terms.

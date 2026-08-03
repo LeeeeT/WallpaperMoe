@@ -16,7 +16,11 @@ and tag are both signed.
 
 ## For each release
 
-From a clean `main` that matches `origin/main`:
+First write the release notes, one file per locale, at
+`fastlane/metadata/android/*/changelogs/<the next version code>.txt`. Leave them
+uncommitted.
+
+Then, from `main` at `origin/main`:
 
 ```bash
 nix run .#release -- patch

@@ -43,6 +43,34 @@ class VersionTest(unittest.TestCase):
                 read_version(path)
 
 
+class ChangelogTest(unittest.TestCase):
+    def fastlane(self, directory, codes):
+        root = Path(directory) / "metadata"
+        for locale in ("zh-CN", "en-US", "ja"):
+            logs = root / locale / "changelogs"
+            logs.mkdir(parents=True)
+            for code in codes:
+                (logs / f"{code}.txt").write_text(f"{locale} notes for {code}")
+        return root
+
+    def test_collects_one_locale_ordered_file_per_version_code(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fastlane(directory, (4, 5))
+            with mock.patch.object(release, "FASTLANE", root):
+                found = release.changelogs(Version(0, 4, 0, 5))
+
+            self.assertEqual(
+                [str(path.relative_to(root)) for path in found],
+                ["en-US/changelogs/5.txt", "ja/changelogs/5.txt", "zh-CN/changelogs/5.txt"],
+            )
+
+    def test_is_empty_when_the_release_has_no_notes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fastlane(directory, (4,))
+            with mock.patch.object(release, "FASTLANE", root):
+                self.assertEqual(release.changelogs(Version(0, 4, 0, 5)), ())
+
+
 class AssetTest(unittest.TestCase):
     def paths(self, directory):
         root = Path(directory)
@@ -77,7 +105,10 @@ class AssetTest(unittest.TestCase):
             self.assertEqual(asset.read_bytes(), b"signed apk")
             self.assertEqual([path.name for path in dist.iterdir()], [asset.name])
             gradle = command.call_args_list[0].args
-            self.assertEqual(gradle, ("gradle", ":app:lintRelease", ":app:assembleRelease"))
+            self.assertEqual(
+                gradle,
+                ("gradle", ":app:verifyReleaseSigning", ":app:lintRelease", ":app:assembleRelease"),
+            )
 
     def test_build_rejects_unsigned_output(self):
         with tempfile.TemporaryDirectory() as directory:

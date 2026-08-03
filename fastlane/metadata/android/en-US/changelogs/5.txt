@@ -1,0 +1,5 @@
+- Redesigned app icon.
+- Wallpapers now go through a live wallpaper service, so Android's own preview chooses the home screen, lock screen, or both.
+- Canonical wallpaper files on disk, with storage and source invariants enforced rather than assumed.
+- Sturdier gallery saving and a tightened app architecture.
+- Releases are signed with APK Signature Scheme v3 only.

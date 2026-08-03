@@ -149,13 +149,9 @@ abstract class VerifyReleaseSigning : DefaultTask() {
     }
 }
 
-val verifyReleaseSigning by tasks.registering(VerifyReleaseSigning::class) {
+tasks.register<VerifyReleaseSigning>("verifyReleaseSigning") {
     group = "verification"
     description = "Fails unless the production release-signing properties are complete."
     configured = releaseSigningEnabled
     requiredProperties = releaseSigningNames
-}
-
-tasks.matching { it.name == "assembleRelease" }.configureEach {
-    dependsOn(verifyReleaseSigning)
 }
