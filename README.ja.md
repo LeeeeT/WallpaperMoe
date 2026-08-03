@@ -5,7 +5,7 @@
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#インストール)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Wallpaper Moe は Android の壁紙を自動で切り替えます。オンラインのコレクションや自分のお気に入りから選ばれ、切り替わるのは画面がロックされたときで、頻度はロックのたびから 1 日 1 回まで指定できます。**きょう** でハートをタップした壁紙は、削除するまでストレージに残ります。
+Wallpaper Moe は Android の壁紙を自動で切り替えます。オンラインのコレクションや自分のお気に入りから選ばれます。ライブ壁紙として動作します。切り替わるのは画面がロックされたときで、頻度はロックのたびから 1 日 1 回まで指定できます。
 
 | きょう | スタジオ | お気に入り |
 | :---: | :---: | :---: |
@@ -13,7 +13,7 @@ Wallpaper Moe は Android の壁紙を自動で切り替えます。オンライ
 
 ## ソース
 
-**スタジオ** を開くと、名前を付けたソースを作成して再利用できます。
+**スタジオ** を開くと、ソースを作成できます。
 
 | ソース | 説明 |
 | --- | --- |
@@ -24,11 +24,11 @@ Wallpaper Moe は Android の壁紙を自動で切り替えます。オンライ
 | **Nekos.best** | 選んだカテゴリからランダムまたは順番に取得します。 |
 | **Pandora** | Xiaomi の公開壁紙チャンネルから選びます。 |
 
-ソースは別のソースの中でも再利用できるので、プロバイダーの設定は一度で済みます。1 つのソースがアクティブに指定され、すべての切り替えはそのソースから行われます。
+ソースは別のソースの中でも再利用できるので、ソースの設定は一度で済みます。1 つのソースがアクティブに指定され、すべての切り替えはそのソースから行われます。
 
 ## インストール
 
-Wallpaper Moe には **Android 14 以降** と `arm64-v8a` または `x86_64` の端末が必要です。ライブ壁紙として動作します。
+Wallpaper Moe には **Android 14 以降** と `arm64-v8a` または `x86_64` の端末が必要です。
 
 [![Obtainium で入手](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
 
@@ -39,7 +39,7 @@ Wallpaper Moe には **Android 14 以降** と `arm64-v8a` または `x86_64` �
 
 ## プライバシー
 
-Wallpaper Moe には広告・アナリティクス・トラッキング SDK がありません。データはすべて端末内に保存され、要求する権限は `INTERNET` だけです。
+Wallpaper Moe には広告・アナリティクス・トラッキング SDK がありません。データはすべて端末内に保存されます。
 
 アプリが通信するのは、あなたが設定したプロバイダーだけです。
 
@@ -48,7 +48,7 @@ Wallpaper Moe には広告・アナリティクス・トラッキング SDK が�
 
 ## コントリビューター向け
 
-このリポジトリには、JDK・Gradle・Android SDK・エミュレーター・ADB を含む、バージョン固定の Nix 開発環境が含まれています。
+このリポジトリには Nix 開発環境が含まれています。
 
 ```bash
 nix develop

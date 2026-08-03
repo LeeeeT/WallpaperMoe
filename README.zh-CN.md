@@ -5,7 +5,7 @@
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#安装)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Wallpaper Moe 会自动更换你的 Android 壁纸，图片取自在线图库或你自己的收藏。更换发生在锁屏时，频率可以是每次锁屏，也可以低至每天一次。在 **今天** 点过爱心的壁纸会一直保存在存储中，直到你移除它。
+Wallpaper Moe 会自动更换你的 Android 壁纸，图片取自在线图库或你自己的收藏。它以动态壁纸的形式运行。更换发生在锁屏时，频率可以是每次锁屏，也可以低至每天一次。
 
 | 今天 | 工作室 | 收藏 |
 | :---: | :---: | :---: |
@@ -13,7 +13,7 @@ Wallpaper Moe 会自动更换你的 Android 壁纸，图片取自在线图库或
 
 ## 来源
 
-打开 **工作室** 即可创建并复用具名来源：
+打开 **工作室** 即可创建来源：
 
 | 来源 | 作用 |
 | --- | --- |
@@ -24,11 +24,11 @@ Wallpaper Moe 会自动更换你的 Android 壁纸，图片取自在线图库或
 | **Nekos.best** | 从所选分类中随机或轮流挑选。 |
 | **Pandora** | 从小米的公开壁纸频道中挑选。 |
 
-来源可以嵌套复用，因此每个提供方只需配置一次。其中一个来源会被设为使用中，每次更换都从它取图。
+来源可以嵌套复用，因此每个来源只需配置一次。其中一个来源会被设为使用中，每次更换都从它取图。
 
 ## 安装
 
-Wallpaper Moe 需要 **Android 14 或更高版本**，且设备为 `arm64-v8a` 或 `x86_64` 架构。它以动态壁纸的形式运行。
+Wallpaper Moe 需要 **Android 14 或更高版本**，且设备为 `arm64-v8a` 或 `x86_64` 架构。
 
 [![通过 Obtainium 获取](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
 
@@ -39,7 +39,7 @@ Wallpaper Moe 需要 **Android 14 或更高版本**，且设备为 `arm64-v8a` �
 
 ## 隐私
 
-Wallpaper Moe 没有广告、数据分析或跟踪 SDK。所有数据都保存在本机，且只申请 `INTERNET` 一项权限。
+Wallpaper Moe 没有广告、数据分析或跟踪 SDK。所有数据都保存在本机。
 
 应用只会连接你自己配置的提供方：
 
@@ -48,7 +48,7 @@ Wallpaper Moe 没有广告、数据分析或跟踪 SDK。所有数据都保存�
 
 ## 面向贡献者
 
-仓库中包含一个版本固定的 Nix 开发环境，内含 JDK、Gradle、Android SDK、模拟器和 ADB：
+仓库中包含一个 Nix 开发环境：
 
 ```bash
 nix develop

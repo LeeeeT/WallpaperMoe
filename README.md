@@ -5,7 +5,7 @@
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Wallpaper Moe changes your Android wallpaper automatically, drawing from online collections or from your own favorites. Changes happen when the screen locks, as often as every lock or as rarely as once a day. Tapping the heart on **Today** keeps a wallpaper in storage until you remove it.
+Wallpaper Moe changes your Android wallpaper automatically, drawing from online collections or from your own favorites. It runs as a live wallpaper. Changes happen when the screen locks, as often as every lock or as rarely as once a day.
 
 | Today | Studio | Favorites |
 | :---: | :---: | :---: |
@@ -13,7 +13,7 @@ Wallpaper Moe changes your Android wallpaper automatically, drawing from online 
 
 ## Sources
 
-Open **Studio** to create and reuse named sources:
+Open **Studio** to create sources:
 
 | Source | What it does |
 | --- | --- |
@@ -24,11 +24,11 @@ Open **Studio** to create and reuse named sources:
 | **Nekos.best** | Samples selected categories randomly or in round-robin order. |
 | **Pandora** | Samples from Xiaomi's public wallpaper channels. |
 
-Sources can be reused inside other sources, so a provider only needs to be configured once. One source is marked active, and it is the one every change draws from.
+Sources can be reused inside other sources, so a source only needs to be configured once. One source is marked active, and it is the one every change draws from.
 
 ## Install
 
-Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` device. It runs as a live wallpaper.
+Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` device.
 
 [![Get it on Obtainium](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
 
@@ -39,7 +39,7 @@ Wallpaper Moe requires **Android 14 or newer** on an `arm64-v8a` or `x86_64` dev
 
 ## Privacy
 
-Wallpaper Moe has no ads, analytics, or tracking SDKs. All data is stored on-device, and `INTERNET` is the only permission it requests.
+Wallpaper Moe has no ads, analytics, or tracking SDKs. All data is stored on-device.
 
 The app contacts only the provider sources you configure:
 
@@ -48,7 +48,7 @@ The app contacts only the provider sources you configure:
 
 ## For contributors
 
-The repository includes a pinned Nix development environment with the JDK, Gradle, Android SDK, emulator, and ADB:
+The repository includes a Nix development environment:
 
 ```bash
 nix develop
