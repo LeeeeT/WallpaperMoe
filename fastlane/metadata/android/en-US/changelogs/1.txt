@@ -1,0 +1,3 @@
+First release.
+
+Wallpaper Moe changes your wallpaper automatically, drawing from wallhaven.cc, Nekos.best, Xiaomi's public wallpaper channels, or the wallpapers you hearted. It runs as a live wallpaper and changes when the screen locks, as often as every lock or as rarely as once a day.
