@@ -20,7 +20,6 @@
         buildToolsVersion = "37.0.0";
         platformVersion = "37";
 
-        # The newest system image nixpkgs carries.
         emulatorPlatformVersion = "36";
 
         mkAndroidComposition = withEmulator:
@@ -31,8 +30,6 @@
             cmdLineToolsVersion = "22.0";
             includeEmulator = withEmulator;
             includeSystemImages = withEmulator;
-            # The development SDK uses AOSP so `adb root` works, and x86_64
-            # runs under KVM. The release SDK omits both large emulator inputs.
             systemImageTypes = pkgs.lib.optionals withEmulator [ "default" ];
             abiVersions = pkgs.lib.optionals withEmulator [ "x86_64" ];
             includeSources = false;
@@ -44,8 +41,33 @@
         releaseSdk = (mkAndroidComposition false).androidsdk;
         releaseSdkRoot = "${releaseSdk}/libexec/android-sdk";
 
-        gradleOptions = sdkRoot:
-          "-Dorg.gradle.project.android.aapt2FromMavenOverride=${sdkRoot}/build-tools/${buildToolsVersion}/aapt2";
+        buildJdk = pkgs.jdk21;
+
+        # must be in sync with `agp` in `gradle/libs.versions.toml`
+        aapt2Version = "9.3.1-15703166";
+        aapt2 = pkgs.stdenv.mkDerivation {
+          pname = "aapt2";
+          version = aapt2Version;
+
+          src = pkgs.fetchurl {
+            url = "https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/${aapt2Version}/aapt2-${aapt2Version}-linux.jar";
+            hash = "sha256-53Kj2ug1R2TxsHk5AyGEJ/SDmCRFIH8uT/yMICZ1W9Q=";
+          };
+
+          nativeBuildInputs = with pkgs; [ autoPatchelfHook unzip ];
+          buildInputs = with pkgs; [ stdenv.cc.cc.lib zlib ];
+
+          dontUnpack = true;
+
+          installPhase = ''
+            runHook preInstall
+            unzip -p $src aapt2 > aapt2
+            install -Dm755 aapt2 $out/bin/aapt2
+            runHook postInstall
+          '';
+        };
+
+        gradleOptions = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${aapt2}/bin/aapt2";
 
         releaseCommand = pkgs.writeShellApplication {
           name = "wallpaper-moe-release";
@@ -54,15 +76,15 @@
             gh
             git
             gradle_9
-            jdk25
+            buildJdk
             python3
             releaseSdk
           ];
           text = ''
-            export JAVA_HOME=${pkgs.jdk25}
+            export JAVA_HOME=${buildJdk}
             export ANDROID_HOME=${releaseSdkRoot}
             export ANDROID_SDK_ROOT=${releaseSdkRoot}
-            export GRADLE_OPTS="${gradleOptions releaseSdkRoot} ''${GRADLE_OPTS:-}"
+            export GRADLE_OPTS="${gradleOptions} ''${GRADLE_OPTS:-}"
             export PATH="${releaseSdkRoot}/build-tools/${buildToolsVersion}:$PATH"
             exec ${pkgs.python3}/bin/python3 ${./tools/release.py} "$@"
           '';
@@ -73,26 +95,22 @@
           name = "wallpaper-moe";
 
           packages = with pkgs; [
-            jdk25
+            buildJdk
             gradle_9
             developmentSdk
-            android-tools # adb, fastboot
+            android-tools
             jq
             zip
             unzip
             curl
           ];
 
-          JAVA_HOME = "${pkgs.jdk25}";
+          JAVA_HOME = "${buildJdk}";
           ANDROID_HOME = developmentSdkRoot;
           ANDROID_SDK_ROOT = developmentSdkRoot;
 
-          # Points AGP at the patched aapt2 NixOS ships, which is the one that
-          # runs against the Nix dynamic loader.
-          GRADLE_OPTS = gradleOptions developmentSdkRoot;
+          GRADLE_OPTS = gradleOptions;
 
-          # `nix develop --command <cmd>` runs this hook too, so the banner is
-          # gated on a terminal and written to stderr, keeping it out of a pipe.
           shellHook = ''
             if [ -t 1 ]; then
               {
@@ -113,17 +131,15 @@
             gh
             git
             gradle_9
-            jdk25
+            buildJdk
             python3
             releaseSdk
           ];
-          JAVA_HOME = "${pkgs.jdk25}";
+          JAVA_HOME = "${buildJdk}";
           ANDROID_HOME = releaseSdkRoot;
           ANDROID_SDK_ROOT = releaseSdkRoot;
-          GRADLE_OPTS = gradleOptions releaseSdkRoot;
+          GRADLE_OPTS = gradleOptions;
 
-          # apksigner lives in build-tools, which the SDK package does not put
-          # on PATH; the release command exports the same directory.
           shellHook = ''
             export PATH="${releaseSdkRoot}/build-tools/${buildToolsVersion}:$PATH"
           '';
@@ -135,7 +151,6 @@
           meta.description = "Build and draft a signed Wallpaper Moe release";
         };
 
-        # Only tools/ is copied in, so unrelated edits do not rebuild this.
         checks.release-script = pkgs.runCommand "wallpaper-moe-release-tests" {
           nativeBuildInputs = [ pkgs.python3 ];
         } ''

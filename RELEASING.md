@@ -27,5 +27,7 @@ nix run .#release -- patch
 # or: minor / major
 ```
 
-That bumps the version, builds a signed APK, pushes the commit and tag, and
-uploads a **draft** GitHub release.
+That commits the version bump, builds a signed APK from that commit, pushes the
+commit and tag, and uploads a **draft** GitHub release. A build that fails
+leaves the release commit behind unpushed. Rerunning the same command picks it
+up and carries on from the build.

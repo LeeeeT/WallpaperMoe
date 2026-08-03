@@ -392,13 +392,9 @@ def release(kind: str) -> None:
             raise ReleaseError(f"release tag {version.tag} already exists")
         original = VERSION_FILE.read_bytes()
         write_version(version)
-        try:
-            asset = build_asset(version)
-        except Exception:
-            VERSION_FILE.write_bytes(original)
-            raise
         create_release_commit(version, notes, original)
         verify_release_commit(version.tag)
+        asset = build_asset(version)
 
     if read_version() != version:
         raise ReleaseError("version changed unexpectedly during the release")
