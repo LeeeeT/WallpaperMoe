@@ -44,8 +44,6 @@ Wallpaper Moe 需要 **Android 14 或更高版本**。
 2. 安装。Android 可能会要求你允许打开 APK 的应用安装应用。
 3. 在 **今天** 中点按 **启用 Wallpaper Moe**。在 Android 的预览中，把壁纸应用到主屏幕和锁屏。
 
-应用会以一个 Nekos.best 来源开始。要使用其他来源，请打开 **工作室**。
-
 ## 隐私
 
 Wallpaper Moe 没有广告、分析或跟踪。所有数据都保留在本机，也不会包含在 Android 云备份中。

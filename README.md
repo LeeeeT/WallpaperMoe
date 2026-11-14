@@ -44,8 +44,6 @@ Wallpaper Moe requires **Android 14 or newer**.
 2. Install it. Android can ask you to allow installs from the app that opened the APK.
 3. On **Today**, tap **Activate Wallpaper Moe**. In the Android preview, apply the wallpaper to the home screen and the lock screen.
 
-The app starts with a Nekos.best source. To use other sources, open **Studio**.
-
 ## Privacy
 
 Wallpaper Moe has no ads, no analytics and no tracking. All data stays on the device. Android cloud backup does not include it.
