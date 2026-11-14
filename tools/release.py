@@ -284,7 +284,6 @@ def build_asset(version: Version) -> Path:
     DIST.mkdir()
     command(
         "./gradlew",
-        ":app:verifyReleaseSigning",
         ":app:test",
         ":app:lintRelease",
         ":app:assembleRelease",

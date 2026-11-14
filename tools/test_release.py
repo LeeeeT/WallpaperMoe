@@ -129,7 +129,6 @@ class AssetTest(unittest.TestCase):
                 gradle,
                 (
                     "./gradlew",
-                    ":app:verifyReleaseSigning",
                     ":app:test",
                     ":app:lintRelease",
                     ":app:assembleRelease",
