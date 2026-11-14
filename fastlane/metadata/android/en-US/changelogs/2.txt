@@ -1,0 +1,8 @@
+- The home screen and the lock screen can each have their own source and frequency.
+- Set the brightness, contrast and blur of each screen.
+- New Device folder source: use the images in a folder on your device.
+- The wallpaper changes while the screen is off, so you do not see the change.
+- Zoom in to full resolution in the viewer.
+- Next wallpaper tile in Quick Settings.
+- Automatic changes can wait for an unmetered network.
+- Back up and restore your sources, settings and favorites.
