@@ -2,6 +2,8 @@
 
 **English** · [日本語](README.ja.md) · [简体中文](README.zh-CN.md)
 
+> A new wallpaper waits for you each time the screen turns on ♡ (◕‿◕✿)
+
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -82,3 +84,5 @@ To make a release, read [RELEASING.md](RELEASING.md).
 Wallpaper Moe is available under the [MIT license](LICENSE).
 
 Wallpaper Moe has no connection with wallhaven.cc, Nekos.best or Xiaomi, and they do not endorse it. The terms of the creators and providers apply to the wallpaper images.
+
+Made with ♡ for everyone who loves moe. (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧

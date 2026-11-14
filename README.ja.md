@@ -2,6 +2,8 @@
 
 [English](README.md) · **日本語** · [简体中文](README.zh-CN.md)
 
+> 画面をつけるたびに、新しい壁紙が待っています ♡ (◕‿◕✿)
+
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#インストール)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -82,3 +84,5 @@ nix run .#emulator
 Wallpaper Moe は [MIT ライセンス](LICENSE) で提供されています。
 
 Wallpaper Moe は wallhaven.cc、Nekos.best、Xiaomi とは関係がなく、これらの推奨も受けていません。壁紙の画像には作者とプロバイダーの規約が適用されます。
+
+萌えが好きなすべての人へ、♡ を込めて。(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧
