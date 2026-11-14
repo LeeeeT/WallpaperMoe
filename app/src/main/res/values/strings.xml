@@ -1,4 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Wallpaper Moe</string>
+    <string name="action_activate_wallpaper">Activate Wallpaper Moe</string>
+    <string name="action_add_favorite">Add to favorites</string>
+    <string name="action_add_source">Add a source</string>
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_change_now">Change now</string>
+    <string name="action_choose_categories">Choose categories</string>
+    <string name="action_choose_channels">Choose channels</string>
+    <string name="action_choose_source">Choose source</string>
+    <string name="action_close">Close</string>
+    <string name="action_create_first_source">Create your first source</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_discard">Discard</string>
+    <string name="action_discard_changes">Discard changes</string>
+    <string name="action_hide_key">Hide key</string>
+    <string name="action_keep_editing">Keep editing</string>
+    <string name="action_more">More options</string>
+    <string name="action_move_earlier">Move earlier</string>
+    <string name="action_move_later">Move later</string>
+    <string name="action_remove_favorite">Remove from favorites</string>
+    <string name="action_remove_reference">Remove source</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_save_source">Save source</string>
+    <string name="action_save_to_gallery">Save to gallery</string>
+    <string name="action_set_wallpaper">Set as wallpaper</string>
+    <string name="action_show_key">Show key</string>
+    <string name="action_try_again">Try again</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_view_source">View source</string>
+    <string name="cache_description">Save wallpapers to reuse later, even when you’re offline.</string>
+    <string name="cache_images_to_keep">Wallpapers to save</string>
+    <string name="cache_refresh_6_hours">After 6 hours</string>
+    <string name="cache_refresh_daily">After 1 day</string>
+    <string name="cache_refresh_hourly">After 1 hour</string>
+    <string name="cache_refresh_interval">When full, refresh on use</string>
+    <string name="cache_refresh_never">Never</string>
+    <string name="categories_unavailable">Could not load artwork choices</string>
+    <string name="channels_unavailable">Could not reach Pandora</string>
+    <string name="dialog_delete_blocked_body">Remove %1$s from these sources first: %2$s</string>
+    <string name="dialog_delete_blocked_title">Source is in use</string>
+    <string name="dialog_delete_source_title">Delete %1$s?</string>
+    <string name="dialog_unsaved_title">Discard unsaved changes?</string>
+    <string name="failure_download">Could not load a wallpaper from %1$s</string>
+    <string name="failure_favorites_empty">Favorites is empty</string>
+    <string name="failure_unexpected">Something went wrong while changing the wallpaper</string>
+    <string name="fallthrough_description">Use the first source that has a wallpaper.</string>
+    <string name="favorite_removed">Removed from favorites</string>
+    <string name="favorites_empty">Tap a heart to keep a wallpaper here.</string>
+    <string name="favorites_reorder_hint">Long-press and drag to reorder</string>
+    <string name="favorites_source_summary_random">Saved wallpapers, at random</string>
+    <string name="favorites_source_summary_round_robin">Saved wallpapers, in turn</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="gallery_save_already_saved">Already in gallery</string>
+    <string name="gallery_save_failure">Couldn’t save to gallery</string>
+    <string name="gallery_save_success">Saved to gallery</string>
+    <string name="history_empty">No history yet.</string>
+    <string name="history_title">History</string>
+    <string name="interval_1_hour">At most every hour</string>
+    <string name="interval_24_hours">At most once a day</string>
+    <string name="interval_6_hours">At most every 6 hours</string>
+    <string name="interval_every_screen_off">Every time the screen turns off</string>
+    <string name="link_open_failure">Couldn’t open the link</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_studio">Studio</string>
+    <string name="nav_today">Today</string>
+    <string name="nekos_best_categories_title">Kinds of artwork</string>
+    <string name="pandora_channels_title">Pandora channels</string>
+    <string name="prefetch_description">Prepare wallpapers before the next change.</string>
+    <string name="prefetch_images_ready">Wallpapers to prepare</string>
+    <string name="random_description">One of these is picked at random each time.</string>
+    <string name="round_robin_description">Sources are used in the order below.</string>
+    <string name="selection_mode_title">How to choose</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_detail">Brightness, contrast, and blur are applied to the live wallpaper.</string>
+    <string name="settings_blur">Blur</string>
+    <string name="settings_brightness">Brightness</string>
+    <string name="settings_contrast">Contrast</string>
+    <string name="settings_how_often">How often</string>
+    <string name="settings_interval_detail">Choose how often turning the screen off may trigger a change.</string>
+    <string name="settings_multiplier_value">%1$s×</string>
+    <string name="settings_preview_description">The current wallpaper with these adjustments</string>
+    <string name="settings_wallhaven">Wallhaven</string>
+    <string name="sorting_favorites">Most favourited</string>
+    <string name="sorting_newest">Newest</string>
+    <string name="sorting_random">Random</string>
+    <string name="sorting_toplist">Top list</string>
+    <string name="sorting_views">Most viewed</string>
+    <string name="source_list_title">Sources</string>
+    <string name="source_name_cache">Save for later</string>
+    <string name="source_name_fallthrough">First available</string>
+    <string name="source_name_label">Source name</string>
+    <string name="source_name_optional_hint">Leave blank to generate a name automatically</string>
+    <string name="source_name_prefetch">Prepare ahead</string>
+    <string name="source_name_random">Random pick</string>
+    <string name="source_name_round_robin">Round robin</string>
+    <string name="source_picker_combine">Mix wallpapers from several sources</string>
+    <string name="source_picker_favorites">Use wallpapers you saved on this device</string>
+    <string name="source_picker_keep_ready">Save or prepare wallpapers before they’re needed</string>
+    <string name="source_picker_nekos_best">Anime artwork from Nekos.best</string>
+    <string name="source_picker_pandora">Xiaomi’s wallpaper channels</string>
+    <string name="source_picker_title">Add a source</string>
+    <string name="source_picker_wallhaven">Search wallhaven.cc</string>
+    <string name="source_reference_picker_title">Choose a source</string>
+    <string name="source_slot_empty">No source selected.</string>
+    <string name="source_slot_title">Source</string>
+    <string name="studio_empty">No sources yet.</string>
+    <string name="summary_anything">Anything</string>
+    <string name="summary_wallhaven">%1$s · %2$s</string>
+    <string name="today_current_description">Current Wallpaper Moe image</string>
+    <string name="today_inactive">Not active</string>
+    <string name="today_needs_attention">Needs attention</string>
+    <string name="today_no_active_source">None selected</string>
+    <string name="today_not_ready">Not ready</string>
+    <string name="today_ready">Ready</string>
+    <string name="today_sampling">Choosing a wallpaper…</string>
+    <string name="today_source_picker_detail">This is the source used for automatic and manual changes.</string>
+    <string name="today_source_picker_title">Choose active source</string>
+    <string name="wallhaven_anime">Anime</string>
+    <string name="wallhaven_api_key">Wallhaven API key</string>
+    <string name="wallhaven_aspect_ratio">Aspect ratio</string>
+    <string name="wallhaven_categories">Categories</string>
+    <string name="wallhaven_general">General</string>
+    <string name="wallhaven_landscape">Landscape</string>
+    <string name="wallhaven_nsfw">NSFW</string>
+    <string name="wallhaven_order">Order</string>
+    <string name="wallhaven_people">People</string>
+    <string name="wallhaven_portrait">Portrait</string>
+    <string name="wallhaven_purity">Purity</string>
+    <string name="wallhaven_search">Search</string>
+    <string name="wallhaven_search_hint">Leave empty for anything</string>
+    <string name="wallhaven_sfw">SFW</string>
+    <string name="wallhaven_sketchy">Sketchy</string>
+    <string name="wallpaper_artist">Art by %1$s</string>
+    <string name="wallpaper_artist_unknown">View artist</string>
+    <string name="wallpaper_preview_description">Original wallpaper preview</string>
+    <string name="wallpaper_thumbnail_by_artist">Wallpaper by %1$s</string>
+    <string name="wallpaper_thumbnail_description">Saved wallpaper</string>
+    <plurals name="pandora_subscribers">
+        <item quantity="one">%1$d subscriber</item>
+        <item quantity="other">%1$d subscribers</item>
+    </plurals>
+    <plurals name="source_library_count">
+        <item quantity="one">%1$d source</item>
+        <item quantity="other">%1$d sources</item>
+    </plurals>
+    <plurals name="summary_cache">
+        <item quantity="other">Save up to %1$d images; when full, refresh on use %2$s</item>
+    </plurals>
+    <plurals name="summary_cache_interval">
+        <item quantity="one">after an hour</item>
+        <item quantity="other">after %1$d hours</item>
+    </plurals>
+    <plurals name="summary_cache_never">
+        <item quantity="other">Cache %1$d</item>
+    </plurals>
+    <plurals name="summary_prefetch">
+        <item quantity="one">Prepare %1$d</item>
+        <item quantity="other">Prepare %1$d</item>
+    </plurals>
+    <plurals name="summary_sources_fallthrough">
+        <item quantity="other">%1$d sources, first that works</item>
+    </plurals>
+    <plurals name="summary_sources_in_turn">
+        <item quantity="other">%1$d sources, in turn</item>
+    </plurals>
+    <plurals name="summary_sources_random">
+        <item quantity="other">%1$d sources, at random</item>
+    </plurals>
+
+    <string name="app_name" translatable="false">Wallpaper Moe</string>
+
+    <string name="wallpaper_description">Wallpapers from your sources</string>
+
+    <string name="tile_label">Next wallpaper</string>
+
+    <string name="action_clear">Clear</string>
+
+    <string name="action_share">Share</string>
+
+    <string name="action_choose_folder">Choose folder</string>
+
+    <string name="screen_home">Home screen</string>
+
+    <string name="screen_lock">Lock screen</string>
+
+    <string name="status_waiting">Waiting for Wi‑Fi</string>
+
+    <string name="picker_title_home">Source for the home screen</string>
+
+    <string name="picker_title_lock">Source for the lock screen</string>
+
+    <string name="picker_empty">There are no sources. Create the first source in Studio.</string>
+
+    <string name="history_clear_title">Clear the history?</string>
+
+    <string name="history_clear_body">Favorites and the current wallpaper stay.</string>
+
+    <string name="message_wallpaper_set">The wallpaper is set</string>
+
+    <string name="message_export_done">The backup is saved</string>
+
+    <string name="message_export_failed">The backup could not be saved</string>
+
+    <string name="message_import_done">The backup is restored</string>
+
+    <string name="message_import_failed">The backup could not be read</string>
+
+    <string name="kind_wallhaven" translatable="false">Wallhaven</string>
+
+    <string name="kind_nekos_best" translatable="false">Nekos.best</string>
+
+    <string name="kind_pandora" translatable="false">Pandora</string>
+
+    <string name="kind_folder">Device folder</string>
+
+    <string name="kind_favorites">Favorites</string>
+
+    <string name="kind_keep_ready">Keep ready</string>
+
+    <string name="kind_combine">Combine</string>
+
+    <string name="kind_folder_detail">Images from a folder on this device</string>
+
+    <string name="folder_title">Folder</string>
+
+    <string name="folder_none">No folder selected</string>
+
+    <string name="folder_detail">Images in subfolders are included.</string>
+
+    <string name="summary_pair" translatable="false">%1$s · %2$s</string>
+
+    <string name="problem_name_taken">Use a name that no other source has</string>
+
+    <string name="problem_wallhaven_category">Choose one category or more</string>
+
+    <string name="problem_wallhaven_purity">Choose one purity level or more</string>
+
+    <string name="problem_wallhaven_aspect">Choose one aspect ratio or more</string>
+
+    <string name="problem_wallhaven_key">Set a Wallhaven API key in Settings to include NSFW images</string>
+
+    <string name="problem_nekos_best_category">Choose one kind of artwork or more</string>
+
+    <string name="problem_pandora_channel">Choose one channel or more</string>
+
+    <string name="problem_folder_missing">Choose a folder</string>
+
+    <string name="problem_keep_ready_source">Choose the source to keep ready</string>
+
+    <string name="problem_keep_ready_option">Turn on Prepare ahead, Save for later, or both</string>
+
+    <string name="problem_combine_sources">Add two sources or more</string>
+
+    <string name="problem_input_missing">Choose sources that exist</string>
+
+    <string name="problem_input_cycle">These sources would use each other</string>
+
+    <string name="failure_no_source">Choose a source first.</string>
+
+    <string name="failure_unavailable">%1$s could not be reached.</string>
+
+    <string name="failure_empty">%1$s has no matching wallpaper.</string>
+
+    <string name="failure_folder_denied">The folder cannot be read. Choose the folder again in Studio.</string>
+
+    <string name="failure_nothing_saved">There are no saved wallpapers.</string>
+
+    <string name="failure_metered">The next automatic change needs an unmetered network.</string>
+
+    <string name="settings_network">Network</string>
+
+    <string name="settings_unmetered">Unmetered networks only</string>
+
+    <string name="settings_unmetered_detail">Automatic changes do not download on mobile data.</string>
+
+    <string name="settings_storage">Storage</string>
+
+    <string name="storage_shown">Current wallpapers and history</string>
+
+    <string name="storage_favorites">Favorites</string>
+
+    <string name="storage_ready">Saved and prepared wallpapers</string>
+
+    <string name="storage_total">Total</string>
+
+    <string name="settings_backup">Backup</string>
+
+    <string name="backup_export">Export</string>
+
+    <string name="backup_export_detail">Sources, settings and favorites go into one file.</string>
+
+    <string name="backup_import">Import</string>
+
+    <string name="backup_import_detail">Replace the sources, settings and favorites with a backup.</string>
+
+    <string name="backup_import_title">Replace the current data?</string>
+
+    <string name="backup_import_body">The backup replaces all sources, settings and favorites on this device.</string>
+
+    <string name="backup_file_name" translatable="false">wallpaper-moe-backup.zip</string>
+
+    <string name="percent" translatable="false">%1$d%%</string>
+    <string name="lock_follow_home">Use the home screen wallpaper</string>
+    <string name="lock_follow_home_detail">The lock screen shows the same wallpaper as the home screen. The source and How often apply to both screens. Each screen keeps its own Appearance.</string>
+    <string name="screen_settings">%1$s settings</string>
+    <string name="studio_use_home">Use on home screen</string>
+    <string name="studio_use_lock">Use on lock screen</string>
+    <string name="studio_use_both">Use on home and lock screens</string>
+    <string name="activate_unavailable">No wallpaper picker is available on this device.</string>
 </resources>

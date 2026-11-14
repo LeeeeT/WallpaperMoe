@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_activate_wallpaper">启用 Wallpaper Moe</string>
+    <string name="action_add_favorite">添加到收藏</string>
+    <string name="action_add_source">添加来源</string>
+    <string name="action_back">返回</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_change_now">立即更换</string>
+    <string name="action_choose_categories">选择分类</string>
+    <string name="action_choose_channels">选择频道</string>
+    <string name="action_choose_source">选择来源</string>
+    <string name="action_close">关闭</string>
+    <string name="action_create_first_source">创建第一个来源</string>
+    <string name="action_delete">删除</string>
+    <string name="action_discard">放弃</string>
+    <string name="action_discard_changes">放弃更改</string>
+    <string name="action_hide_key">隐藏密钥</string>
+    <string name="action_keep_editing">继续编辑</string>
+    <string name="action_more">更多选项</string>
+    <string name="action_move_earlier">向前移动</string>
+    <string name="action_move_later">向后移动</string>
+    <string name="action_remove_favorite">从收藏中移除</string>
+    <string name="action_remove_reference">移除来源</string>
+    <string name="action_reset">重置</string>
+    <string name="action_save_source">保存来源</string>
+    <string name="action_save_to_gallery">保存到相册</string>
+    <string name="action_set_wallpaper">设为壁纸</string>
+    <string name="action_show_key">显示密钥</string>
+    <string name="action_try_again">重试</string>
+    <string name="action_undo">撤销</string>
+    <string name="action_view_source">查看来源</string>
+    <string name="cache_description">保存壁纸以便稍后使用，即使离线也可用。</string>
+    <string name="cache_images_to_keep">要保存的壁纸数量</string>
+    <string name="cache_refresh_6_hours">6 小时后</string>
+    <string name="cache_refresh_daily">1 天后</string>
+    <string name="cache_refresh_hourly">1 小时后</string>
+    <string name="cache_refresh_interval">存满后在使用时刷新</string>
+    <string name="cache_refresh_never">从不</string>
+    <string name="categories_unavailable">无法加载作品类型</string>
+    <string name="channels_unavailable">无法连接 Pandora</string>
+    <string name="dialog_delete_blocked_body">请先从这些来源中移除 %1$s：%2$s</string>
+    <string name="dialog_delete_blocked_title">来源正在使用中</string>
+    <string name="dialog_delete_source_title">删除 %1$s？</string>
+    <string name="dialog_unsaved_title">放弃未保存的更改？</string>
+    <string name="failure_download">无法加载来自 %1$s 的壁纸</string>
+    <string name="failure_favorites_empty">收藏为空</string>
+    <string name="failure_unexpected">更换壁纸时出现问题</string>
+    <string name="fallthrough_description">使用首个找到壁纸的来源。</string>
+    <string name="favorite_removed">已从收藏中移除</string>
+    <string name="favorites_empty">点按爱心即可把壁纸保存到这里。</string>
+    <string name="favorites_reorder_hint">长按并拖动即可重新排序</string>
+    <string name="favorites_source_summary_random">随机使用已保存的壁纸</string>
+    <string name="favorites_source_summary_round_robin">轮流使用已保存的壁纸</string>
+    <string name="favorites_title">收藏</string>
+    <string name="gallery_save_already_saved">已在相册中</string>
+    <string name="gallery_save_failure">无法保存到相册</string>
+    <string name="gallery_save_success">已保存到相册</string>
+    <string name="history_empty">暂无历史记录。</string>
+    <string name="history_title">历史记录</string>
+    <string name="interval_1_hour">最多每小时一次</string>
+    <string name="interval_24_hours">最多每天一次</string>
+    <string name="interval_6_hours">最多每 6 小时一次</string>
+    <string name="interval_every_screen_off">每次息屏时</string>
+    <string name="link_open_failure">无法打开链接</string>
+    <string name="nav_settings">设置</string>
+    <string name="nav_studio">工作室</string>
+    <string name="nav_today">今天</string>
+    <string name="nekos_best_categories_title">作品类型</string>
+    <string name="pandora_channels_title">Pandora 频道</string>
+    <string name="prefetch_description">在下次更换前准备好壁纸。</string>
+    <string name="prefetch_images_ready">要准备的壁纸数量</string>
+    <string name="random_description">每次从这些来源中随机选一个。</string>
+    <string name="round_robin_description">按下面的顺序轮流使用各来源。</string>
+    <string name="selection_mode_title">选择方式</string>
+    <string name="settings_appearance">外观</string>
+    <string name="settings_appearance_detail">亮度、对比度和模糊会应用到动态壁纸。</string>
+    <string name="settings_blur">模糊</string>
+    <string name="settings_brightness">亮度</string>
+    <string name="settings_contrast">对比度</string>
+    <string name="settings_how_often">更换频率</string>
+    <string name="settings_interval_detail">选择息屏最多可以多频繁地触发更换。</string>
+    <string name="settings_multiplier_value">%1$s×</string>
+    <string name="settings_preview_description">应用这些调整后的当前壁纸</string>
+    <string name="settings_wallhaven">Wallhaven</string>
+    <string name="sorting_favorites">收藏最多</string>
+    <string name="sorting_newest">最新</string>
+    <string name="sorting_random">随机</string>
+    <string name="sorting_toplist">排行榜</string>
+    <string name="sorting_views">浏览最多</string>
+    <string name="source_list_title">来源</string>
+    <string name="source_name_cache">稍后使用</string>
+    <string name="source_name_fallthrough">首个可用</string>
+    <string name="source_name_label">来源名称</string>
+    <string name="source_name_optional_hint">留空即可自动生成名称</string>
+    <string name="source_name_prefetch">提前准备</string>
+    <string name="source_name_random">随机选取</string>
+    <string name="source_name_round_robin">轮流</string>
+    <string name="source_picker_combine">混合多个来源的壁纸</string>
+    <string name="source_picker_favorites">使用你保存在本机上的壁纸</string>
+    <string name="source_picker_keep_ready">在需要前保存或准备壁纸</string>
+    <string name="source_picker_nekos_best">来自 Nekos.best 的动漫作品</string>
+    <string name="source_picker_pandora">小米的壁纸频道</string>
+    <string name="source_picker_title">添加来源</string>
+    <string name="source_picker_wallhaven">搜索 wallhaven.cc</string>
+    <string name="source_reference_picker_title">选择来源</string>
+    <string name="source_slot_empty">未选择来源。</string>
+    <string name="source_slot_title">来源</string>
+    <string name="studio_empty">尚无来源。</string>
+    <string name="summary_anything">不限</string>
+    <string name="summary_wallhaven">%1$s · %2$s</string>
+    <string name="today_current_description">Wallpaper Moe 当前图片</string>
+    <string name="today_inactive">未启用</string>
+    <string name="today_needs_attention">需要处理</string>
+    <string name="today_no_active_source">未选择来源</string>
+    <string name="today_not_ready">未就绪</string>
+    <string name="today_ready">已就绪</string>
+    <string name="today_sampling">正在选择壁纸…</string>
+    <string name="today_source_picker_detail">自动更换和手动更换都会使用该来源。</string>
+    <string name="today_source_picker_title">选择当前来源</string>
+    <string name="wallhaven_anime">动漫</string>
+    <string name="wallhaven_api_key">Wallhaven API 密钥</string>
+    <string name="wallhaven_aspect_ratio">宽高比</string>
+    <string name="wallhaven_categories">分类</string>
+    <string name="wallhaven_general">综合</string>
+    <string name="wallhaven_landscape">横向</string>
+    <string name="wallhaven_nsfw">NSFW</string>
+    <string name="wallhaven_order">排序</string>
+    <string name="wallhaven_people">人物</string>
+    <string name="wallhaven_portrait">竖向</string>
+    <string name="wallhaven_purity">尺度</string>
+    <string name="wallhaven_search">搜索</string>
+    <string name="wallhaven_search_hint">留空则不限</string>
+    <string name="wallhaven_sfw">SFW</string>
+    <string name="wallhaven_sketchy">较敏感</string>
+    <string name="wallpaper_artist">作者：%1$s</string>
+    <string name="wallpaper_artist_unknown">查看作者</string>
+    <string name="wallpaper_preview_description">原图预览</string>
+    <string name="wallpaper_thumbnail_by_artist">%1$s 创作的壁纸</string>
+    <string name="wallpaper_thumbnail_description">已保存的壁纸</string>
+    <plurals name="pandora_subscribers">
+        <item quantity="other">%1$d 位订阅者</item>
+    </plurals>
+    <plurals name="source_library_count">
+        <item quantity="other">%1$d 个来源</item>
+    </plurals>
+    <plurals name="summary_cache">
+        <item quantity="other">最多保存 %1$d 张；存满后，%2$s在使用时刷新</item>
+    </plurals>
+    <plurals name="summary_cache_interval">
+        <item quantity="other">%1$d 小时后</item>
+    </plurals>
+    <plurals name="summary_cache_never">
+        <item quantity="other">缓存 %1$d 张</item>
+    </plurals>
+    <plurals name="summary_prefetch">
+        <item quantity="other">准备 %1$d 张</item>
+    </plurals>
+    <plurals name="summary_sources_fallthrough">
+        <item quantity="other">%1$d 个来源中第一个可用的</item>
+    </plurals>
+    <plurals name="summary_sources_in_turn">
+        <item quantity="other">轮流使用 %1$d 个来源</item>
+    </plurals>
+    <plurals name="summary_sources_random">
+        <item quantity="other">从 %1$d 个来源中随机选取</item>
+    </plurals>
+
+    <string name="wallpaper_description">来自你的来源的壁纸</string>
+
+    <string name="tile_label">下一张壁纸</string>
+
+    <string name="action_clear">清除</string>
+
+    <string name="action_share">分享</string>
+
+    <string name="action_choose_folder">选择文件夹</string>
+
+    <string name="screen_home">主屏幕</string>
+
+    <string name="screen_lock">锁屏</string>
+
+    <string name="status_waiting">正在等待 Wi‑Fi</string>
+
+    <string name="picker_title_home">主屏幕的来源</string>
+
+    <string name="picker_title_lock">锁屏的来源</string>
+
+    <string name="picker_empty">尚无来源。请在工作室中创建第一个来源。</string>
+
+    <string name="history_clear_title">清除历史记录？</string>
+
+    <string name="history_clear_body">收藏和当前壁纸会保留。</string>
+
+    <string name="message_wallpaper_set">壁纸已设置</string>
+
+    <string name="message_export_done">备份已保存</string>
+
+    <string name="message_export_failed">无法保存备份</string>
+
+    <string name="message_import_done">备份已恢复</string>
+
+    <string name="message_import_failed">无法读取备份</string>
+
+    <string name="kind_folder">设备文件夹</string>
+
+    <string name="kind_favorites">收藏</string>
+
+    <string name="kind_keep_ready">保持就绪</string>
+
+    <string name="kind_combine">组合</string>
+
+    <string name="kind_folder_detail">本机文件夹中的图片</string>
+
+    <string name="folder_title">文件夹</string>
+
+    <string name="folder_none">未选择文件夹</string>
+
+    <string name="folder_detail">包括子文件夹中的图片。</string>
+
+    <string name="problem_name_taken">请使用其他来源没有用过的名称</string>
+
+    <string name="problem_wallhaven_category">请至少选择一个分类</string>
+
+    <string name="problem_wallhaven_purity">请至少选择一个尺度</string>
+
+    <string name="problem_wallhaven_aspect">请至少选择一个宽高比</string>
+
+    <string name="problem_wallhaven_key">要包含 NSFW 图片，请在“设置”中填写 Wallhaven API 密钥</string>
+
+    <string name="problem_nekos_best_category">请至少选择一个作品类型</string>
+
+    <string name="problem_pandora_channel">请至少选择一个频道</string>
+
+    <string name="problem_folder_missing">请选择一个文件夹</string>
+
+    <string name="problem_keep_ready_source">请选择要保持就绪的来源</string>
+
+    <string name="problem_keep_ready_option">请开启“提前准备”、“稍后使用”或两者</string>
+
+    <string name="problem_combine_sources">请添加两个或更多来源</string>
+
+    <string name="problem_input_missing">请选择存在的来源</string>
+
+    <string name="problem_input_cycle">这些来源会互相引用</string>
+
+    <string name="failure_no_source">请先选择一个来源。</string>
+
+    <string name="failure_unavailable">无法连接 %1$s。</string>
+
+    <string name="failure_empty">%1$s 中没有符合条件的壁纸。</string>
+
+    <string name="failure_folder_denied">无法读取文件夹。请在工作室中重新选择文件夹。</string>
+
+    <string name="failure_nothing_saved">没有已保存的壁纸。</string>
+
+    <string name="failure_metered">下次自动更换需要不按流量计费的网络。</string>
+
+    <string name="settings_network">网络</string>
+
+    <string name="settings_unmetered">仅限不按流量计费的网络</string>
+
+    <string name="settings_unmetered_detail">自动更换不会使用移动数据下载。</string>
+
+    <string name="settings_storage">存储空间</string>
+
+    <string name="storage_shown">当前壁纸和历史记录</string>
+
+    <string name="storage_favorites">收藏</string>
+
+    <string name="storage_ready">已保存和已准备的壁纸</string>
+
+    <string name="storage_total">总计</string>
+
+    <string name="settings_backup">备份</string>
+
+    <string name="backup_export">导出</string>
+
+    <string name="backup_export_detail">来源、设置和收藏会保存到一个文件中。</string>
+
+    <string name="backup_import">导入</string>
+
+    <string name="backup_import_detail">用备份替换来源、设置和收藏。</string>
+
+    <string name="backup_import_title">替换当前数据？</string>
+
+    <string name="backup_import_body">备份会替换本机上的所有来源、设置和收藏。</string>
+
+    <string name="lock_follow_home">使用主屏幕壁纸</string>
+    <string name="lock_follow_home_detail">锁屏显示与主屏幕相同的壁纸。来源和更换频率同时适用于两个屏幕。外观按屏幕分别设置。</string>
+    <string name="screen_settings">%1$s设置</string>
+    <string name="studio_use_home">用于主屏幕</string>
+    <string name="studio_use_lock">用于锁屏</string>
+    <string name="studio_use_both">用于主屏幕和锁屏</string>
+    <string name="activate_unavailable">此设备上没有壁纸选择器。</string>
+</resources>

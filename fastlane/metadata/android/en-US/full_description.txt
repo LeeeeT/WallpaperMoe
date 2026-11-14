@@ -1,0 +1,28 @@
+Wallpaper Moe is a live wallpaper that changes itself. It gets wallpapers from online collections, from a folder on your device, or from your favorites. A change occurs when the screen goes off: each time, or at most each hour, each 6 hours or each day.
+
+Features
+
+- Home and lock screen: both screens can use one source, or each screen can have its own source and frequency. Each screen has its own brightness, contrast and blur.
+- Sources that you build: a source can use other sources, so you configure a source one time.
+- History and favorites: the last 20 wallpapers stay on the device at full size. You can put favorites in order.
+- Viewer: swipe and zoom, set as wallpaper, save to the gallery, share, or open the source page.
+- Next wallpaper tile in Quick Settings.
+- Wallpaper colors for the system theme.
+- Automatic changes can wait for an unmetered network.
+- Backup and restore of sources, settings and favorites.
+
+Sources
+
+- Wallhaven searches wallhaven.cc by text, category, purity, aspect ratio and order.
+- Nekos.best gets anime artwork from the kinds that you select.
+- Pandora gets images from Xiaomi's public wallpaper channels.
+- Device folder uses the images in a folder on your device.
+- Favorites uses the wallpapers that you marked with a heart, at random or in your order.
+- Keep ready prepares wallpapers before a change, saves wallpapers for later, or both.
+- Combine uses two or more sources at random, in turn, or as fallbacks.
+
+Privacy
+
+Wallpaper Moe has no ads, no analytics and no tracking. All data stays on the device. The app connects only to the providers of the sources that you configure. Pandora requests contain the app version, the language, the screen width, the time and a random identifier for this installation. The app sends your Wallhaven API key only for searches that include NSFW images.
+
+Wallpaper Moe requires Android 14 or newer. It has no connection with wallhaven.cc, Nekos.best or Xiaomi, and they do not endorse it. The terms of the creators and providers apply to the wallpaper images.

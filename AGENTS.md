@@ -34,3 +34,6 @@ Use ASD-STE100 in messages, commit messages, documentation, and code comments.
 Use short sentences. Use active voice. Give one meaning to each sentence.
 Avoid code comments. Use names and structure to explain the code.
 
+---
+
+For anything release-related, read `RELEASING.md` first.

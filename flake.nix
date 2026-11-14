@@ -82,15 +82,63 @@
           exec emulator -avd ${avdName} -gpu host "$@"
         '';
       };
+
+      gradleOptions = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${aapt2}";
+
+      release = pkgs.writeShellApplication {
+        name = "moe-release";
+        runtimeInputs = [
+          pkgs.coreutils
+          pkgs.gh
+          pkgs.git
+          pkgs.python3
+          jdk
+          androidSdk
+        ];
+        text = ''
+          export JAVA_HOME=${jdk.home}
+          export ANDROID_HOME=${androidSdkRoot}
+          export ANDROID_SDK_ROOT=${androidSdkRoot}
+          export GRADLE_OPTS="${gradleOptions} ''${GRADLE_OPTS:-}"
+          export PATH="${androidSdkRoot}/build-tools/${buildToolsVersion}:$PATH"
+          exec python3 ${./tools/release.py} "$@"
+        '';
+      };
     in
     {
-      packages.${system}.emulator = emulator;
-
-      apps.${system}.emulator = {
-        type = "app";
-        program = "${emulator}/bin/moe-emulator";
-        meta.description = "Run the Wallpaper Moe emulator on the host GPU";
+      packages.${system} = {
+        inherit emulator release;
       };
+
+      apps.${system} = {
+        emulator = {
+          type = "app";
+          program = "${emulator}/bin/moe-emulator";
+          meta.description = "Run the Wallpaper Moe emulator on the host GPU";
+        };
+        release = {
+          type = "app";
+          program = "${release}/bin/moe-release";
+          meta.description = "Build and draft a signed Wallpaper Moe release";
+        };
+      };
+
+      checks.${system}.release-tool =
+        pkgs.runCommand "moe-release-tool"
+          {
+            nativeBuildInputs = [
+              pkgs.python3
+              pkgs.ruff
+            ];
+          }
+          ''
+            cp -r ${./tools} tools
+            chmod -R +w tools
+            ruff check tools
+            ruff format --check tools
+            python3 -m unittest -v tools/test_release.py
+            touch $out
+          '';
 
       devShells.${system}.default = pkgs.mkShell {
         packages = [
@@ -102,7 +150,7 @@
         JAVA_HOME = jdk.home;
         ANDROID_HOME = androidSdkRoot;
         ANDROID_SDK_ROOT = androidSdkRoot;
-        GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${aapt2}";
+        GRADLE_OPTS = gradleOptions;
       };
 
       formatter.${system} = pkgs.nixfmt;

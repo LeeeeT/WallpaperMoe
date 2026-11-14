@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_activate_wallpaper">Wallpaper Moe を有効にする</string>
+    <string name="action_add_favorite">お気に入りに追加</string>
+    <string name="action_add_source">ソースを追加</string>
+    <string name="action_back">戻る</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_change_now">いま変更</string>
+    <string name="action_choose_categories">カテゴリを選択</string>
+    <string name="action_choose_channels">チャンネルを選択</string>
+    <string name="action_choose_source">ソースを選択</string>
+    <string name="action_close">閉じる</string>
+    <string name="action_create_first_source">最初のソースを作成</string>
+    <string name="action_delete">削除</string>
+    <string name="action_discard">破棄</string>
+    <string name="action_discard_changes">変更を破棄</string>
+    <string name="action_hide_key">キーを隠す</string>
+    <string name="action_keep_editing">編集を続ける</string>
+    <string name="action_more">その他のオプション</string>
+    <string name="action_move_earlier">前へ移動</string>
+    <string name="action_move_later">後ろへ移動</string>
+    <string name="action_remove_favorite">お気に入りから削除</string>
+    <string name="action_remove_reference">ソースを外す</string>
+    <string name="action_reset">リセット</string>
+    <string name="action_save_source">ソースを保存</string>
+    <string name="action_save_to_gallery">ギャラリーに保存</string>
+    <string name="action_set_wallpaper">壁紙に設定</string>
+    <string name="action_show_key">キーを表示</string>
+    <string name="action_try_again">再試行</string>
+    <string name="action_undo">元に戻す</string>
+    <string name="action_view_source">出典を見る</string>
+    <string name="cache_description">壁紙を保存して、あとでオフラインでも使えるようにします。</string>
+    <string name="cache_images_to_keep">保存する壁紙の数</string>
+    <string name="cache_refresh_6_hours">6 時間後</string>
+    <string name="cache_refresh_daily">1 日後</string>
+    <string name="cache_refresh_hourly">1 時間後</string>
+    <string name="cache_refresh_interval">保存数に達したら使用時に更新</string>
+    <string name="cache_refresh_never">しない</string>
+    <string name="categories_unavailable">作品の種類を読み込めませんでした</string>
+    <string name="channels_unavailable">Pandora に接続できませんでした</string>
+    <string name="dialog_delete_blocked_body">先に次のソースから %1$s を外してください: %2$s</string>
+    <string name="dialog_delete_blocked_title">ソースは使用中です</string>
+    <string name="dialog_delete_source_title">%1$s を削除しますか？</string>
+    <string name="dialog_unsaved_title">保存していない変更を破棄しますか？</string>
+    <string name="failure_download">%1$s の壁紙を読み込めませんでした</string>
+    <string name="failure_favorites_empty">お気に入りが空です</string>
+    <string name="failure_unexpected">壁紙の変更中に問題が発生しました</string>
+    <string name="fallthrough_description">壁紙が見つかった最初のソースを使います。</string>
+    <string name="favorite_removed">お気に入りから削除しました</string>
+    <string name="favorites_empty">ハートをタップすると壁紙をここに保存できます。</string>
+    <string name="favorites_reorder_hint">長押ししてドラッグすると並べ替えられます</string>
+    <string name="favorites_source_summary_random">保存した壁紙をランダムに</string>
+    <string name="favorites_source_summary_round_robin">保存した壁紙を順番に</string>
+    <string name="favorites_title">お気に入り</string>
+    <string name="gallery_save_already_saved">ギャラリーに保存済みです</string>
+    <string name="gallery_save_failure">ギャラリーに保存できませんでした</string>
+    <string name="gallery_save_success">ギャラリーに保存しました</string>
+    <string name="history_empty">履歴はまだありません。</string>
+    <string name="history_title">履歴</string>
+    <string name="interval_1_hour">1 時間に 1 回まで</string>
+    <string name="interval_24_hours">1 日に 1 回まで</string>
+    <string name="interval_6_hours">6 時間に 1 回まで</string>
+    <string name="interval_every_screen_off">画面が消灯するたび</string>
+    <string name="link_open_failure">リンクを開けませんでした</string>
+    <string name="nav_settings">設定</string>
+    <string name="nav_studio">スタジオ</string>
+    <string name="nav_today">きょう</string>
+    <string name="nekos_best_categories_title">作品の種類</string>
+    <string name="pandora_channels_title">Pandora チャンネル</string>
+    <string name="prefetch_description">次の変更前に壁紙を用意します。</string>
+    <string name="prefetch_images_ready">用意する壁紙の数</string>
+    <string name="random_description">毎回、この中から 1 つがランダムに選ばれます。</string>
+    <string name="round_robin_description">下の順番でソースが使われます。</string>
+    <string name="selection_mode_title">選び方</string>
+    <string name="settings_appearance">表示</string>
+    <string name="settings_appearance_detail">明るさ、コントラスト、ぼかしはライブ壁紙に適用されます。</string>
+    <string name="settings_blur">ぼかし</string>
+    <string name="settings_brightness">明るさ</string>
+    <string name="settings_contrast">コントラスト</string>
+    <string name="settings_how_often">変更の頻度</string>
+    <string name="settings_interval_detail">画面の消灯で変更が起きる頻度を選びます。</string>
+    <string name="settings_multiplier_value">%1$s×</string>
+    <string name="settings_preview_description">調整を適用した現在の壁紙</string>
+    <string name="settings_wallhaven">Wallhaven</string>
+    <string name="sorting_favorites">お気に入り数順</string>
+    <string name="sorting_newest">新着順</string>
+    <string name="sorting_random">ランダム</string>
+    <string name="sorting_toplist">トップリスト</string>
+    <string name="sorting_views">閲覧数順</string>
+    <string name="source_list_title">ソース</string>
+    <string name="source_name_cache">あとで使う</string>
+    <string name="source_name_fallthrough">最初に見つかったもの</string>
+    <string name="source_name_label">ソース名</string>
+    <string name="source_name_optional_hint">空欄にすると名前が自動生成されます</string>
+    <string name="source_name_prefetch">先に用意</string>
+    <string name="source_name_random">ランダム選択</string>
+    <string name="source_name_round_robin">順番に</string>
+    <string name="source_picker_combine">複数のソースから壁紙を組み合わせます</string>
+    <string name="source_picker_favorites">この端末に保存した壁紙を使います</string>
+    <string name="source_picker_keep_ready">必要になる前に壁紙を保存または用意します</string>
+    <string name="source_picker_nekos_best">Nekos.best のアニメ作品</string>
+    <string name="source_picker_pandora">Xiaomi の壁紙チャンネル</string>
+    <string name="source_picker_title">ソースを追加</string>
+    <string name="source_picker_wallhaven">wallhaven.cc を検索</string>
+    <string name="source_reference_picker_title">ソースを選択</string>
+    <string name="source_slot_empty">ソースが選択されていません。</string>
+    <string name="source_slot_title">ソース</string>
+    <string name="studio_empty">ソースはまだありません。</string>
+    <string name="summary_anything">すべて</string>
+    <string name="summary_wallhaven">%1$s · %2$s</string>
+    <string name="today_current_description">Wallpaper Moe の現在の画像</string>
+    <string name="today_inactive">無効</string>
+    <string name="today_needs_attention">確認が必要です</string>
+    <string name="today_no_active_source">選択されていません</string>
+    <string name="today_not_ready">準備できていません</string>
+    <string name="today_ready">準備完了</string>
+    <string name="today_sampling">壁紙を選んでいます…</string>
+    <string name="today_source_picker_detail">自動変更と手動変更の両方でこのソースが使われます。</string>
+    <string name="today_source_picker_title">アクティブなソースを選択</string>
+    <string name="wallhaven_anime">アニメ</string>
+    <string name="wallhaven_api_key">Wallhaven API キー</string>
+    <string name="wallhaven_aspect_ratio">アスペクト比</string>
+    <string name="wallhaven_categories">カテゴリ</string>
+    <string name="wallhaven_general">一般</string>
+    <string name="wallhaven_landscape">横向き</string>
+    <string name="wallhaven_nsfw">NSFW</string>
+    <string name="wallhaven_order">並び順</string>
+    <string name="wallhaven_people">人物</string>
+    <string name="wallhaven_portrait">縦向き</string>
+    <string name="wallhaven_purity">健全度</string>
+    <string name="wallhaven_search">検索</string>
+    <string name="wallhaven_search_hint">空欄ならすべてが対象です</string>
+    <string name="wallhaven_sfw">SFW</string>
+    <string name="wallhaven_sketchy">際どい</string>
+    <string name="wallpaper_artist">作者: %1$s</string>
+    <string name="wallpaper_artist_unknown">作者を見る</string>
+    <string name="wallpaper_preview_description">元の壁紙のプレビュー</string>
+    <string name="wallpaper_thumbnail_by_artist">%1$s の壁紙</string>
+    <string name="wallpaper_thumbnail_description">保存された壁紙</string>
+    <plurals name="pandora_subscribers">
+        <item quantity="other">%1$d 人の購読者</item>
+    </plurals>
+    <plurals name="source_library_count">
+        <item quantity="other">%1$d 個のソース</item>
+    </plurals>
+    <plurals name="summary_cache">
+        <item quantity="other">最大 %1$d 枚を保存し、満杯になると %2$s の使用時に更新</item>
+    </plurals>
+    <plurals name="summary_cache_interval">
+        <item quantity="other">%1$d 時間後</item>
+    </plurals>
+    <plurals name="summary_cache_never">
+        <item quantity="other">%1$d 枚キャッシュ</item>
+    </plurals>
+    <plurals name="summary_prefetch">
+        <item quantity="other">%1$d 枚用意</item>
+    </plurals>
+    <plurals name="summary_sources_fallthrough">
+        <item quantity="other">%1$d 個のソースのうち最初に成功したもの</item>
+    </plurals>
+    <plurals name="summary_sources_in_turn">
+        <item quantity="other">%1$d 個のソースを順番に</item>
+    </plurals>
+    <plurals name="summary_sources_random">
+        <item quantity="other">%1$d 個のソースからランダムに</item>
+    </plurals>
+
+    <string name="wallpaper_description">あなたのソースから届く壁紙</string>
+
+    <string name="tile_label">次の壁紙</string>
+
+    <string name="action_clear">消去</string>
+
+    <string name="action_share">共有</string>
+
+    <string name="action_choose_folder">フォルダを選択</string>
+
+    <string name="screen_home">ホーム画面</string>
+
+    <string name="screen_lock">ロック画面</string>
+
+    <string name="status_waiting">Wi‑Fi を待っています</string>
+
+    <string name="picker_title_home">ホーム画面のソース</string>
+
+    <string name="picker_title_lock">ロック画面のソース</string>
+
+    <string name="picker_empty">ソースがありません。スタジオで最初のソースを作成してください。</string>
+
+    <string name="history_clear_title">履歴を消去しますか？</string>
+
+    <string name="history_clear_body">お気に入りと現在の壁紙は残ります。</string>
+
+    <string name="message_wallpaper_set">壁紙を設定しました</string>
+
+    <string name="message_export_done">バックアップを保存しました</string>
+
+    <string name="message_export_failed">バックアップを保存できませんでした</string>
+
+    <string name="message_import_done">バックアップを復元しました</string>
+
+    <string name="message_import_failed">バックアップを読み込めませんでした</string>
+
+    <string name="kind_folder">端末のフォルダ</string>
+
+    <string name="kind_favorites">お気に入り</string>
+
+    <string name="kind_keep_ready">常に準備</string>
+
+    <string name="kind_combine">組み合わせ</string>
+
+    <string name="kind_folder_detail">この端末のフォルダにある画像</string>
+
+    <string name="folder_title">フォルダ</string>
+
+    <string name="folder_none">フォルダが選択されていません</string>
+
+    <string name="folder_detail">サブフォルダの画像も含まれます。</string>
+
+    <string name="problem_name_taken">他のソースと違う名前にしてください</string>
+
+    <string name="problem_wallhaven_category">カテゴリを 1 つ以上選んでください</string>
+
+    <string name="problem_wallhaven_purity">健全度を 1 つ以上選んでください</string>
+
+    <string name="problem_wallhaven_aspect">アスペクト比を 1 つ以上選んでください</string>
+
+    <string name="problem_wallhaven_key">NSFW 画像を含めるには「設定」で Wallhaven API キーを設定してください</string>
+
+    <string name="problem_nekos_best_category">作品の種類を 1 つ以上選んでください</string>
+
+    <string name="problem_pandora_channel">チャンネルを 1 つ以上選んでください</string>
+
+    <string name="problem_folder_missing">フォルダを選んでください</string>
+
+    <string name="problem_keep_ready_source">準備しておくソースを選んでください</string>
+
+    <string name="problem_keep_ready_option">「先に用意」、「あとで使う」、または両方を有効にしてください</string>
+
+    <string name="problem_combine_sources">ソースを 2 つ以上追加してください</string>
+
+    <string name="problem_input_missing">存在するソースを選んでください</string>
+
+    <string name="problem_input_cycle">ソース同士が互いを使うことになります</string>
+
+    <string name="failure_no_source">先にソースを選んでください。</string>
+
+    <string name="failure_unavailable">%1$s に接続できませんでした。</string>
+
+    <string name="failure_empty">%1$s に条件に合う壁紙がありません。</string>
+
+    <string name="failure_folder_denied">フォルダを読み取れません。スタジオでフォルダを選び直してください。</string>
+
+    <string name="failure_nothing_saved">保存済みの壁紙がありません。</string>
+
+    <string name="failure_metered">次の自動変更には従量制でないネットワークが必要です。</string>
+
+    <string name="settings_network">ネットワーク</string>
+
+    <string name="settings_unmetered">従量制でないネットワークのみ</string>
+
+    <string name="settings_unmetered_detail">自動変更ではモバイルデータでダウンロードしません。</string>
+
+    <string name="settings_storage">ストレージ</string>
+
+    <string name="storage_shown">現在の壁紙と履歴</string>
+
+    <string name="storage_favorites">お気に入り</string>
+
+    <string name="storage_ready">保存済みと用意済みの壁紙</string>
+
+    <string name="storage_total">合計</string>
+
+    <string name="settings_backup">バックアップ</string>
+
+    <string name="backup_export">エクスポート</string>
+
+    <string name="backup_export_detail">ソース、設定、お気に入りを 1 つのファイルにまとめます。</string>
+
+    <string name="backup_import">インポート</string>
+
+    <string name="backup_import_detail">ソース、設定、お気に入りをバックアップの内容に置き換えます。</string>
+
+    <string name="backup_import_title">現在のデータを置き換えますか？</string>
+
+    <string name="backup_import_body">この端末のすべてのソース、設定、お気に入りがバックアップの内容に置き換わります。</string>
+
+    <string name="lock_follow_home">ホーム画面の壁紙を使う</string>
+    <string name="lock_follow_home_detail">ロック画面にホーム画面と同じ壁紙を表示します。ソースと変更の頻度は両方の画面に適用されます。表示は画面ごとに設定します。</string>
+    <string name="screen_settings">%1$sの設定</string>
+    <string name="studio_use_home">ホーム画面で使う</string>
+    <string name="studio_use_lock">ロック画面で使う</string>
+    <string name="studio_use_both">ホーム画面とロック画面で使う</string>
+    <string name="activate_unavailable">この端末には壁紙の選択画面がありません。</string>
+</resources>
