@@ -207,5 +207,90 @@ class AssetTest(unittest.TestCase):
                 release.build_asset(Version(1, 0, 0, 1))
 
 
+class FdroidTest(unittest.TestCase):
+    RECIPE = (
+        "RepoType: git\n"
+        "Repo: https://github.com/LeeeeT/WallpaperMoe\n"
+        "Binaries: \n"
+        "  https://github.com/LeeeeT/WallpaperMoe/releases/download/v%v/wallpaper-moe-v%v.apk\n"
+        "\n"
+        "Builds:\n"
+        "  - versionName: 1.0.0\n"
+    )
+
+    def test_points_only_repo_and_binaries_at_the_local_release(self):
+        recipe, binary = release.point_recipe_at(self.RECIPE, "https://127.0.0.1:4443")
+        self.assertEqual(binary, "wallpaper-moe-v%v.apk")
+        self.assertEqual(
+            recipe,
+            "RepoType: git\n"
+            "Repo: https://127.0.0.1:4443/source.git\n"
+            "Binaries: https://127.0.0.1:4443/wallpaper-moe-v%v.apk\n"
+            "\n"
+            "Builds:\n"
+            "  - versionName: 1.0.0\n",
+        )
+
+    def test_rejects_a_recipe_without_binaries(self):
+        with self.assertRaisesRegex(ReleaseError, "Repo or Binaries"):
+            release.point_recipe_at(
+                "Repo: https://example.org/app\n", "https://127.0.0.1:1"
+            )
+
+    def test_fails_unless_the_fdroid_job_compares_the_binary_successfully(self):
+        with tempfile.TemporaryDirectory() as directory:
+            asset = Path(directory) / "wallpaper-moe-v2.0.0.apk"
+            asset.write_bytes(b"signed apk")
+            data = Path(directory) / "fdroiddata"
+            (data / "metadata").mkdir(parents=True)
+            recipe = data / "metadata" / "dev.leeeet.wallpapermoe.yml"
+            recipe.write_text(self.RECIPE)
+
+            def run(*parts, **kwargs):
+                if parts[:2] == ("docker", "run") and "checkupdates" in parts[-1]:
+                    recipe.write_text(
+                        recipe.read_text()
+                        + "  - versionName: 2.0.0\n    versionCode: 2\n"
+                    )
+                return subprocess.CompletedProcess(parts, 0, stdout="bundle", stderr="")
+
+            for log, expected in (
+                (f"... {release.FDROID_SUCCESS}\n", None),
+                (
+                    "compared built binary to supplied reference binary but failed\n",
+                    ReleaseError,
+                ),
+            ):
+                with (
+                    self.subTest(log=log),
+                    mock.patch.object(
+                        release, "fdroiddata_checkout", return_value=data
+                    ),
+                    mock.patch.object(release, "git"),
+                    mock.patch.object(release, "command", side_effect=run),
+                    mock.patch.object(
+                        release,
+                        "certificate_authority",
+                        return_value=(
+                            Path("server.pem"),
+                            Path("server.key"),
+                            Path("bundle.pem"),
+                        ),
+                    ),
+                    mock.patch.object(
+                        release,
+                        "serve_https",
+                        return_value=mock.Mock(server_address=("127.0.0.1", 4443)),
+                    ),
+                    mock.patch.object(release, "run_logged", return_value=(0, log)),
+                ):
+                    recipe.write_text(self.RECIPE)
+                    if expected is None:
+                        release.verify_fdroid_build(Version(2, 0, 0, 2), asset)
+                    else:
+                        with self.assertRaises(expected):
+                            release.verify_fdroid_build(Version(2, 0, 0, 2), asset)
+
+
 if __name__ == "__main__":
     unittest.main()

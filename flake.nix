@@ -91,6 +91,8 @@
           pkgs.coreutils
           pkgs.gh
           pkgs.git
+          pkgs.gitlab-ci-local
+          pkgs.openssl
           pkgs.python3
           jdk
           androidSdk

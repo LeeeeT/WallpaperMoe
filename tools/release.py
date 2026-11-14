@@ -4,13 +4,18 @@
 from __future__ import annotations
 
 import argparse
+import functools
+import http.server
 import json
 import os
 import re
 import shlex
 import shutil
+import ssl
 import subprocess
 import sys
+import tempfile
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -20,6 +25,13 @@ VERSION_FILE = Path("version.properties")
 FASTLANE = Path("fastlane/metadata/android")
 RELEASE_OUTPUT = Path("app/build/outputs/apk/release")
 DIST = Path("dist")
+APPLICATION_ID = "dev.leeeet.wallpapermoe"
+FDROID_IMAGE = "registry.gitlab.com/fdroid/fdroidserver:buildserver-trixie"
+FDROIDDATA = "https://gitlab.com/fdroid/fdroiddata.git"
+FDROIDSERVER = "https://gitlab.com/fdroid/fdroidserver.git"
+FDROID_JOB = "fdroid build"
+FDROID_GRADLE_HOME = "wallpapermoe-fdroid-gradle"
+FDROID_SUCCESS = "compared built binary to supplied reference binary successfully"
 
 
 class ReleaseError(RuntimeError):
@@ -140,7 +152,9 @@ def optional_output(*parts: str) -> str | None:
 
 def require_tools() -> None:
     missing = [
-        name for name in ("git", "gh", "apksigner") if shutil.which(name) is None
+        name
+        for name in ("git", "gh", "apksigner", "docker")
+        if shutil.which(name) is None
     ]
     if missing:
         raise ReleaseError(f"release environment is missing: {', '.join(missing)}")
@@ -302,6 +316,281 @@ def build_asset(version: Version) -> Path:
     asset = DIST / f"wallpaper-moe-{version.tag}.apk"
     shutil.copy2(built, asset)
     return asset
+
+
+def point_recipe_at(recipe: str, base: str) -> tuple[str, str]:
+    repo = re.compile(r"^Repo: \S+$", re.MULTILINE)
+    binaries = re.compile(r"^Binaries:\s*(https://\S+)$", re.MULTILINE)
+    match = binaries.search(recipe)
+    if repo.search(recipe) is None or match is None:
+        raise ReleaseError(
+            "the F-Droid recipe has no Repo or Binaries line to point at the release"
+        )
+    name = match.group(1).rsplit("/", 1)[1]
+    recipe = repo.sub(f"Repo: {base}/source.git", recipe, count=1)
+    recipe = binaries.sub(f"Binaries: {base}/{name}", recipe, count=1)
+    return recipe, name
+
+
+def fdroid_cache() -> Path:
+    root = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache")
+    return root / "wallpapermoe"
+
+
+def fdroiddata_checkout(version: Version) -> Path:
+    data = fdroid_cache() / "fdroiddata"
+    if (data / ".git").is_dir():
+        git("-C", str(data), "fetch", "--quiet", "--depth", "1", "origin", "master")
+    else:
+        data.parent.mkdir(parents=True, exist_ok=True)
+        git(
+            "clone", "--quiet", "--depth", "1", "--single-branch", FDROIDDATA, str(data)
+        )
+    git(
+        "-C",
+        str(data),
+        "checkout",
+        "--quiet",
+        "--force",
+        "-B",
+        f"wallpapermoe-{version.tag}",
+        "origin/master",
+    )
+    git("-C", str(data), "clean", "--quiet", "-dffx")
+    git("-C", str(data), "remote", "set-head", "origin", "master")
+    return data
+
+
+def certificate_authority(directory: Path) -> tuple[Path, Path, Path]:
+    authority, key = directory / "authority.pem", directory / "authority.key"
+    server, server_key = directory / "server.pem", directory / "server.key"
+    request, extensions = directory / "server.csr", directory / "server.ext"
+    extensions.write_text(
+        "subjectAltName=IP:127.0.0.1\nbasicConstraints=CA:FALSE\nextendedKeyUsage=serverAuth\n"
+    )
+    for parts in (
+        (
+            "req",
+            "-x509",
+            "-newkey",
+            "rsa:2048",
+            "-nodes",
+            "-days",
+            "1",
+            "-subj",
+            "/CN=Wallpaper Moe release check",
+            "-addext",
+            "basicConstraints=critical,CA:TRUE",
+            "-addext",
+            "keyUsage=critical,keyCertSign",
+            "-keyout",
+            str(key),
+            "-out",
+            str(authority),
+        ),
+        (
+            "req",
+            "-newkey",
+            "rsa:2048",
+            "-nodes",
+            "-subj",
+            "/CN=127.0.0.1",
+            "-keyout",
+            str(server_key),
+            "-out",
+            str(request),
+        ),
+        (
+            "x509",
+            "-req",
+            "-days",
+            "1",
+            "-in",
+            str(request),
+            "-CA",
+            str(authority),
+            "-CAkey",
+            str(key),
+            "-CAcreateserial",
+            "-extfile",
+            str(extensions),
+            "-out",
+            str(server),
+        ),
+    ):
+        command("openssl", *parts, capture=True)
+    bundle = directory / "bundle.pem"
+    bundle.write_text(
+        output(
+            "docker",
+            "run",
+            "--rm",
+            FDROID_IMAGE,
+            "cat",
+            "/etc/ssl/certs/ca-certificates.crt",
+        )
+        + "\n"
+        + authority.read_text()
+    )
+    return server, server_key, bundle
+
+
+class Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, format: str, *args: object) -> None:
+        pass
+
+
+def serve_https(
+    root: Path, certificate: Path, key: Path
+) -> http.server.ThreadingHTTPServer:
+    server = http.server.ThreadingHTTPServer(
+        ("127.0.0.1", 0), functools.partial(Quiet, directory=str(root))
+    )
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(certificate, key)
+    server.socket = context.wrap_socket(server.socket, server_side=True)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server
+
+
+def run_logged(*parts: str, cwd: Path) -> tuple[int, str]:
+    print(f"+ (cd {cwd}) {shlex.join(parts)}", file=sys.stderr)
+    process = subprocess.Popen(
+        parts, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    )
+    lines = []
+    assert process.stdout is not None
+    for line in process.stdout:
+        sys.stderr.write(line)
+        lines.append(line)
+    return process.wait(), "".join(lines)
+
+
+def verify_fdroid_build(version: Version, asset: Path) -> None:
+    command("docker", "pull", "--quiet", FDROID_IMAGE)
+    data = fdroiddata_checkout(version)
+    recipe_path = data / "metadata" / f"{APPLICATION_ID}.yml"
+    with tempfile.TemporaryDirectory(prefix="moe-fdroid-") as directory:
+        work = Path(directory)
+        site = work / "site"
+        site.mkdir()
+        git("clone", "--quiet", "--bare", "--no-local", ".", str(site / "source.git"))
+        git(
+            "-C",
+            str(site / "source.git"),
+            "-c",
+            "tag.gpgsign=false",
+            "tag",
+            "--annotate",
+            "--message",
+            f"Wallpaper Moe {version.tag}",
+            version.tag,
+            "HEAD",
+        )
+        git("-C", str(site / "source.git"), "update-server-info")
+        certificate, key, bundle = certificate_authority(work)
+        server = serve_https(site, certificate, key)
+        try:
+            base = f"https://127.0.0.1:{server.server_address[1]}"
+            recipe, binary = point_recipe_at(
+                recipe_path.read_text(encoding="utf-8"), base
+            )
+            recipe_path.write_text(recipe, encoding="utf-8")
+            shutil.copy2(
+                asset,
+                site
+                / binary.replace("%v", version.name).replace("%c", str(version.code)),
+            )
+            identity = (
+                "-c",
+                "user.name=Wallpaper Moe release",
+                "-c",
+                "user.email=release@localhost",
+                "-c",
+                "commit.gpgsign=false",
+            )
+            git(
+                "-C",
+                str(data),
+                *identity,
+                "commit",
+                "--quiet",
+                "--all",
+                "--message",
+                f"Point {APPLICATION_ID} at {version.tag}",
+            )
+            command(
+                "docker",
+                "run",
+                "--rm",
+                "--network",
+                "host",
+                "--user",
+                f"{os.getuid()}:{os.getgid()}",
+                "--env",
+                "HOME=/tmp/home",
+                "--volume",
+                f"{bundle}:/etc/ssl/certs/ca-certificates.crt:ro",
+                "--volume",
+                f"{data}:/fdroiddata",
+                "--workdir",
+                "/fdroiddata",
+                FDROID_IMAGE,
+                "bash",
+                "-ec",
+                "mkdir -p $HOME; "
+                "git config --global user.name 'checkupdates bot'; "
+                "git config --global user.email checkupdates@localhost; "
+                "git config --global commit.gpgsign false; "
+                f"git clone --quiet --depth 1 {FDROIDSERVER} /tmp/fdroidserver; "
+                "PATH=/tmp/fdroidserver:$PATH PYTHONPATH=/tmp/fdroidserver "
+                f"fdroid checkupdates --allow-dirty --auto --commit {APPLICATION_ID}",
+            )
+            if f"versionCode: {version.code}\n" not in recipe_path.read_text(
+                encoding="utf-8"
+            ):
+                raise ReleaseError(
+                    f"F-Droid's checkupdates did not add a build for {version.tag}"
+                )
+            command(
+                "docker",
+                "run",
+                "--rm",
+                "--volume",
+                f"{FDROID_GRADLE_HOME}:/gradle",
+                FDROID_IMAGE,
+                "find",
+                "/gradle/caches",
+                "-maxdepth",
+                "1",
+                "-name",
+                "build-cache-*",
+                "-exec",
+                "rm",
+                "-rf",
+                "{}",
+                "+",
+            )
+            status, log = run_logged(
+                "gitlab-ci-local",
+                "--network",
+                "host",
+                "--ca-file",
+                str(bundle),
+                "--volume",
+                f"{FDROID_GRADLE_HOME}:/home/vagrant/.gradle",
+                "--pull-policy",
+                "if-not-present",
+                FDROID_JOB,
+                cwd=data,
+            )
+        finally:
+            server.shutdown()
+            server.server_close()
+    if status != 0 or FDROID_SUCCESS not in log:
+        raise ReleaseError(
+            f"F-Droid's {FDROID_JOB!r} job did not reproduce {asset.name}"
+        )
 
 
 def verify_release_commit(tag: str) -> None:
@@ -468,6 +757,7 @@ def release(kind: str) -> None:
 
     if read_version() != version:
         raise ReleaseError("version changed unexpectedly during the release")
+    verify_fdroid_build(version, asset)
     ensure_signed_tag(version)
     push_release(version, origin_main)
     url = publish_draft(version, asset)
@@ -477,7 +767,7 @@ def release(kind: str) -> None:
 def parser() -> argparse.ArgumentParser:
     value = argparse.ArgumentParser(
         prog="nix run .#release --",
-        description="Bump, build, sign, tag, push, and draft a Wallpaper Moe release.",
+        description="Bump, build, sign, verify with F-Droid, tag, push, and draft a Wallpaper Moe release.",
     )
     value.add_argument("bump", choices=("patch", "minor", "major"))
     return value
