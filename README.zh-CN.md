@@ -38,6 +38,8 @@ Wallpaper Moe 是一款会自动更换的动态壁纸。它从在线图库、本
 
 Wallpaper Moe 需要 **Android 14 或更高版本**。
 
+[![在 F-Droid 上获取](https://f-droid.org/badge/get-it-on-zh-cn.png)](https://f-droid.org/packages/dev.leeeet.wallpapermoe/)
+
 [![Get it on Obtainium](https://github.com/ImranR98/Obtainium/raw/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.page/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522dev.leeeet.wallpapermoe%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252FLeeeeT%252FWallpaperMoe%2522%252C%2522author%2522%253A%2522LeeeeT%2522%252C%2522name%2522%253A%2522Wallpaper%2520Moe%2522%257D)
 
 1. 从 [GitHub Releases](../../releases) 下载最新的 APK。
